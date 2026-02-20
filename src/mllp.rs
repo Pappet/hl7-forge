@@ -1,4 +1,5 @@
 use crate::hl7::parser::{build_ack, parse_message};
+use crate::hl7::types::Hl7Message;
 use crate::store::MessageStore;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
@@ -134,6 +135,12 @@ async fn handle_connection(
                 Err(e) => {
                     stats.parse_errors.fetch_add(1, Ordering::Relaxed);
                     warn!("Parse error from {}: {}", peer, e);
+
+                    // Store the failed message so it is visible in the UI
+                    let mut failed = Hl7Message::new_empty(message.clone(), peer.to_string());
+                    failed.message_type = "UNKNOWN".to_string();
+                    failed.parse_error = Some(e.clone());
+                    store.insert(failed).await;
 
                     // Send NACK (AE = Application Error)
                     let nack =

@@ -20,6 +20,7 @@ pub struct Hl7Message {
     pub segments: Vec<Hl7Segment>,
     pub patient_name: Option<String>,
     pub patient_id: Option<String>,
+    pub parse_error: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -76,6 +77,7 @@ impl Hl7Message {
             segments: Vec::new(),
             patient_name: None,
             patient_id: None,
+            parse_error: None,
         }
     }
 }
@@ -93,6 +95,7 @@ pub struct Hl7MessageSummary {
     pub patient_name: Option<String>,
     pub patient_id: Option<String>,
     pub segment_count: usize,
+    pub parse_error: Option<String>,
 }
 
 impl From<&Hl7Message> for Hl7MessageSummary {
@@ -108,6 +111,7 @@ impl From<&Hl7Message> for Hl7MessageSummary {
             patient_name: msg.patient_name.clone(),
             patient_id: msg.patient_id.clone(),
             segment_count: msg.segments.len(),
+            parse_error: msg.parse_error.clone(),
         }
     }
 }
