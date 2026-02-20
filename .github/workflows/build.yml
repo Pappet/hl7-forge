@@ -44,7 +44,6 @@ jobs:
           path: target/release/hl7-forge.exe
           retention-days: 30
 
-      # Bei einem GitHub Release: .exe automatisch anhängen
       - name: Attach to Release
         if: github.event_name == 'release'
         uses: softprops/action-gh-release@v2
@@ -52,26 +51,15 @@ jobs:
           files: target/release/hl7-forge.exe
 
   build-macos:
-    runs-on: ${{ matrix.runner }}
+    runs-on: macos-latest
     permissions:
       contents: write
-    strategy:
-      matrix:
-        include:
-          - runner: macos-latest
-            target: x86_64-apple-darwin
-            artifact: hl7-forge-macos-intel
-          - runner: macos-latest
-            target: aarch64-apple-darwin
-            artifact: hl7-forge-macos-apple-silicon
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.target }}
 
       - name: Cache cargo
         uses: actions/cache@v4
@@ -80,11 +68,11 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: ${{ matrix.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: ${{ matrix.target }}-cargo-
+          key: macos-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: macos-cargo-
 
       - name: Build
-        run: cargo build --release --target ${{ matrix.target }}
+        run: cargo build --release
 
       - name: Run tests
         run: cargo test --release
@@ -92,17 +80,60 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.artifact }}
-          path: target/${{ matrix.target }}/release/hl7-forge
+          name: hl7-forge-macos-apple-silicon
+          path: target/release/hl7-forge
           retention-days: 30
 
-      # Bei einem GitHub Release: Binary umbenennen und anhängen
       - name: Rename binary for release
         if: github.event_name == 'release'
-        run: cp target/${{ matrix.target }}/release/hl7-forge ${{ matrix.artifact }}
+        run: cp target/release/hl7-forge hl7-forge-macos-apple-silicon
 
       - name: Attach to Release
         if: github.event_name == 'release'
         uses: softprops/action-gh-release@v2
         with:
-          files: ${{ matrix.artifact }}
+          files: hl7-forge-macos-apple-silicon
+
+  build-linux:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: linux-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: linux-cargo-
+
+      - name: Build
+        run: cargo build --release
+
+      - name: Run tests
+        run: cargo test --release
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hl7-forge-linux
+          path: target/release/hl7-forge
+          retention-days: 30
+
+      - name: Rename binary for release
+        if: github.event_name == 'release'
+        run: cp target/release/hl7-forge hl7-forge-linux
+
+      - name: Attach to Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: hl7-forge-linux
