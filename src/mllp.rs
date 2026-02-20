@@ -4,6 +4,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
+use tokio::sync::watch;
 use tokio::time::{timeout, Duration};
 use tracing::{info, warn};
 
@@ -41,27 +42,39 @@ pub async fn start_mllp_server(
     bind_addr: &str,
     store: MessageStore,
     stats: MllpStats,
+    mut shutdown: watch::Receiver<bool>,
 ) -> anyhow::Result<()> {
     let listener = TcpListener::bind(bind_addr).await?;
     info!("MLLP server listening on {}", bind_addr);
 
     loop {
-        let (socket, peer_addr) = listener.accept().await?;
-        let store = store.clone();
-        let stats = stats.clone();
-        let peer = peer_addr.to_string();
-
-        stats.active_connections.fetch_add(1, Ordering::Relaxed);
-        info!("New MLLP connection from {}", peer);
-
-        tokio::spawn(async move {
-            if let Err(e) = handle_connection(socket, &peer, &store, &stats).await {
-                warn!("Connection error from {}: {}", peer, e);
+        tokio::select! {
+            biased;
+            _ = shutdown.changed() => {
+                info!("MLLP server shutting down gracefully");
+                break;
             }
-            stats.active_connections.fetch_sub(1, Ordering::Relaxed);
-            info!("MLLP connection closed: {}", peer);
-        });
+            result = listener.accept() => {
+                let (socket, peer_addr) = result?;
+                let store = store.clone();
+                let stats = stats.clone();
+                let peer = peer_addr.to_string();
+
+                stats.active_connections.fetch_add(1, Ordering::Relaxed);
+                info!("New MLLP connection from {}", peer);
+
+                tokio::spawn(async move {
+                    if let Err(e) = handle_connection(socket, &peer, &store, &stats).await {
+                        warn!("Connection error from {}: {}", peer, e);
+                    }
+                    stats.active_connections.fetch_sub(1, Ordering::Relaxed);
+                    info!("MLLP connection closed: {}", peer);
+                });
+            }
+        }
     }
+
+    Ok(())
 }
 
 async fn handle_connection(

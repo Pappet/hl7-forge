@@ -30,14 +30,14 @@ pub fn parse_message(raw: &str, source_addr: &str) -> Result<Hl7Message, String>
 
     // Extract key fields from MSH
     if let Some(msh) = msg.segments.first() {
-        // MSH fields are offset by 1 because MSH-1 IS the field separator
-        msg.sending_application = get_field_value(msh, 2);
-        msg.sending_facility = get_field_value(msh, 3);
-        msg.receiving_application = get_field_value(msh, 4);
-        msg.receiving_facility = get_field_value(msh, 5);
+        // Use HL7-standard field numbers (1-based): MSH-1=separator, MSH-2=encoding chars, etc.
+        msg.sending_application = get_field_value(msh, 3);
+        msg.sending_facility = get_field_value(msh, 4);
+        msg.receiving_application = get_field_value(msh, 5);
+        msg.receiving_facility = get_field_value(msh, 6);
 
         // MSH-9: Message Type (e.g. ADT^A01^ADT_A01)
-        let msg_type_field = get_field_value(msh, 8);
+        let msg_type_field = get_field_value(msh, 9);
         let type_components: Vec<&str> = msg_type_field.split(delimiters.component).collect();
         if !type_components.is_empty() {
             msg.message_type = if type_components.len() >= 2 {
@@ -50,8 +50,8 @@ pub fn parse_message(raw: &str, source_addr: &str) -> Result<Hl7Message, String>
             }
         }
 
-        msg.message_control_id = get_field_value(msh, 9);
-        msg.version = get_field_value(msh, 11);
+        msg.message_control_id = get_field_value(msh, 10);
+        msg.version = get_field_value(msh, 12);
     }
 
     // Extract patient info from PID segment
@@ -125,10 +125,15 @@ fn parse_segment(raw: &str, delimiters: Delimiters) -> Hl7Segment {
         });
     }
 
-    // For MSH, insert the field separator as field 1 and encoding chars as field 2
+    // For MSH, align indices with the HL7 standard (MSH-1 = separator, MSH-2 = encoding chars, ...).
+    // The split-based loop assigns index i starting at 1, which maps to HL7 MSH-2 onwards,
+    // so shift everything up by 1 and insert the separator as MSH-1.
     if name == "MSH" {
+        for field in fields.iter_mut() {
+            field.index += 1;
+        }
         fields.insert(0, Hl7Field {
-            index: 0,
+            index: 1,
             value: sep.to_string(),
             components: vec![sep.to_string()],
         });
@@ -141,8 +146,8 @@ fn parse_segment(raw: &str, delimiters: Delimiters) -> Hl7Segment {
     }
 }
 
-/// Get field value by 0-based field index (after segment name).
-/// For MSH: index 0 = field separator, 1 = encoding chars, 2 = sending app, etc.
+/// Get field value by HL7 field number (1-based standard numbering).
+/// For MSH: index 1 = field separator, 2 = encoding chars, 3 = sending app, etc.
 fn get_field_value(segment: &Hl7Segment, index: usize) -> String {
     segment
         .fields

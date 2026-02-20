@@ -5,7 +5,7 @@ mod web;
 
 use mllp::MllpStats;
 use store::MessageStore;
-use tracing::info;
+use tracing::{info, warn};
 use tracing_subscriber::EnvFilter;
 use web::{create_router, AppState};
 
@@ -38,14 +38,17 @@ async fn main() -> anyhow::Result<()> {
     info!("║  Web UI:       http://localhost:{}     ║", web_port);
     info!("╚══════════════════════════════════════════╝");
 
+    let (shutdown_tx, shutdown_rx) = tokio::sync::watch::channel(false);
+
     // Start MLLP server
     let mllp_store = store.clone();
     let mllp_stats = stats.clone();
+    let mllp_shutdown = shutdown_rx.clone();
     let mllp_handle = tokio::spawn(async move {
         let addr = format!("0.0.0.0:{}", mllp_port);
-        mllp::start_mllp_server(&addr, mllp_store, mllp_stats)
-            .await
-            .expect("MLLP server failed");
+        if let Err(e) = mllp::start_mllp_server(&addr, mllp_store, mllp_stats, mllp_shutdown).await {
+            warn!("MLLP server error: {}", e);
+        }
     });
 
     // Start Web server
@@ -57,15 +60,31 @@ async fn main() -> anyhow::Result<()> {
     let app = create_router(app_state);
     let web_addr = format!("0.0.0.0:{}", web_port);
     let listener = tokio::net::TcpListener::bind(&web_addr).await?;
+    let web_shutdown = shutdown_rx.clone();
     let web_handle = tokio::spawn(async move {
-        axum::serve(listener, app).await.expect("Web server failed");
+        axum::serve(listener, app)
+            .with_graceful_shutdown(async move {
+                let mut rx = web_shutdown;
+                let _ = rx.changed().await;
+            })
+            .await
+            .expect("Web server failed");
     });
 
-    // Wait for both servers
+    // Wait for a shutdown signal or an unexpected server exit
     tokio::select! {
-        _ = mllp_handle => {},
-        _ = web_handle => {},
+        _ = mllp_handle => {
+            warn!("MLLP server stopped unexpectedly, initiating shutdown");
+        }
+        _ = web_handle => {
+            warn!("Web server stopped unexpectedly, initiating shutdown");
+        }
+        _ = tokio::signal::ctrl_c() => {
+            info!("Received Ctrl+C, shutting down gracefully");
+        }
     }
 
+    let _ = shutdown_tx.send(true);
+    info!("HL7 Forge stopped.");
     Ok(())
 }

@@ -12,7 +12,7 @@ categories = ["network-programming", "web-programming"]
 
 [dependencies]
 # Async runtime
-tokio = { version = "1", features = ["rt-multi-thread", "net", "sync", "time", "macros", "io-util"] }
+tokio = { version = "1", features = ["rt-multi-thread", "net", "sync", "time", "macros", "io-util", "signal"] }
 
 # Web framework + WebSocket
 axum = { version = "0.7", features = ["ws"] }
