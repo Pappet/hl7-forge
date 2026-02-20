@@ -4,7 +4,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
-use tracing::{error, info, warn};
+use tracing::{info, warn};
 
 /// MLLP framing constants
 const MLLP_START: u8 = 0x0B; // Vertical Tab (VT)
@@ -100,10 +100,9 @@ async fn handle_connection(
                     warn!("Parse error from {}: {}", peer, e);
 
                     // Send NACK (AE = Application Error)
-                    let nack = format!(
-                        "MSH|^~\\&|HL7Forge|HL7Forge|||||ACK||P|2.5\rMSA|AE|UNKNOWN|{}",
-                        e
-                    );
+                    let nack =
+                        "MSH|^~\\&|HL7Forge|HL7Forge|||||ACK||P|2.5\rMSA|AE|UNKNOWN|Message parse error"
+                            .to_string();
                     let nack_frame = wrap_mllp(&nack);
                     let _ = socket.write_all(&nack_frame).await;
                 }

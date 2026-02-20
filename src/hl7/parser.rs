@@ -1,5 +1,4 @@
 use super::types::*;
-use tracing::warn;
 
 /// Parse a raw HL7 v2.x message string into a structured Hl7Message.
 /// Handles standard and custom delimiters from MSH segment.
@@ -113,16 +112,14 @@ fn parse_segment(raw: &str, delimiters: Delimiters) -> Hl7Segment {
     let mut fields = Vec::new();
 
     // For MSH, field indexing is special: MSH-1 is the separator itself
-    let start_index = if name == "MSH" { 1 } else { 0 };
-
-    for (i, &part) in parts.iter().enumerate().skip(if name == "MSH" { 1 } else { 1 }) {
+    for (i, &part) in parts.iter().enumerate().skip(1) {
         let components: Vec<String> = part
             .split(delimiters.component)
             .map(|c| c.to_string())
             .collect();
 
         fields.push(Hl7Field {
-            index: if name == "MSH" { i } else { i },
+            index: i,
             value: part.to_string(),
             components,
         });

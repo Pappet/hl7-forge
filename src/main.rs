@@ -32,7 +32,7 @@ async fn main() -> anyhow::Result<()> {
     let stats = MllpStats::new();
 
     info!("╔══════════════════════════════════════════╗");
-    info!("║          HL7 Forge v0.1.0                ║");
+    info!("║          HL7 Forge v{}                ║", env!("CARGO_PKG_VERSION"));
     info!("╠══════════════════════════════════════════╣");
     info!("║  MLLP Server:  0.0.0.0:{}             ║", mllp_port);
     info!("║  Web UI:       http://localhost:{}     ║", web_port);
@@ -52,6 +52,7 @@ async fn main() -> anyhow::Result<()> {
     let app_state = AppState {
         store: store.clone(),
         stats: stats.clone(),
+        mllp_port,
     };
     let app = create_router(app_state);
     let web_addr = format!("0.0.0.0:{}", web_port);

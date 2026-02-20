@@ -3,13 +3,12 @@ use crate::store::MessageStore;
 use axum::extract::ws::{Message, WebSocket, WebSocketUpgrade};
 use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
-use axum::response::{Html, IntoResponse, Response};
+use axum::response::{Html, IntoResponse};
 use axum::routing::get;
 use axum::{Json, Router};
 use rust_embed::Embed;
 use serde::Deserialize;
 use std::sync::atomic::Ordering;
-use tracing::info;
 
 #[derive(Embed)]
 #[folder = "static/"]
@@ -19,6 +18,7 @@ struct StaticAssets;
 pub struct AppState {
     pub store: MessageStore,
     pub stats: MllpStats,
+    pub mllp_port: u16,
 }
 
 pub fn create_router(state: AppState) -> Router {
@@ -87,6 +87,7 @@ async fn get_stats(State(state): State<AppState>) -> impl IntoResponse {
         "parsed_ok": state.stats.parsed_ok.load(Ordering::Relaxed),
         "parse_errors": state.stats.parse_errors.load(Ordering::Relaxed),
         "active_connections": state.stats.active_connections.load(Ordering::Relaxed),
+        "mllp_port": state.mllp_port,
     }))
 }
 

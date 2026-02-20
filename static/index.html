@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -252,6 +252,8 @@
 
         .segment-block {
             margin-bottom: 12px;
+            border-left: 3px solid var(--border);
+            padding-left: 12px;
         }
 
         .segment-name {
@@ -262,8 +264,21 @@
             margin-bottom: 4px;
             cursor: pointer;
             user-select: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
         .segment-name:hover { color: var(--text-primary); }
+        .segment-name .collapse-icon {
+            font-size: 10px;
+            width: 12px;
+            display: inline-block;
+        }
+        .segment-name .field-count {
+            font-size: 10px;
+            font-weight: 400;
+            color: var(--text-muted);
+        }
 
         .field-table {
             width: 100%;
@@ -272,14 +287,29 @@
             margin-bottom: 4px;
         }
 
+        .field-table th {
+            padding: 4px 10px;
+            text-align: left;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            font-weight: 600;
+            border-bottom: 1px solid var(--border);
+        }
+
         .field-table td {
             padding: 3px 10px;
             border-bottom: 1px solid var(--border);
             vertical-align: top;
         }
 
+        .field-table tbody tr:nth-child(even) {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
         .field-table .field-idx {
-            width: 50px;
+            width: 70px;
             font-family: var(--font-mono);
             color: var(--text-muted);
             font-size: 11px;
@@ -289,6 +319,12 @@
             font-family: var(--font-mono);
             color: var(--text-primary);
             word-break: break-all;
+        }
+
+        .field-table .field-empty {
+            color: var(--text-muted);
+            opacity: 0.5;
+            font-style: italic;
         }
 
         .field-table .field-components {
@@ -397,6 +433,7 @@
         let autoscroll = true;
         let searchQuery = '';
         let ws = null;
+        let collapsedSegments = new Set();
 
         // --- WebSocket ---
         function connectWs() {
@@ -412,6 +449,12 @@
                 document.getElementById('ws-dot').className = 'stat-dot red';
                 document.getElementById('ws-status').textContent = 'Disconnected';
                 setTimeout(connectWs, 2000);
+            };
+
+            ws.onerror = (event) => {
+                console.error('WebSocket error:', event);
+                document.getElementById('ws-dot').className = 'stat-dot red';
+                document.getElementById('ws-status').textContent = 'Error';
             };
 
             ws.onmessage = (event) => {
@@ -437,6 +480,7 @@
         async function loadMessages() {
             try {
                 const resp = await fetch('/api/messages?limit=1000');
+                if (!resp.ok) return;
                 messages = await resp.json();
                 document.getElementById('stat-total').textContent = messages.length;
                 renderMessageList();
@@ -449,10 +493,14 @@
         async function pollStats() {
             try {
                 const resp = await fetch('/api/stats');
+                if (!resp.ok) return;
                 const stats = await resp.json();
                 document.getElementById('stat-total').textContent = stats.total_messages;
                 document.getElementById('stat-connections').textContent = stats.active_connections;
                 document.getElementById('stat-errors').textContent = stats.parse_errors;
+                if (stats.mllp_port) {
+                    document.getElementById('mllp-port').textContent = stats.mllp_port;
+                }
             } catch (e) {}
         }
 
@@ -482,7 +530,7 @@
                 row.onclick = () => selectMessage(msg.id);
 
                 const time = new Date(msg.received_at);
-                const timeStr = time.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                const timeStr = time.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
                 row.innerHTML = `
                     <span class="msg-type">${esc(msg.message_type)}</span>
@@ -555,23 +603,34 @@
             const msg = selectedMessage;
 
             if (activeTab === 'parsed') {
-                content.innerHTML = msg.segments.map(seg => `
+                content.innerHTML = msg.segments.map((seg, segIdx) => {
+                    const key = `${msg.message_control_id}-${segIdx}`;
+                    const collapsed = collapsedSegments.has(key);
+                    const icon = collapsed ? '▸' : '▾';
+                    return `
                     <div class="segment-block">
-                        <div class="segment-name">${esc(seg.name)}</div>
-                        <table class="field-table">
+                        <div class="segment-name" onclick="toggleSegment('${key}')">
+                            <span class="collapse-icon">${icon}</span>
+                            ${esc(seg.name)}
+                            <span class="field-count">(${seg.fields.length})</span>
+                        </div>
+                        ${collapsed ? '' : `<table class="field-table">
+                            <thead><tr><th style="width:70px">Field</th><th>Value</th><th>Components</th></tr></thead>
+                            <tbody>
                             ${seg.fields.map(f => `
                                 <tr>
                                     <td class="field-idx">${seg.name}-${f.index + 1}</td>
-                                    <td class="field-val">${esc(f.value) || '<span style="color:var(--text-muted)">∅</span>'}</td>
+                                    <td class="field-val">${esc(f.value) || '<span class="field-empty">empty</span>'}</td>
                                     <td class="field-components">${f.components.length > 1
                                         ? f.components.map((c, i) => `<span title="${seg.name}-${f.index + 1}.${i + 1}">${esc(c)}</span>`).join(' <span style="color:var(--text-muted)">^</span> ')
                                         : ''
                                     }</td>
                                 </tr>
                             `).join('')}
-                        </table>
-                    </div>
-                `).join('');
+                            </tbody>
+                        </table>`}
+                    </div>`;
+                }).join('');
             } else if (activeTab === 'raw') {
                 const lines = msg.raw.split(/\r?\n|\r/).filter(l => l.trim());
                 content.innerHTML = `<div class="raw-view">${
@@ -585,6 +644,15 @@
             }
         }
 
+        function toggleSegment(key) {
+            if (collapsedSegments.has(key)) {
+                collapsedSegments.delete(key);
+            } else {
+                collapsedSegments.add(key);
+            }
+            renderTab();
+        }
+
         // --- Actions ---
         function toggleAutoscroll() {
             autoscroll = !autoscroll;
@@ -596,6 +664,7 @@
         async function exportMessages() {
             try {
                 const resp = await fetch('/api/messages?limit=100000');
+                if (!resp.ok) throw new Error(`Server error: ${resp.status}`);
                 const data = await resp.json();
                 const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
@@ -610,15 +679,20 @@
         }
 
         async function clearMessages() {
-            if (!confirm('Alle Nachrichten löschen?')) return;
-            await fetch('/api/clear', { method: 'POST' });
-            messages = [];
-            selectedId = null;
-            selectedMessage = null;
-            renderMessageList();
-            document.getElementById('detail-content').innerHTML = '<div class="empty-state"><p>Keine Nachricht ausgewählt</p></div>';
-            document.getElementById('detail-title').textContent = 'Select a message';
-            document.getElementById('detail-meta').textContent = '';
+            if (!confirm('Delete all messages?')) return;
+            try {
+                const resp = await fetch('/api/clear', { method: 'POST' });
+                if (!resp.ok) throw new Error(`Server error: ${resp.status}`);
+                messages = [];
+                selectedId = null;
+                selectedMessage = null;
+                renderMessageList();
+                document.getElementById('detail-content').innerHTML = '<div class="empty-state"><p>No message selected</p></div>';
+                document.getElementById('detail-title').textContent = 'Select a message';
+                document.getElementById('detail-meta').textContent = '';
+            } catch (e) {
+                console.error('Failed to clear messages:', e);
+            }
         }
 
         // --- Utility ---
