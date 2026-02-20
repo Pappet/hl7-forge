@@ -356,6 +356,27 @@
             color: var(--text-muted);
         }
 
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-family: var(--font-mono);
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            z-index: 1000;
+            animation: toast-in 0.2s ease-out;
+        }
+        .toast.error { border-color: var(--error); color: var(--error); }
+        @keyframes toast-in {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
         /* Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -674,7 +695,7 @@
                 a.click();
                 URL.revokeObjectURL(url);
             } catch (e) {
-                alert('Export failed: ' + e.message);
+                showToast('Export failed: ' + (e.message || e));
             }
         }
 
@@ -696,6 +717,14 @@
         }
 
         // --- Utility ---
+        function showToast(message, type = 'error') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
+
         function esc(str) {
             if (!str) return '';
             const div = document.createElement('div');

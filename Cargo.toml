@@ -2,11 +2,17 @@
 name = "hl7-forge"
 version = "0.1.0"
 edition = "2021"
+authors = ["Peter Paprotny"]
 description = "High-performance HL7 MLLP server with real-time Web UI"
+license = "MIT"
+repository = "https://github.com/Pappet/hl7-forge"
+readme = "README.md"
+keywords = ["hl7", "mllp", "healthcare", "fhir", "integration"]
+categories = ["network-programming", "web-programming"]
 
 [dependencies]
 # Async runtime
-tokio = { version = "1", features = ["full"] }
+tokio = { version = "1", features = ["rt-multi-thread", "net", "sync", "time", "macros", "io-util"] }
 
 # Web framework + WebSocket
 axum = { version = "0.7", features = ["ws"] }
