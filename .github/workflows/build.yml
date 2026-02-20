@@ -46,9 +46,9 @@ jobs:
 
       - name: Attach to Release
         if: github.event_name == 'release'
-        uses: softprops/action-gh-release@v2
-        with:
-          files: target/release/hl7-forge.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload ${{ github.ref_name }} target/release/hl7-forge.exe --clobber
 
   build-macos:
     runs-on: macos-latest
@@ -84,15 +84,13 @@ jobs:
           path: target/release/hl7-forge
           retention-days: 30
 
-      - name: Rename binary for release
-        if: github.event_name == 'release'
-        run: cp target/release/hl7-forge hl7-forge-macos-apple-silicon
-
       - name: Attach to Release
         if: github.event_name == 'release'
-        uses: softprops/action-gh-release@v2
-        with:
-          files: hl7-forge-macos-apple-silicon
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cp target/release/hl7-forge hl7-forge-macos-apple-silicon
+          gh release upload ${{ github.ref_name }} hl7-forge-macos-apple-silicon --clobber
 
   build-linux:
     runs-on: ubuntu-latest
@@ -128,12 +126,10 @@ jobs:
           path: target/release/hl7-forge
           retention-days: 30
 
-      - name: Rename binary for release
-        if: github.event_name == 'release'
-        run: cp target/release/hl7-forge hl7-forge-linux
-
       - name: Attach to Release
         if: github.event_name == 'release'
-        uses: softprops/action-gh-release@v2
-        with:
-          files: hl7-forge-linux
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cp target/release/hl7-forge hl7-forge-linux
+          gh release upload ${{ github.ref_name }} hl7-forge-linux --clobber
