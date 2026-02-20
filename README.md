@@ -172,10 +172,27 @@ cargo test test_parse_adt_a01
 
 # Send a test message manually via netcat
 printf '\x0bMSH|^~\\&|TESTSYS|TESTFAC|HL7FORGE|HL7FORGE|20240101120000||ADT^A01|MSG001|P|2.5\rPID|||12345||Doe^John||19900101|M\rPV1||I|ICU^101^A\x1c\r' | nc localhost 2575
+```
 
-# Run the full test suite (ADT, ORU, SIU + error cases + 100-message load test)
+### Manual Test Scripts
+
+Both scripts send the same set of HL7 messages: three valid types (ADT^A01, ORU^R01, SIU^S12), three error cases, followed by a load test.
+
+**Linux / macOS** — requires `nc` (netcat):
+
+```bash
 ./test.sh
 ```
+
+Load test: 100 messages, one `nc` process per message.
+
+**Windows** — no external tools required, uses .NET `TcpClient` directly:
+
+```powershell
+.\tests\test.ps1
+```
+
+Load test: 1000 messages over a **single persistent TCP connection** for more accurate throughput measurement.
 
 ### Error Handling Behavior
 
