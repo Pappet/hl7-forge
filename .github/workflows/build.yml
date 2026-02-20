@@ -1,0 +1,50 @@
+name: Build & Release
+
+on:
+  push:
+    branches: [main]
+  release:
+    types: [created]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: windows-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: windows-cargo-
+
+      - name: Build
+        run: cargo build --release
+
+      - name: Run tests
+        run: cargo test --release
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hl7-forge-windows
+          path: target/release/hl7-forge.exe
+          retention-days: 30
+
+      # Bei einem GitHub Release: .exe automatisch anhängen
+      - name: Attach to Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: target/release/hl7-forge.exe
