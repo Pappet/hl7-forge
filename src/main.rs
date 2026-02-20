@@ -34,7 +34,7 @@ async fn main() -> anyhow::Result<()> {
     info!("╔══════════════════════════════════════════╗");
     info!("║          HL7 Forge v{}                ║", env!("CARGO_PKG_VERSION"));
     info!("╠══════════════════════════════════════════╣");
-    info!("║  MLLP Server:  0.0.0.0:{}             ║", mllp_port);
+    info!("║  MLLP Server:  0.0.0.0:{}              ║", mllp_port);
     info!("║  Web UI:       http://localhost:{}     ║", web_port);
     info!("╚══════════════════════════════════════════╝");
 
