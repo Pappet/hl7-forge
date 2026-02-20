@@ -1,0 +1,28 @@
+[package]
+name = "hl7-forge"
+version = "0.1.0"
+edition = "2021"
+description = "High-performance HL7 MLLP server with real-time Web UI"
+
+[dependencies]
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+
+# Web framework + WebSocket
+axum = { version = "0.7", features = ["ws"] }
+tower-http = { version = "0.5", features = ["cors", "fs"] }
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Utilities
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1", features = ["v4"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Embedded static files
+rust-embed = { version = "8", features = ["axum"] }
+mime_guess = "2"
+anyhow = "1"

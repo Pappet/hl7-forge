@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HL7 Forge</title>
+    <style>
+        :root {
+            --bg-primary: #0f1117;
+            --bg-secondary: #1a1d27;
+            --bg-tertiary: #242736;
+            --bg-hover: #2a2e3f;
+            --border: #2e3247;
+            --text-primary: #e4e6f0;
+            --text-secondary: #8b8fa3;
+            --text-muted: #5c6078;
+            --accent: #6c8cff;
+            --accent-dim: #4a62b3;
+            --success: #4caf84;
+            --warning: #e5a54b;
+            --error: #e05454;
+            --font-mono: 'SF Mono', 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            height: 52px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 16px;
+            letter-spacing: -0.3px;
+        }
+
+        .logo svg { width: 22px; height: 22px; }
+
+        .stats-bar {
+            display: flex;
+            gap: 24px;
+            font-size: 12px;
+            font-family: var(--font-mono);
+            color: var(--text-secondary);
+        }
+
+        .stat { display: flex; align-items: center; gap: 6px; }
+        .stat-dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            display: inline-block;
+        }
+        .stat-dot.green { background: var(--success); box-shadow: 0 0 6px var(--success); }
+        .stat-dot.blue { background: var(--accent); }
+        .stat-dot.red { background: var(--error); }
+        .stat-dot.yellow { background: var(--warning); }
+
+        .header-actions { display: flex; gap: 8px; }
+
+        button {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.15s;
+            font-family: var(--font-sans);
+        }
+        button:hover { background: var(--bg-hover); }
+        button.danger { border-color: var(--error); color: var(--error); }
+        button.danger:hover { background: rgba(224, 84, 84, 0.1); }
+
+        /* Main layout */
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Message list panel */
+        .list-panel {
+            width: 55%;
+            min-width: 400px;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border);
+        }
+
+        .search-bar {
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-secondary);
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 8px 12px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 13px;
+            font-family: var(--font-mono);
+            outline: none;
+        }
+        .search-bar input:focus { border-color: var(--accent); }
+        .search-bar input::placeholder { color: var(--text-muted); }
+
+        .message-list {
+            flex: 1;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--bg-tertiary) transparent;
+        }
+
+        .message-row {
+            display: grid;
+            grid-template-columns: 100px 90px 1fr 140px 60px;
+            gap: 12px;
+            padding: 9px 16px;
+            border-bottom: 1px solid var(--border);
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.1s;
+            align-items: center;
+        }
+        .message-row:hover { background: var(--bg-hover); }
+        .message-row.selected { background: var(--bg-tertiary); border-left: 3px solid var(--accent); }
+        .message-row.new-flash {
+            animation: flash 0.6s ease-out;
+        }
+
+        @keyframes flash {
+            0% { background: rgba(108, 140, 255, 0.15); }
+            100% { background: transparent; }
+        }
+
+        .msg-type {
+            font-family: var(--font-mono);
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .msg-source { color: var(--text-secondary); font-family: var(--font-mono); font-size: 11px; }
+        .msg-patient { color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .msg-time { color: var(--text-muted); font-family: var(--font-mono); font-size: 11px; text-align: right; }
+        .msg-segs { color: var(--text-muted); font-family: var(--font-mono); font-size: 11px; text-align: right; }
+
+        .list-header {
+            display: grid;
+            grid-template-columns: 100px 90px 1fr 140px 60px;
+            gap: 12px;
+            padding: 7px 16px;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-muted);
+            gap: 12px;
+        }
+        .empty-state svg { width: 48px; height: 48px; opacity: 0.3; }
+        .empty-state p { font-size: 14px; }
+        .empty-state .hint { font-size: 12px; font-family: var(--font-mono); }
+
+        /* Detail panel */
+        .detail-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-primary);
+            overflow: hidden;
+        }
+
+        .detail-header {
+            padding: 14px 20px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .detail-header h2 {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .detail-tabs {
+            display: flex;
+            gap: 0;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 0 16px;
+        }
+
+        .detail-tab {
+            padding: 10px 16px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.15s;
+            background: none;
+            border-top: none;
+            border-left: none;
+            border-right: none;
+        }
+        .detail-tab:hover { color: var(--text-primary); }
+        .detail-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+        .detail-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px 20px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--bg-tertiary) transparent;
+        }
+
+        .segment-block {
+            margin-bottom: 12px;
+        }
+
+        .segment-name {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--accent);
+            margin-bottom: 4px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .segment-name:hover { color: var(--text-primary); }
+
+        .field-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+
+        .field-table td {
+            padding: 3px 10px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+
+        .field-table .field-idx {
+            width: 50px;
+            font-family: var(--font-mono);
+            color: var(--text-muted);
+            font-size: 11px;
+        }
+
+        .field-table .field-val {
+            font-family: var(--font-mono);
+            color: var(--text-primary);
+            word-break: break-all;
+        }
+
+        .field-table .field-components {
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+            font-size: 11px;
+        }
+
+        /* Raw view */
+        .raw-view {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            word-break: break-all;
+            color: var(--text-primary);
+        }
+
+        .raw-view .segment-line:hover {
+            background: var(--bg-tertiary);
+        }
+
+        /* Connection indicator */
+        .ws-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--bg-tertiary); border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="var(--accent)" stroke="var(--accent)"/>
+            </svg>
+            HL7 Forge
+        </div>
+        <div class="stats-bar">
+            <div class="stat"><span class="stat-dot green" id="ws-dot"></span><span id="ws-status">Connecting...</span></div>
+            <div class="stat"><span class="stat-dot blue"></span>Messages: <span id="stat-total">0</span></div>
+            <div class="stat"><span class="stat-dot yellow"></span>Connections: <span id="stat-connections">0</span></div>
+            <div class="stat"><span class="stat-dot red"></span>Errors: <span id="stat-errors">0</span></div>
+        </div>
+        <div class="header-actions">
+            <button onclick="toggleAutoscroll()" id="btn-autoscroll" title="Auto-scroll">⬇ Auto</button>
+            <button onclick="exportMessages()" title="Export JSON">📥 Export</button>
+            <button class="danger" onclick="clearMessages()" title="Clear all">🗑 Clear</button>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div class="list-panel">
+            <div class="search-bar">
+                <input type="text" id="search-input" placeholder="Filter: message type, patient, facility, ID..." />
+            </div>
+            <div class="list-header">
+                <span>Type</span>
+                <span>Facility</span>
+                <span>Patient</span>
+                <span>Time</span>
+                <span>Segs</span>
+            </div>
+            <div class="message-list" id="message-list">
+                <div class="empty-state" id="empty-state">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                    </svg>
+                    <p>Waiting for HL7 messages...</p>
+                    <span class="hint">MLLP Server listening on port <span id="mllp-port">2575</span></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-panel">
+            <div class="detail-header">
+                <h2 id="detail-title">Select a message</h2>
+                <span id="detail-meta" style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);"></span>
+            </div>
+            <div class="detail-tabs">
+                <button class="detail-tab active" data-tab="parsed" onclick="switchTab('parsed')">Segments</button>
+                <button class="detail-tab" data-tab="raw" onclick="switchTab('raw')">Raw</button>
+                <button class="detail-tab" data-tab="json" onclick="switchTab('json')">JSON</button>
+            </div>
+            <div class="detail-content" id="detail-content">
+                <div class="empty-state">
+                    <p>Click a message to view details</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- State ---
+        let messages = [];
+        let selectedId = null;
+        let selectedMessage = null;
+        let activeTab = 'parsed';
+        let autoscroll = true;
+        let searchQuery = '';
+        let ws = null;
+
+        // --- WebSocket ---
+        function connectWs() {
+            const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            ws = new WebSocket(`${proto}//${location.host}/ws`);
+
+            ws.onopen = () => {
+                document.getElementById('ws-dot').className = 'stat-dot green';
+                document.getElementById('ws-status').textContent = 'Connected';
+            };
+
+            ws.onclose = () => {
+                document.getElementById('ws-dot').className = 'stat-dot red';
+                document.getElementById('ws-status').textContent = 'Disconnected';
+                setTimeout(connectWs, 2000);
+            };
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.type === 'init') {
+                    document.getElementById('stat-total').textContent = data.total;
+                    loadMessages();
+                } else if (data.type === 'new_message') {
+                    addMessage(data.data);
+                } else if (data.type === 'lagged') {
+                    console.warn(`Missed ${data.missed} messages, reloading...`);
+                    loadMessages();
+                }
+            };
+        }
+
+        function addMessage(summary) {
+            messages.unshift(summary);
+            document.getElementById('stat-total').textContent = messages.length;
+            renderMessageList();
+        }
+
+        async function loadMessages() {
+            try {
+                const resp = await fetch('/api/messages?limit=1000');
+                messages = await resp.json();
+                document.getElementById('stat-total').textContent = messages.length;
+                renderMessageList();
+            } catch (e) {
+                console.error('Failed to load messages:', e);
+            }
+        }
+
+        // --- Stats polling ---
+        async function pollStats() {
+            try {
+                const resp = await fetch('/api/stats');
+                const stats = await resp.json();
+                document.getElementById('stat-total').textContent = stats.total_messages;
+                document.getElementById('stat-connections').textContent = stats.active_connections;
+                document.getElementById('stat-errors').textContent = stats.parse_errors;
+            } catch (e) {}
+        }
+
+        // --- Rendering ---
+        function renderMessageList() {
+            const list = document.getElementById('message-list');
+            const empty = document.getElementById('empty-state');
+            const filtered = searchQuery
+                ? messages.filter(m => matchesSearch(m, searchQuery))
+                : messages;
+
+            if (filtered.length === 0) {
+                empty.style.display = 'flex';
+                // Clear previous rows but keep empty state
+                list.querySelectorAll('.message-row').forEach(r => r.remove());
+                return;
+            }
+
+            empty.style.display = 'none';
+
+            // Efficient DOM update: rebuild (fast enough for thousands)
+            const fragment = document.createDocumentFragment();
+            for (const msg of filtered) {
+                const row = document.createElement('div');
+                row.className = 'message-row' + (msg.id === selectedId ? ' selected' : '');
+                row.dataset.id = msg.id;
+                row.onclick = () => selectMessage(msg.id);
+
+                const time = new Date(msg.received_at);
+                const timeStr = time.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+                row.innerHTML = `
+                    <span class="msg-type">${esc(msg.message_type)}</span>
+                    <span class="msg-source">${esc(msg.sending_facility)}</span>
+                    <span class="msg-patient">${esc(msg.patient_name || msg.patient_id || '—')}</span>
+                    <span class="msg-time">${timeStr}</span>
+                    <span class="msg-segs">${msg.segment_count}</span>
+                `;
+                fragment.appendChild(row);
+            }
+
+            // Replace all rows
+            list.querySelectorAll('.message-row').forEach(r => r.remove());
+            list.appendChild(fragment);
+
+            if (autoscroll) {
+                list.scrollTop = 0;
+            }
+        }
+
+        function matchesSearch(msg, query) {
+            const q = query.toLowerCase();
+            return (
+                (msg.message_type || '').toLowerCase().includes(q) ||
+                (msg.sending_facility || '').toLowerCase().includes(q) ||
+                (msg.patient_name || '').toLowerCase().includes(q) ||
+                (msg.patient_id || '').toLowerCase().includes(q) ||
+                (msg.message_control_id || '').toLowerCase().includes(q) ||
+                (msg.source_addr || '').toLowerCase().includes(q)
+            );
+        }
+
+        async function selectMessage(id) {
+            selectedId = id;
+            renderMessageList();
+
+            try {
+                const resp = await fetch(`/api/messages/${id}`);
+                if (!resp.ok) return;
+                selectedMessage = await resp.json();
+                renderDetail();
+            } catch (e) {
+                console.error('Failed to load message:', e);
+            }
+        }
+
+        function renderDetail() {
+            if (!selectedMessage) return;
+            const msg = selectedMessage;
+
+            document.getElementById('detail-title').textContent =
+                `${msg.message_type} — ${msg.patient_name || msg.patient_id || 'Unknown'}`;
+            document.getElementById('detail-meta').textContent =
+                `${msg.source_addr} | ${msg.message_control_id} | v${msg.version}`;
+
+            renderTab();
+        }
+
+        function switchTab(tab) {
+            activeTab = tab;
+            document.querySelectorAll('.detail-tab').forEach(t => {
+                t.classList.toggle('active', t.dataset.tab === tab);
+            });
+            renderTab();
+        }
+
+        function renderTab() {
+            const content = document.getElementById('detail-content');
+            if (!selectedMessage) return;
+            const msg = selectedMessage;
+
+            if (activeTab === 'parsed') {
+                content.innerHTML = msg.segments.map(seg => `
+                    <div class="segment-block">
+                        <div class="segment-name">${esc(seg.name)}</div>
+                        <table class="field-table">
+                            ${seg.fields.map(f => `
+                                <tr>
+                                    <td class="field-idx">${seg.name}-${f.index + 1}</td>
+                                    <td class="field-val">${esc(f.value) || '<span style="color:var(--text-muted)">∅</span>'}</td>
+                                    <td class="field-components">${f.components.length > 1
+                                        ? f.components.map((c, i) => `<span title="${seg.name}-${f.index + 1}.${i + 1}">${esc(c)}</span>`).join(' <span style="color:var(--text-muted)">^</span> ')
+                                        : ''
+                                    }</td>
+                                </tr>
+                            `).join('')}
+                        </table>
+                    </div>
+                `).join('');
+            } else if (activeTab === 'raw') {
+                const lines = msg.raw.split(/\r?\n|\r/).filter(l => l.trim());
+                content.innerHTML = `<div class="raw-view">${
+                    lines.map(line => {
+                        const segName = line.substring(0, 3);
+                        return `<div class="segment-line"><span style="color:var(--accent);font-weight:600">${esc(segName)}</span>${esc(line.substring(3))}</div>`;
+                    }).join('')
+                }</div>`;
+            } else if (activeTab === 'json') {
+                content.innerHTML = `<pre class="raw-view">${esc(JSON.stringify(msg, null, 2))}</pre>`;
+            }
+        }
+
+        // --- Actions ---
+        function toggleAutoscroll() {
+            autoscroll = !autoscroll;
+            const btn = document.getElementById('btn-autoscroll');
+            btn.style.borderColor = autoscroll ? 'var(--success)' : 'var(--border)';
+            btn.style.color = autoscroll ? 'var(--success)' : 'var(--text-primary)';
+        }
+
+        async function exportMessages() {
+            try {
+                const resp = await fetch('/api/messages?limit=100000');
+                const data = await resp.json();
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `hl7-forge-export-${new Date().toISOString().slice(0, 19)}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+            } catch (e) {
+                alert('Export failed: ' + e.message);
+            }
+        }
+
+        async function clearMessages() {
+            if (!confirm('Alle Nachrichten löschen?')) return;
+            await fetch('/api/clear', { method: 'POST' });
+            messages = [];
+            selectedId = null;
+            selectedMessage = null;
+            renderMessageList();
+            document.getElementById('detail-content').innerHTML = '<div class="empty-state"><p>Keine Nachricht ausgewählt</p></div>';
+            document.getElementById('detail-title').textContent = 'Select a message';
+            document.getElementById('detail-meta').textContent = '';
+        }
+
+        // --- Utility ---
+        function esc(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        // --- Init ---
+        document.getElementById('search-input').addEventListener('input', (e) => {
+            searchQuery = e.target.value;
+            renderMessageList();
+        });
+
+        toggleAutoscroll(); // set initial visual state
+        connectWs();
+        setInterval(pollStats, 3000);
+    </script>
+</body>
+</html>
