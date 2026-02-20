@@ -46,8 +46,16 @@ send_mllp() {
     sleep 1
 }
 
+send_mllp_fast() {
+    # Faster version without echoes and sleeps for load testing.
+    # Still incurs process-spawning overhead from 'nc'.
+    local payload="$1"
+    formatted_payload=$(echo "$payload" | sed '/^$/d' | tr '\n' '\r')
+    printf "%b%s%b%b" "$SB" "$formatted_payload" "$EB" "$CR" | nc -w 1 "$HOST" "$PORT" > /dev/null 2>&1
+}
+
 # ==========================================
-# HL7 Dummy Messages (fake patients)
+# HL7 Dummy Messages (Valid)
 # ==========================================
 
 # 1. ADT^A01 (Patient admission)
@@ -74,14 +82,90 @@ PID|1||1003^^^HOSP^MR||Schmidt^Anna||19751120|F
 EOM
 
 # ==========================================
-# Run test suite
+# HL7 Dummy Messages (Faulty)
 # ==========================================
 
-echo "Starting HL7 MLLP test run against $HOST:$PORT..."
+# 4. Missing MSH Segment (Critical structural error)
+read -r -d '' MSG_ERR_NO_MSH << EOM
+PID|1||1004^^^HOSP^MR||Fehler^OhneMSH||19900101|M
+PV1|1|O|||||9999^Unbekannt
+EOM
+
+# 5. Invalid/Unknown Message Type (ZZZ^Z99)
+read -r -d '' MSG_ERR_INV_TYPE << EOM
+MSH|^~\&|SEND_APP|SEND_FAC|RECV_APP|RECV_FAC|20260220132500||ZZZ^Z99|MSG0004|P|2.3
+PID|1||1005^^^HOSP^MR||Test^Unbekannt||19850101|M
+EOM
+
+# 6. Missing Mandatory Fields in MSH (Missing Message Control ID)
+read -r -d '' MSG_ERR_BAD_MSH << EOM
+MSH|^~\&|||||20260220133000||ADT^A04||P|2.3
+PID|1||1006^^^HOSP^MR||Test^Kaputt||19700101|F
+EOM
+
+
+# ==========================================
+# Run Functional Tests
+# ==========================================
+
+echo "Starting HL7 MLLP functional tests against $HOST:$PORT..."
+echo "=================================================="
+
+send_mllp "ADT^A01 (Valid Patient admission)" "$MSG_ADT"
+send_mllp "ORU^R01 (Valid Lab result)" "$MSG_ORU"
+send_mllp "SIU^S12 (Valid Appointment booking)" "$MSG_SIU"
+
+echo "Running ERROR Handling Tests..."
 echo "--------------------------------------------------"
+send_mllp "ERROR: Missing MSH Segment" "$MSG_ERR_NO_MSH"
+send_mllp "ERROR: Unknown Message Type (ZZZ^Z99)" "$MSG_ERR_INV_TYPE"
+send_mllp "ERROR: Missing Mandatory Fields in MSH" "$MSG_ERR_BAD_MSH"
 
-send_mllp "ADT^A01 (Patient admission)" "$MSG_ADT"
-send_mllp "ORU^R01 (Lab result)" "$MSG_ORU"
-send_mllp "SIU^S12 (Appointment booking)" "$MSG_SIU"
+echo "Functional test run completed."
+echo ""
 
-echo "Test run completed."
+# ==========================================
+# Run Load Test
+# ==========================================
+
+LOAD_ITERATIONS=100
+
+echo "=================================================="
+echo "Starting Load Test: Sending $LOAD_ITERATIONS ADT^A01 messages..."
+echo "=================================================="
+
+# Check if 'bc' is installed for floating point math
+if ! command -v bc &> /dev/null; then
+    echo "Warning: 'bc' is not installed. Throughput calculation will be skipped."
+    HAS_BC=0
+else
+    HAS_BC=1
+fi
+
+START_TIME=$(date +%s)
+
+for ((i=1; i<=LOAD_ITERATIONS; i++)); do
+    # Generate a unique Control ID for each message to avoid server-side caching/duplication drops
+    CURRENT_MSG=$(echo "$MSG_ADT" | sed "s/MSG0001/LOAD$(printf "%04d" $i)/")
+    send_mllp_fast "$CURRENT_MSG"
+    
+    # Progress indicator
+    if (( i % 25 == 0 )); then
+        echo "  ...sent $i messages"
+    fi
+done
+
+END_TIME=$(date +%s)
+DURATION=$((END_TIME - START_TIME))
+
+echo "--------------------------------------------------"
+echo "Load Test completed."
+echo "Sent $LOAD_ITERATIONS messages in $DURATION seconds."
+
+if [ "$DURATION" -gt 0 ] && [ "$HAS_BC" -eq 1 ]; then
+    MSG_PER_SEC=$(echo "scale=2; $LOAD_ITERATIONS / $DURATION" | bc)
+    echo "Approximate Throughput: $MSG_PER_SEC messages/second."
+elif [ "$DURATION" -eq 0 ]; then
+    echo "Test completed in under 1 second."
+fi
+echo "=================================================="

@@ -105,6 +105,10 @@ printf '\x0bMSH|^~\\&|TESTSYS|TESTFAC|HL7FORGE|HL7FORGE|20240101120000||ADT^A01|
 ./test.sh
 ```
 
+`test.sh` includes error-handling tests, one of which sends a message with an unknown message type (`ZZZ^Z99`).
+HL7 Forge responds with `AA` (ACK) for this case — the server validates MLLP framing and HL7 syntax, but does not reject messages based on unknown message types.
+A `NACK` is only sent when the message is structurally invalid (e.g. missing MSH segment).
+
 ## Roadmap
 
 The full roadmap is described in [ROADMAP.md](ROADMAP.md), the derived milestones in [MILESTONES.md](MILESTONES.md).
