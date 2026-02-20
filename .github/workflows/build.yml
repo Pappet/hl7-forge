@@ -58,7 +58,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - runner: macos-13
+          - runner: macos-latest
             target: x86_64-apple-darwin
             artifact: hl7-forge-macos-intel
           - runner: macos-latest
