@@ -4,12 +4,17 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
+use tokio::time::{timeout, Duration};
 use tracing::{info, warn};
 
 /// MLLP framing constants
 const MLLP_START: u8 = 0x0B; // Vertical Tab (VT)
 const MLLP_END_1: u8 = 0x1C; // File Separator (FS)
 const MLLP_END_2: u8 = 0x0D; // Carriage Return (CR)
+
+const MAX_MESSAGE_SIZE: usize = 10 * 1024 * 1024; // 10 MB hard limit per connection buffer
+const READ_TIMEOUT: Duration = Duration::from_secs(60);
+const WRITE_TIMEOUT: Duration = Duration::from_secs(30);
 
 /// Stats for the MLLP server
 #[derive(Clone)]
@@ -69,13 +74,29 @@ async fn handle_connection(
     let mut accumulated = Vec::with_capacity(8 * 1024);
 
     loop {
-        let n = socket.read(&mut buf).await?;
-        if n == 0 {
-            // Connection closed
-            break;
-        }
+        let n = match timeout(READ_TIMEOUT, socket.read(&mut buf)).await {
+            Ok(Ok(0)) | Err(_) => {
+                // Connection closed or read timeout
+                if accumulated.is_empty() {
+                    break;
+                }
+                warn!("Read timeout or connection closed from {}", peer);
+                break;
+            }
+            Ok(Ok(n)) => n,
+            Ok(Err(e)) => return Err(e.into()),
+        };
 
         accumulated.extend_from_slice(&buf[..n]);
+
+        if accumulated.len() > MAX_MESSAGE_SIZE {
+            warn!(
+                "Buffer exceeded {} MB from {}, closing connection",
+                MAX_MESSAGE_SIZE / 1024 / 1024,
+                peer
+            );
+            return Ok(());
+        }
 
         // Process all complete MLLP frames in the buffer
         while let Some((message, consumed)) = extract_mllp_frame(&accumulated) {
@@ -88,8 +109,10 @@ async fn handle_connection(
                     // Build and send ACK
                     let ack = build_ack(&msg, "AA");
                     let ack_frame = wrap_mllp(&ack);
-                    if let Err(e) = socket.write_all(&ack_frame).await {
-                        warn!("Failed to send ACK to {}: {}", peer, e);
+                    match timeout(WRITE_TIMEOUT, socket.write_all(&ack_frame)).await {
+                        Ok(Ok(())) => {}
+                        Ok(Err(e)) => warn!("Failed to send ACK to {}: {}", peer, e),
+                        Err(_) => warn!("Write timeout sending ACK to {}", peer),
                     }
 
                     // Store the message (async, non-blocking for the connection)
@@ -104,7 +127,7 @@ async fn handle_connection(
                         "MSH|^~\\&|HL7Forge|HL7Forge|||||ACK||P|2.5\rMSA|AE|UNKNOWN|Message parse error"
                             .to_string();
                     let nack_frame = wrap_mllp(&nack);
-                    let _ = socket.write_all(&nack_frame).await;
+                    let _ = timeout(WRITE_TIMEOUT, socket.write_all(&nack_frame)).await;
                 }
             }
 

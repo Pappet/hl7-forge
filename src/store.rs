@@ -1,4 +1,5 @@
 use crate::hl7::types::{Hl7Message, Hl7MessageSummary};
+use std::collections::VecDeque;
 use std::sync::Arc;
 use tokio::sync::{broadcast, RwLock};
 use tracing::info;
@@ -14,7 +15,7 @@ pub struct MessageStore {
 }
 
 struct StoreInner {
-    messages: Vec<Hl7Message>,
+    messages: VecDeque<Hl7Message>,
     capacity: usize,
 }
 
@@ -23,7 +24,7 @@ impl MessageStore {
         let (tx, _) = broadcast::channel(BROADCAST_CAPACITY);
         Self {
             inner: Arc::new(RwLock::new(StoreInner {
-                messages: Vec::with_capacity(1024),
+                messages: VecDeque::with_capacity(1024),
                 capacity: DEFAULT_CAPACITY,
             })),
             tx,
@@ -43,7 +44,7 @@ impl MessageStore {
             info!("Evicted {} old messages from store", drain_count);
         }
 
-        inner.messages.push(msg);
+        inner.messages.push_back(msg);
         let count = inner.messages.len();
         drop(inner);
 
