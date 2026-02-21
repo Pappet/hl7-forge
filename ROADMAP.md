@@ -25,8 +25,8 @@ HL7 Forge replaces HL7 Inspector as the primary testing tool for the integration
 - [x] Segment/field detail view (Parsed, Raw, JSON tabs)
 - [x] Search filter (message type, patient, facility, ID)
 - [x] JSON export
-- [ ] Route fix for message detail view (`:id` instead of `{id}`)
-- [ ] Clean up compiler warnings
+- [x] Route fix for message detail view (`:id` instead of `{id}`)
+- [x] Clean up compiler warnings
 
 ## Phase 2 – Team Readiness
 
@@ -38,15 +38,13 @@ HL7 Forge replaces HL7 Inspector as the primary testing tool for the integration
 - [ ] **Message tagging** – manual tagging of messages (e.g. "Bug #1234", "Test scenario A") for attribution during shared use
 - [ ] **Bookmark/Pin** – mark important messages so they don't get lost in the stream
 
-### Windows Server Deployment
-- [ ] **Windows Service** – HL7 Forge as a Windows service (`sc create` / NSSM), automatic start on server boot
+### Deployment & Configuration
 - [ ] **Configuration file** (`hl7-forge.toml`) – ports, memory limits, log level, retention configurable without recompilation
-- [ ] **Startup banner in Event Log** – Windows Event Log integration for ops monitoring
+- [ ] **File Logging** – standard rotating log files for operation monitoring
 - [ ] **Portable binary** – single `.exe`, no dependencies, xcopy deployment
 
 ### Stability & Performance
-- [ ] **Backpressure handling** – evict oldest messages when the store is full instead of OOM
-- [ ] **Configurable memory budget** – e.g. max 512 MB RAM, automatic eviction
+- [ ] **Memory Management** – configurable memory budget (e.g. max 512 MB RAM) with automatic eviction of oldest messages to prevent OOM
 - [ ] **Connection limits** – cap maximum concurrent MLLP connections
 - [ ] **Graceful shutdown** – cleanly terminate active connections on service stop
 
@@ -114,10 +112,14 @@ HL7 Forge replaces HL7 Inspector as the primary testing tool for the integration
 | Web framework | Axum | Tokio-native, type-safe, performant |
 | UI | Embedded SPA (HTML/JS) | Zero dependencies, browser-based, multi-user |
 | Persistence | In-memory (Phase 1–2), SQLite (Phase 3+) | Simple start, persistence when needed |
-| Deployment | Single `.exe` as Windows service | No installer, no runtime, xcopy deploy |
+| Deployment | Single portable `.exe` | No installer, no runtime, xcopy deploy |
 
 ## Non-Goals
 
-- **No full HL7 editor** – HL7 Forge is primarily a receive and analysis tool, not a replacement for Orchestra
-- **No database integration** – messages are not stored persistently in SQL databases
+- **No complex visual HL7 editor** – simple raw text editing for testing is provided, but it's not a full replacement for Orchestra's mapping UI
+- **No external database servers** – does not require heavy databases like PostgreSQL/MSSQL; uses lightweight local SQLite instead
 - **No HL7 router** – message routing and transformation stays in Orchestra
+
+## Development Guidelines
+
+- **Commits:** Always create a git commit after completing a reasonable amount of code changes or finishing a task. Maintain atomic, well-described commits.
