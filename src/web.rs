@@ -1,5 +1,5 @@
+use crate::store::{MessageStore, StoreEvent};
 use crate::mllp::MllpStats;
-use crate::store::MessageStore;
 use axum::extract::ws::{Message, WebSocket, WebSocketUpgrade};
 use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
@@ -121,10 +121,18 @@ async fn handle_ws(mut socket: WebSocket, state: AppState) {
         tokio::select! {
             result = rx.recv() => {
                 match result {
-                    Ok(summary) => {
+                    Ok(StoreEvent::NewMessage(summary)) => {
                         let payload = serde_json::json!({
                             "type": "new_message",
                             "data": summary,
+                        });
+                        if socket.send(Message::Text(payload.to_string())).await.is_err() {
+                            break; // client disconnected
+                        }
+                    }
+                    Ok(StoreEvent::Cleared) => {
+                        let payload = serde_json::json!({
+                            "type": "cleared"
                         });
                         if socket.send(Message::Text(payload.to_string())).await.is_err() {
                             break; // client disconnected

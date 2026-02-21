@@ -45,6 +45,17 @@ function connectWs() {
         } else if (data.type === 'lagged') {
             console.warn(`Missed ${data.missed} messages, reloading...`);
             loadMessages();
+        } else if (data.type === 'cleared') {
+            console.info("Server cleared messages via Web UI or API");
+            messages = [];
+            pendingMessages = [];
+            selectedId = null;
+            selectedMessage = null;
+            renderMessageList();
+            document.getElementById('detail-content').innerHTML = '<div class="empty-state"><p>No message selected</p></div>';
+            document.getElementById('detail-title').textContent = 'Select a message';
+            document.getElementById('detail-meta').textContent = '';
+            document.getElementById('stat-total').textContent = '0';
         }
     };
 }
@@ -102,7 +113,7 @@ async function pollStats() {
         if (stats.mllp_port) {
             document.getElementById('mllp-port').textContent = stats.mllp_port;
         }
-    } catch (e) {}
+    } catch (e) { }
 }
 
 // --- Rendering ---
@@ -234,9 +245,9 @@ function renderTab() {
                             <td class="field-idx">${seg.name}-${f.index}</td>
                             <td class="field-val">${esc(f.value) || '<span class="field-empty">empty</span>'}</td>
                             <td class="field-components">${f.components.length > 1
-                                ? f.components.map((c, i) => `<span title="${seg.name}-${f.index}.${i + 1}">${esc(c)}</span>`).join(' <span style="color:var(--text-muted)">^</span> ')
-                                : ''
-                            }</td>
+                    ? f.components.map((c, i) => `<span title="${seg.name}-${f.index}.${i + 1}">${esc(c)}</span>`).join(' <span style="color:var(--text-muted)">^</span> ')
+                    : ''
+                }</td>
                         </tr>
                     `).join('')}
                     </tbody>
@@ -245,12 +256,11 @@ function renderTab() {
         }).join('');
     } else if (activeTab === 'raw') {
         const lines = msg.raw.split(/\r?\n|\r/).filter(l => l.trim());
-        content.innerHTML = `<div class="raw-view">${
-            lines.map(line => {
-                const segName = line.substring(0, 3);
-                return `<div class="segment-line"><span style="color:var(--accent);font-weight:600">${esc(segName)}</span>${esc(line.substring(3))}</div>`;
-            }).join('')
-        }</div>`;
+        content.innerHTML = `<div class="raw-view">${lines.map(line => {
+            const segName = line.substring(0, 3);
+            return `<div class="segment-line"><span style="color:var(--accent);font-weight:600">${esc(segName)}</span>${esc(line.substring(3))}</div>`;
+        }).join('')
+            }</div>`;
     } else if (activeTab === 'json') {
         content.innerHTML = `<pre class="raw-view">${esc(JSON.stringify(msg, null, 2))}</pre>`;
     }

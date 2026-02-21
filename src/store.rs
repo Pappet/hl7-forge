@@ -10,11 +10,17 @@ const DEFAULT_CAPACITY: usize = 10_000;
 const MAX_STORE_BYTES: usize = 512 * 1024 * 1024; // 512 MB
 const BROADCAST_CAPACITY: usize = 4096;
 
+#[derive(Clone)]
+pub enum StoreEvent {
+    NewMessage(Hl7MessageSummary),
+    Cleared,
+}
+
 /// Thread-safe in-memory message store with broadcast notifications
 #[derive(Clone)]
 pub struct MessageStore {
     inner: Arc<RwLock<StoreInner>>,
-    tx: broadcast::Sender<Hl7MessageSummary>,
+    tx: broadcast::Sender<StoreEvent>,
 }
 
 struct StoreInner {
@@ -67,7 +73,7 @@ impl MessageStore {
         drop(inner);
 
         // Broadcast to WebSocket subscribers (ignore if no receivers)
-        let _ = self.tx.send(summary);
+        let _ = self.tx.send(StoreEvent::NewMessage(summary));
 
         if count % 1000 == 0 {
             info!("Store now holds {} messages", count);
@@ -75,7 +81,7 @@ impl MessageStore {
     }
 
     /// Get a broadcast receiver for real-time updates
-    pub fn subscribe(&self) -> broadcast::Receiver<Hl7MessageSummary> {
+    pub fn subscribe(&self) -> broadcast::Receiver<StoreEvent> {
         self.tx.subscribe()
     }
 
@@ -128,5 +134,6 @@ impl MessageStore {
         inner.messages.clear();
         inner.current_bytes = 0;
         info!("Message store cleared");
+        let _ = self.tx.send(StoreEvent::Cleared);
     }
 }
