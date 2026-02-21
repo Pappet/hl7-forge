@@ -86,7 +86,7 @@ und dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 | Commit | Beschreibung |
 |--------|-------------|
-| [`c967107`](https://github.com/Pappet/hl7-forge/commit/c967107) | `docs:` Changelog-Pflicht in CLAUDE.md und AGENTS.md dokumentiert |
+| [`fdb6e05`](https://github.com/Pappet/hl7-forge/commit/fdb6e05) | `docs:` Changelog-Pflicht in CLAUDE.md und AGENTS.md dokumentiert |
 | [`79cec90`](https://github.com/Pappet/hl7-forge/commit/79cec901f6141ba32c719dda2829e15d20f9f5d3) | `docs:` CLAUDE.md aktualisiert, AGENTS.md mit Architektur- und Deployment-Kontext hinzugefügt |
 | [`041cb04`](https://github.com/Pappet/hl7-forge/commit/041cb0417f821b354fce1c021148d4e18a78cd01) | `fix:` ACK-Storm-Prevention, Search-Debounce (300 ms), größenbasierte Store-Eviction (`MAX_STORE_BYTES`) |
 | [`44afeb9`](https://github.com/Pappet/hl7-forge/commit/44afeb9364ce45d2073da84cd840d72ccd6e1882) | `.gitignore` angepasst |
