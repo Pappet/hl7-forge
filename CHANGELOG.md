@@ -9,6 +9,14 @@ und dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
+*(keine ausstehenden Änderungen)*
+
+---
+
+## [0.2.0] – 2026-02-21 – Stabilisierung & Robustheit
+
+> ACK-Storm-Prevention, größenbasierte Store-Eviction, UI-Verbesserungen und Fehlerbehandlung für Produktivbetrieb mit Orchestra/MDM-Traffic.
+
 ### Geplant – Milestone 1: Team-Ready Server
 
 > Ziel: HL7 Forge läuft stabil als Windows-Dienst auf dem Dev-Server, ist ohne Neucompilierung konfigurierbar und hält hoher Last stand.
@@ -204,5 +212,6 @@ und dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
-[Unreleased]: https://github.com/Pappet/hl7-forge/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/Pappet/hl7-forge/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/Pappet/hl7-forge/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/Pappet/hl7-forge/releases/tag/v0.1.0
