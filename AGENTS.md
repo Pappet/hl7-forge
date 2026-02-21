@@ -25,6 +25,23 @@ cargo clippy -- -D warnings    # Zero warnings policy — must pass clean
 
 If any of these three commands fails, the task is not done.
 
+## Changelog — Mandatory on Every Commit
+
+`CHANGELOG.md` must be updated as part of every commit. Do not push without it.
+
+**Steps:**
+
+1. After `git commit`, note the first 7 characters of the commit hash.
+2. Open `CHANGELOG.md` and find (or create) the `#### YYYY-MM-DD` heading for today under `## [Unreleased]` → commit history table.
+3. Add one row per commit:
+   ```
+   | [`<hash>`](https://github.com/Pappet/hl7-forge/commit/<full-hash>) | `<type>:` Short description |
+   ```
+4. For features or fixes: also update the corresponding `### Added` / `### Fixed` / `### Changed` prose section of the active release block.
+5. Stage `CHANGELOG.md` and amend the commit (`git commit --amend --no-edit`) **or** include it in the same commit from the start.
+
+Never create a standalone "update changelog" commit — it belongs to the commit it documents.
+
 ---
 
 ## Architecture

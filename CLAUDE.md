@@ -17,6 +17,18 @@ Environment variables: `MLLP_PORT` (default 2575), `WEB_PORT` (default 8080), `R
 
 Manual MLLP testing: `./test.sh` (Linux/macOS) or `.\tests\test.ps1` (Windows) — sends ADT^A01, ORU^R01, SIU^S12 plus error cases and a load test.
 
+## Commit & Changelog Workflow
+
+**Before every commit and push**, update `CHANGELOG.md`:
+
+1. Add a new row to the commit-history table under today's date (add a new `#### YYYY-MM-DD` heading if it doesn't exist yet).
+2. Row format: `| [\`<short-hash>\`](<https://github.com/Pappet/hl7-forge/commit/<full-hash>>) | \`<type>:\` Short description |`
+   — The short hash is the first 7 characters of the commit hash.
+3. For substantive changes (new feature, fix, refactor): also update the relevant `### Added`, `### Fixed`, or `### Changed` entries in the `[Unreleased]` or the active release section.
+4. The changelog format follows [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
+
+The commit hash is only available **after** `git commit`. Update the changelog as part of the same commit — amend or add a follow-up commit if needed. Do not create a separate "update changelog" commit when it can be included in the main commit.
+
 ## Architecture
 
 HL7 Forge is an MLLP server with a real-time web UI for inspecting HL7 v2.x messages. Two async Tokio tasks run concurrently via `tokio::select!` in `main.rs`:
