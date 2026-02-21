@@ -62,8 +62,8 @@ send_mllp_fast() {
 read -r -d '' MSG_ADT << EOM
 MSH|^~\&|SEND_APP|SEND_FAC|RECV_APP|RECV_FAC|20260220131200||ADT^A01|MSG0001|P|2.3
 EVN|A01|20260220131200
-PID|1||1001^^^HOSP^MR||Muster^Max^M||19800101|M|||Teststraße 1^^Konstanz^BW^78462^DE||0151-12345678|||M
-PV1|1|I|INTENSIV^Bett 1^Zimmer 3||||1234^Arzt^Andreas
+PID|1||1001^^^HOSP^MR||Sample^Max^M||19800101|M|||1 Test Street^^Springfield^IL^62701^US||555-12345678|||M
+PV1|1|I|ICU^Bed 1^Room 3||||1234^Doctor^Andrew
 EOM
 
 # 2. ORU^R01 (Lab result)
@@ -77,8 +77,8 @@ EOM
 # 3. SIU^S12 (Appointment booking)
 read -r -d '' MSG_SIU << EOM
 MSH|^~\&|SCHED_APP|CLINIC|RECV_APP|RECV_FAC|20260220132000||SIU^S12|MSG0003|P|2.3
-SCH|112233|223344||||ROUTINE|Kontrolle|MINS|30|m||||20260301100000
-PID|1||1003^^^HOSP^MR||Schmidt^Anna||19751120|F
+SCH|112233|223344||||ROUTINE|Checkup|MINS|30|m||||20260301100000
+PID|1||1003^^^HOSP^MR||Smith^Anna||19751120|F
 EOM
 
 # ==========================================
@@ -87,20 +87,20 @@ EOM
 
 # 4. Missing MSH Segment (Critical structural error)
 read -r -d '' MSG_ERR_NO_MSH << EOM
-PID|1||1004^^^HOSP^MR||Fehler^OhneMSH||19900101|M
-PV1|1|O|||||9999^Unbekannt
+PID|1||1004^^^HOSP^MR||Error^NoMSH||19900101|M
+PV1|1|O|||||9999^Unknown
 EOM
 
 # 5. Invalid/Unknown Message Type (ZZZ^Z99)
 read -r -d '' MSG_ERR_INV_TYPE << EOM
 MSH|^~\&|SEND_APP|SEND_FAC|RECV_APP|RECV_FAC|20260220132500||ZZZ^Z99|MSG0004|P|2.3
-PID|1||1005^^^HOSP^MR||Test^Unbekannt||19850101|M
+PID|1||1005^^^HOSP^MR||Test^Unknown||19850101|M
 EOM
 
 # 6. Missing Mandatory Fields in MSH (Missing Message Control ID)
 read -r -d '' MSG_ERR_BAD_MSH << EOM
 MSH|^~\&|||||20260220133000||ADT^A04||P|2.3
-PID|1||1006^^^HOSP^MR||Test^Kaputt||19700101|F
+PID|1||1006^^^HOSP^MR||Test^Broken||19700101|F
 EOM
 
 

@@ -181,7 +181,7 @@ pub fn build_ack(original: &Hl7Message, ack_code: &str) -> String {
 mod tests {
     use super::*;
 
-    const SAMPLE_ADT: &str = "MSH|^~\\&|SENDING_APP|SENDING_FAC|REC_APP|REC_FAC|20240101120000||ADT^A01^ADT_A01|MSG00001|P|2.5\rPID|||12345^^^HOSP||Müller^Hans^Peter||19800515|M\rPV1||I|WARD1^ROOM1^BED1";
+    const SAMPLE_ADT: &str = "MSH|^~\\&|SENDING_APP|SENDING_FAC|REC_APP|REC_FAC|20240101120000||ADT^A01^ADT_A01|MSG00001|P|2.5\rPID|||12345^^^HOSP||Smith^John^Peter||19800515|M\rPV1||I|WARD1^ROOM1^BED1";
 
     #[test]
     fn test_parse_adt_a01() {
@@ -193,7 +193,7 @@ mod tests {
         assert_eq!(msg.message_control_id, "MSG00001");
         assert_eq!(msg.version, "2.5");
         assert_eq!(msg.patient_id, Some("12345".into()));
-        assert_eq!(msg.patient_name, Some("Müller, Hans".into()));
+        assert_eq!(msg.patient_name, Some("Smith, John".into()));
         assert_eq!(msg.segments.len(), 3);
     }
 

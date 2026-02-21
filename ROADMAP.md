@@ -2,122 +2,122 @@
 
 ## Vision
 
-HL7 Forge ersetzt den HL7 Inspector als primäres Testwerkzeug im Schnittstellen-Team. Es läuft als zentraler Service auf dem Dev-Server (Windows Server) und wird von mehreren Entwicklern gleichzeitig über den Browser genutzt – kein lokales Setup, keine RDP-exklusiven Fenster, keine Performance-Einbrüche bei hohem Nachrichtenvolumen.
+HL7 Forge replaces HL7 Inspector as the primary testing tool for the integration team. It runs as a central service on the dev server (Windows Server) and is used by multiple developers simultaneously via browser — no local setup, no RDP-exclusive windows, no performance degradation at high message volumes.
 
-## Einsatzkontext
+## Usage Context
 
-- **Team:** Schnittstellen-Team (Mehrere Entwickler gleichzeitig)
-- **Software:** Orchestra (Schnittstellenentwicklung)
-- **Infrastruktur:** Windows Server, Zugriff per RDP + Browser
-- **Protokoll:** HL7 v2.x über MLLP, perspektivisch FHIR R4
+- **Team:** Integration team (multiple developers simultaneously)
+- **Software:** Orchestra (interface development)
+- **Infrastructure:** Windows Server, access via RDP + browser
+- **Protocol:** HL7 v2.x over MLLP, FHIR R4 on the horizon
 
 ---
 
-## Phase 1 – Solides Fundament (MVP) ✅
+## Phase 1 – Solid Foundation (MVP) ✅
 
-*Status: Grundgerüst fertig, erste Nachrichten werden empfangen*
+*Status: Core structure complete, first messages are being received*
 
-- [x] MLLP Server mit Tokio (async TCP, korrekte `0x0B`/`0x1C 0x0D` Framing)
-- [x] ACK/NAK Antworten (AA, AE)
-- [x] HL7 v2.x Parser (dynamische Delimiter-Erkennung, MSH/PID-Extraktion)
-- [x] In-Memory Message Store mit Broadcast-Channel
-- [x] Web UI mit Echtzeit-Nachrichtenliste (WebSocket)
-- [x] Segment/Feld-Detailansicht (Parsed, Raw, JSON Tabs)
-- [x] Suchfilter (Nachrichtentyp, Patient, Facility, ID)
-- [x] JSON-Export
-- [ ] Route-Fix für Message-Detail-Ansicht (`:id` statt `{id}`)
-- [ ] Compiler-Warnings bereinigen
+- [x] MLLP server with Tokio (async TCP, correct `0x0B`/`0x1C 0x0D` framing)
+- [x] ACK/NAK responses (AA, AE)
+- [x] HL7 v2.x parser (dynamic delimiter detection, MSH/PID extraction)
+- [x] In-memory message store with broadcast channel
+- [x] Web UI with real-time message list (WebSocket)
+- [x] Segment/field detail view (Parsed, Raw, JSON tabs)
+- [x] Search filter (message type, patient, facility, ID)
+- [x] JSON export
+- [ ] Route fix for message detail view (`:id` instead of `{id}`)
+- [ ] Clean up compiler warnings
 
-## Phase 2 – Team-Tauglichkeit
+## Phase 2 – Team Readiness
 
-*Fokus: Mehrere Entwickler arbeiten gleichzeitig gegen denselben Server*
+*Focus: Multiple developers working against the same server simultaneously*
 
 ### Multi-User & Sessions
-- [ ] **Session-basierte Ansichten** – jeder Entwickler sieht seine eigene Filterkonfiguration, Scroll-Position und Auswahl, ohne andere zu beeinflussen
-- [ ] **Farbcodierte Quell-Markierung** – Nachrichten nach Absender-System/IP visuell unterscheidbar (z.B. Orchestra Dev vs. Orchestra Test)
-- [ ] **Nachrichten-Tagging** – manuelles Taggen von Nachrichten (z.B. "Bug #1234", "Test-Szenario A") zur Zuordnung bei gemeinsamer Nutzung
-- [ ] **Bookmark/Pin** – wichtige Nachrichten markieren, damit sie nicht im Strom untergehen
+- [ ] **Session-based views** – each developer sees their own filter configuration, scroll position and selection without affecting others
+- [ ] **Color-coded source markers** – messages visually distinguishable by sender system/IP (e.g. Orchestra Dev vs. Orchestra Test)
+- [ ] **Message tagging** – manual tagging of messages (e.g. "Bug #1234", "Test scenario A") for attribution during shared use
+- [ ] **Bookmark/Pin** – mark important messages so they don't get lost in the stream
 
 ### Windows Server Deployment
-- [ ] **Windows Service** – HL7 Forge als Windows-Dienst (`sc create` / NSSM), automatischer Start beim Serverboot
-- [ ] **Konfigurationsdatei** (`hl7-forge.toml`) – Ports, Speicherlimits, Log-Level, Retention konfigurierbar ohne Neucompilierung
-- [ ] **Startup-Banner im Event-Log** – Windows Event Log Integration für Ops-Monitoring
-- [ ] **Portable Binary** – Single `.exe`, keine Abhängigkeiten, xcopy-Deployment
+- [ ] **Windows Service** – HL7 Forge as a Windows service (`sc create` / NSSM), automatic start on server boot
+- [ ] **Configuration file** (`hl7-forge.toml`) – ports, memory limits, log level, retention configurable without recompilation
+- [ ] **Startup banner in Event Log** – Windows Event Log integration for ops monitoring
+- [ ] **Portable binary** – single `.exe`, no dependencies, xcopy deployment
 
-### Stabilität & Performance
-- [ ] **Backpressure-Handling** – wenn der Store voll wird, älteste Nachrichten evicten statt OOM
-- [ ] **Memory-Budget konfigurierbar** – z.B. max 512 MB RAM, automatische Eviction
-- [ ] **Connection Limits** – maximale gleichzeitige MLLP-Verbindungen begrenzen
-- [ ] **Graceful Shutdown** – laufende Verbindungen sauber beenden bei Dienst-Stop
+### Stability & Performance
+- [ ] **Backpressure handling** – evict oldest messages when the store is full instead of OOM
+- [ ] **Configurable memory budget** – e.g. max 512 MB RAM, automatic eviction
+- [ ] **Connection limits** – cap maximum concurrent MLLP connections
+- [ ] **Graceful shutdown** – cleanly terminate active connections on service stop
 
-## Phase 3 – Orchestra-Integration & Workflow
+## Phase 3 – Orchestra Integration & Workflow
 
-*Fokus: Nahtlose Integration in den Schnittstellenentwicklungs-Workflow mit Orchestra*
+*Focus: Seamless integration into the interface development workflow with Orchestra*
 
-### Nachrichten-Analyse
-- [ ] **HL7-Feldwörterbuch** – Hover-Tooltips zeigen Feld-Beschreibungen (z.B. "PID-5: Patient Name", "OBR-4: Universal Service Identifier") basierend auf HL7 v2.5/v2.6 Spec
-- [ ] **Nachrichtentyp-Erkennung** – ADT, ORM, ORU, SIU, MDM etc. mit Kurzbeschreibung und typischen Segmenten
-- [ ] **Validierung** – Pflichtfelder pro Nachrichtentyp prüfen, Warnungen anzeigen (z.B. "PID-3 fehlt in ADT^A01")
-- [ ] **Segment-Vergleich (Diff)** – zwei Nachrichten nebeneinander vergleichen, Unterschiede hervorheben (ideal zum Testen von Orchestra-Transformationen)
+### Message Analysis
+- [ ] **HL7 field dictionary** – hover tooltips showing field descriptions (e.g. "PID-5: Patient Name", "OBR-4: Universal Service Identifier") based on HL7 v2.5/v2.6 spec
+- [ ] **Message type detection** – ADT, ORM, ORU, SIU, MDM etc. with short description and typical segments
+- [ ] **Validation** – check required fields per message type, show warnings (e.g. "PID-3 missing in ADT^A01")
+- [ ] **Segment diff** – compare two messages side by side, highlight differences (ideal for testing Orchestra transformations)
 
-### Workflow-Features
-- [ ] **Nachrichten-Replay** – gespeicherte Nachrichten erneut an eine konfigurierbare Zieladresse/Port senden (MLLP Client-Modus)
-- [ ] **Test-Nachricht-Generator** – Templates für gängige Nachrichtentypen (ADT^A01, ORM^O01, ORU^R01) mit editierbaren Feldern, direkt aus der UI absenden
-- [ ] **Nachrichten-Editor** – Raw-HL7 direkt in der UI bearbeiten und absenden (Rapid-Testing gegen Orchestra-Channels)
-- [ ] **Auto-Refresh Trigger** – WebSocket-basierte Benachrichtigung, wenn neue Nachrichten eintreffen, optional mit Desktop-Notification
+### Workflow Features
+- [ ] **Message replay** – resend stored messages to a configurable target address/port (MLLP client mode)
+- [ ] **Test message generator** – templates for common message types (ADT^A01, ORM^O01, ORU^R01) with editable fields, send directly from the UI
+- [ ] **Message editor** – edit raw HL7 directly in the UI and send (rapid testing against Orchestra channels)
+- [ ] **Auto-refresh trigger** – WebSocket-based notification when new messages arrive, optionally with desktop notification
 
-### Persistenz
-- [ ] **SQLite-Backend** – optionale Persistenz, damit Nachrichten einen Server-Neustart überleben
-- [ ] **Retention-Policy** – automatisches Löschen nach X Tagen / X Nachrichten
-- [ ] **Export-Erweiterung** – CSV-Export, HL7-Datei-Export (`.hl7`), gefilterte Exports
+### Persistence
+- [ ] **SQLite backend** – optional persistence so messages survive server restarts
+- [ ] **Retention policy** – automatic deletion after X days / X messages
+- [ ] **Extended export** – CSV export, HL7 file export (`.hl7`), filtered exports
 
-## Phase 4 – FHIR & Erweiterte Analyse
+## Phase 4 – FHIR & Extended Analysis
 
-*Fokus: Zukunftssicherheit und tiefere Einblicke*
+*Focus: Future-proofing and deeper insights*
 
 ### FHIR R4 Preview
-- [ ] **HL7 v2 → FHIR R4 Mapping** – ADT-Nachrichten als FHIR Bundle anzeigen (Patient, Encounter, etc.)
-- [ ] **FHIR JSON-Ansicht** – zusätzlicher Tab in der Detailansicht
-- [ ] **FHIR HTTP Endpoint** – REST-Endpunkt der FHIR Bundles/Ressourcen empfangen kann (für zukünftige Orchestra-FHIR-Channels)
+- [ ] **HL7 v2 → FHIR R4 mapping** – display ADT messages as FHIR bundles (Patient, Encounter, etc.)
+- [ ] **FHIR JSON view** – additional tab in the detail view
+- [ ] **FHIR HTTP endpoint** – REST endpoint that can receive FHIR bundles/resources (for future Orchestra FHIR channels)
 
-### Monitoring & Statistiken
-- [ ] **Dashboard-Ansicht** – Nachrichten pro Minute/Stunde, Nachrichtentyp-Verteilung, Error-Rate als Charts
-- [ ] **Latenz-Tracking** – Zeitdifferenz zwischen MSH-7 (Message Timestamp) und Empfangszeitpunkt
-- [ ] **Alerting** – konfigurierbare Warnungen bei Fehlerquote > X% oder Nachrichtenausfall > Y Minuten
-- [ ] **Health-Endpoint** – `/api/health` für Monitoring-Tools (Zabbix, PRTG etc.)
+### Monitoring & Statistics
+- [ ] **Dashboard view** – messages per minute/hour, message type distribution, error rate as charts
+- [ ] **Latency tracking** – time difference between MSH-7 (message timestamp) and receive time
+- [ ] **Alerting** – configurable warnings at error rate > X% or message gap > Y minutes
+- [ ] **Health endpoint** – `/api/health` for monitoring tools (Zabbix, PRTG etc.)
 
-### Erweiterte Features
-- [ ] **Multi-Port-Listener** – mehrere MLLP-Ports gleichzeitig, z.B. Port 2575 für ADT, 2576 für ORM (getrennte Orchestra-Channels testen)
-- [ ] **TLS-Support** – verschlüsselte MLLP-Verbindungen (MLLP/S)
-- [ ] **Acknowledgement-Konfiguration** – anpassbare ACK-Antworten (z.B. immer NAK senden zum Testen von Orchestra-Retry-Logik)
-- [ ] **Regex-Filter** – erweiterte Suche mit regulären Ausdrücken über alle Felder
-- [ ] **Dark/Light Theme Toggle**
+### Extended Features
+- [ ] **Multi-port listener** – multiple MLLP ports simultaneously, e.g. port 2575 for ADT, 2576 for ORM (test separate Orchestra channels)
+- [ ] **TLS support** – encrypted MLLP connections (MLLP/S)
+- [ ] **ACK configuration** – customizable ACK responses (e.g. always send NAK to test Orchestra retry logic)
+- [ ] **Regex filter** – extended search with regular expressions across all fields
+- [ ] **Dark/Light theme toggle**
 
 ## Phase 5 – Nice-to-Have
 
-*Keine Priorität, aber nützlich wenn Zeit da ist*
+*No priority, but useful when time allows*
 
-- [ ] **Plugin-System** – eigene Parser/Transformer als WASM-Module laden
-- [ ] **REST API für CI/CD** – Nachrichten programmatisch senden und Ergebnisse prüfen (Automated Integration Tests für Orchestra-Channels)
-- [ ] **Audit-Log** – wer hat wann welche Nachricht angesehen/gesendet
-- [ ] **Import aus HL7 Inspector** – bestehende Nachrichtensammlungen übernehmen
-- [ ] **Orchestra Log-Korrelation** – Nachrichten-ID mit Orchestra Channel-Logs verknüpfen
+- [ ] **Plugin system** – load custom parsers/transformers as WASM modules
+- [ ] **REST API for CI/CD** – send messages programmatically and verify results (automated integration tests for Orchestra channels)
+- [ ] **Audit log** – who viewed/sent which message and when
+- [ ] **Import from HL7 Inspector** – migrate existing message collections
+- [ ] **Orchestra log correlation** – link message IDs to Orchestra channel logs
 
 ---
 
-## Technische Entscheidungen
+## Technical Decisions
 
-| Thema | Entscheidung | Begründung |
+| Topic | Decision | Rationale |
 |---|---|---|
-| Sprache | Rust | Performance, Memory Safety, Single Binary |
-| Async Runtime | Tokio | Bewährt, hoher Durchsatz, geringe Latenz |
-| Web Framework | Axum | Tokio-nativ, typsicher, performant |
-| UI | Embedded SPA (HTML/JS) | Zero Dependencies, Browser-basiert, Multi-User |
-| Persistenz | In-Memory (Phase 1-2), SQLite (Phase 3+) | Einfacher Start, Persistenz wenn nötig |
-| Deployment | Single `.exe` als Windows Service | Kein Installer, kein Runtime, xcopy-deploy |
+| Language | Rust | Performance, memory safety, single binary |
+| Async runtime | Tokio | Proven, high throughput, low latency |
+| Web framework | Axum | Tokio-native, type-safe, performant |
+| UI | Embedded SPA (HTML/JS) | Zero dependencies, browser-based, multi-user |
+| Persistence | In-memory (Phase 1–2), SQLite (Phase 3+) | Simple start, persistence when needed |
+| Deployment | Single `.exe` as Windows service | No installer, no runtime, xcopy deploy |
 
-## Nicht-Ziele
+## Non-Goals
 
-- **Kein vollständiger HL7-Editor** – HL7 Forge ist primär ein Empfangs- und Analyse-Tool, kein Ersatz für Orchestra
-- **Keine Datenbank-Integration** – wir speichern keine Nachrichten dauerhaft in SQL-Datenbanken
-- **Kein HL7 Router** – Nachrichten-Routing und Transformation bleibt in Orchestra
+- **No full HL7 editor** – HL7 Forge is primarily a receive and analysis tool, not a replacement for Orchestra
+- **No database integration** – messages are not stored persistently in SQL databases
+- **No HL7 router** – message routing and transformation stays in Orchestra

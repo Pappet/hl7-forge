@@ -1,159 +1,159 @@
 # HL7 Forge – Milestones
 
-Abgeleitet aus der [ROADMAP.md](ROADMAP.md), Phasen 2–4. Phase 1 (MVP) ist abgeschlossen, Phase 5 (Nice-to-Have) bewusst ausgeklammert.
+Derived from [ROADMAP.md](ROADMAP.md), phases 2–4. Phase 1 (MVP) is complete; phase 5 (nice-to-have) is deliberately excluded.
 
 ---
 
 ## Milestone 1 – Team-Ready Server
 
-**Goal:** HL7 Forge läuft stabil als Windows-Dienst auf dem Dev-Server, ist ohne Neucompilierung konfigurierbar und hält hoher Last stand.
+**Goal:** HL7 Forge runs stably as a Windows service on the dev server, is configurable without recompilation, and holds up under high load.
 
 ### Requirements
 
-- Phase 1 (MVP) komplett abgeschlossen
+- Phase 1 (MVP) fully complete
 
 ### Tasks
 
-- [ ] **Konfigurationsdatei** (`hl7-forge.toml`) – Ports, Speicherlimits, Log-Level, Retention konfigurierbar
-- [ ] **Windows Service** – als Windows-Dienst installierbar (`sc create` / NSSM), automatischer Start beim Serverboot
-- [ ] **Startup-Banner im Event-Log** – Windows Event Log Integration für Ops-Monitoring
-- [ ] **Portable Binary** – Single `.exe` ohne Abhängigkeiten, xcopy-Deployment
-- [ ] **Backpressure-Handling** – bei vollem Store älteste Nachrichten evicten statt OOM
-- [ ] **Memory-Budget konfigurierbar** – z.B. max 512 MB RAM, automatische Eviction
-- [ ] **Connection Limits** – maximale gleichzeitige MLLP-Verbindungen begrenzen
-- [ ] **Graceful Shutdown** – laufende Verbindungen sauber beenden bei Dienst-Stop
+- [ ] **Configuration file** (`hl7-forge.toml`) – ports, memory limits, log level, retention configurable
+- [ ] **Windows Service** – installable as a Windows service (`sc create` / NSSM), automatic start on server boot
+- [ ] **Startup banner in Event Log** – Windows Event Log integration for ops monitoring
+- [ ] **Portable binary** – single `.exe` without dependencies, xcopy deployment
+- [ ] **Backpressure handling** – evict oldest messages when the store is full instead of OOM
+- [ ] **Configurable memory budget** – e.g. max 512 MB RAM, automatic eviction
+- [ ] **Connection limits** – cap maximum concurrent MLLP connections
+- [ ] **Graceful shutdown** – cleanly terminate active connections on service stop
 
-### Akzeptanzkriterien
+### Acceptance Criteria
 
-- [ ] Server startet über `hl7-forge.toml` mit konfigurierten Ports und Limits
-- [ ] Server läuft als Windows-Dienst und startet nach Reboot automatisch
-- [ ] Bei Erreichen des Memory-Budgets werden alte Nachrichten evictet, kein OOM
-- [ ] `Ctrl+C` bzw. Dienst-Stop beendet laufende MLLP-Verbindungen sauber
+- [ ] Server starts via `hl7-forge.toml` with configured ports and limits
+- [ ] Server runs as a Windows service and starts automatically after reboot
+- [ ] When the memory budget is reached, old messages are evicted — no OOM
+- [ ] `Ctrl+C` or service stop terminates active MLLP connections cleanly
 
 ---
 
 ## Milestone 2 – Multi-User Experience
 
-**Goal:** Mehrere Entwickler arbeiten gleichzeitig produktiv gegen denselben Server, ohne sich gegenseitig zu stören.
+**Goal:** Multiple developers work productively against the same server simultaneously without interfering with each other.
 
 ### Requirements
 
-- Milestone 1 abgeschlossen (stabiler Server mit Konfiguration)
+- Milestone 1 complete (stable server with configuration)
 
 ### Tasks
 
-- [ ] **Session-basierte Ansichten** – jeder Entwickler sieht eigene Filterkonfiguration, Scroll-Position und Auswahl
-- [ ] **Farbcodierte Quell-Markierung** – Nachrichten nach Absender-System/IP visuell unterscheidbar
-- [ ] **Nachrichten-Tagging** – manuelles Taggen (z.B. "Bug #1234", "Test-Szenario A") zur Zuordnung
-- [ ] **Bookmark/Pin** – wichtige Nachrichten markieren, damit sie nicht im Strom untergehen
+- [ ] **Session-based views** – each developer sees their own filter configuration, scroll position and selection
+- [ ] **Color-coded source markers** – messages visually distinguishable by sender system/IP
+- [ ] **Message tagging** – manual tagging (e.g. "Bug #1234", "Test scenario A") for attribution
+- [ ] **Bookmark/Pin** – mark important messages so they don't get lost in the stream
 
-### Akzeptanzkriterien
+### Acceptance Criteria
 
-- [ ] Zwei Browser-Tabs zeigen unabhängige Filter und Auswahl
-- [ ] Nachrichten von unterschiedlichen Quell-IPs sind visuell unterscheidbar
-- [ ] Tags und Bookmarks bleiben über Page-Reload erhalten (Session-Scope)
+- [ ] Two browser tabs show independent filters and selections
+- [ ] Messages from different source IPs are visually distinguishable
+- [ ] Tags and bookmarks persist across page reloads (session scope)
 
 ---
 
-## Milestone 3 – Nachrichten-Analyse
+## Milestone 3 – Message Analysis
 
-**Goal:** Entwickler verstehen HL7-Nachrichten direkt in der UI – Feldnamen, Validierung, Diff.
+**Goal:** Developers understand HL7 messages directly in the UI — field names, validation, diff.
 
 ### Requirements
 
-- Milestone 1 abgeschlossen (stabiler Server)
+- Milestone 1 complete (stable server)
 
 ### Tasks
 
-- [ ] **HL7-Feldwörterbuch** – Hover-Tooltips mit Feld-Beschreibungen (z.B. "PID-5: Patient Name") basierend auf HL7 v2.5/v2.6 Spec
-- [ ] **Nachrichtentyp-Erkennung** – ADT, ORM, ORU, SIU, MDM etc. mit Kurzbeschreibung und typischen Segmenten
-- [ ] **Validierung** – Pflichtfelder pro Nachrichtentyp prüfen, Warnungen anzeigen (z.B. "PID-3 fehlt in ADT^A01")
-- [ ] **Segment-Vergleich (Diff)** – zwei Nachrichten nebeneinander vergleichen, Unterschiede hervorheben
+- [ ] **HL7 field dictionary** – hover tooltips with field descriptions (e.g. "PID-5: Patient Name") based on HL7 v2.5/v2.6 spec
+- [ ] **Message type detection** – ADT, ORM, ORU, SIU, MDM etc. with short description and typical segments
+- [ ] **Validation** – check required fields per message type, show warnings (e.g. "PID-3 missing in ADT^A01")
+- [ ] **Segment diff** – compare two messages side by side, highlight differences
 
-### Akzeptanzkriterien
+### Acceptance Criteria
 
-- [ ] Hover über ein HL7-Feld zeigt Namen und Beschreibung aus der Spec
-- [ ] Validierungs-Warnungen erscheinen bei fehlenden Pflichtfeldern
-- [ ] Diff-Ansicht zeigt Feldunterschiede zwischen zwei Nachrichten farblich markiert
+- [ ] Hovering over an HL7 field shows its name and description from the spec
+- [ ] Validation warnings appear for missing required fields
+- [ ] Diff view shows field differences between two messages highlighted in color
 
 ---
 
 ## Milestone 4 – Workflow & Testing
 
-**Goal:** Rapid-Testing gegen Orchestra – Nachrichten senden, editieren, wiederholen, direkt aus der UI.
+**Goal:** Rapid testing against Orchestra — send, edit, replay messages directly from the UI.
 
 ### Requirements
 
-- Milestone 1 abgeschlossen (stabiler Server)
+- Milestone 1 complete (stable server)
 
 ### Tasks
 
-- [ ] **Nachrichten-Replay** – gespeicherte Nachrichten erneut an konfigurierbare Zieladresse/Port senden (MLLP Client)
-- [ ] **Test-Nachricht-Generator** – Templates für gängige Typen (ADT^A01, ORM^O01, ORU^R01) mit editierbaren Feldern
-- [ ] **Nachrichten-Editor** – Raw-HL7 in der UI bearbeiten und absenden
-- [ ] **Auto-Refresh Trigger** – Desktop-Notification bei neuen Nachrichten (optional)
+- [ ] **Message replay** – resend stored messages to a configurable target address/port (MLLP client)
+- [ ] **Test message generator** – templates for common types (ADT^A01, ORM^O01, ORU^R01) with editable fields
+- [ ] **Message editor** – edit raw HL7 in the UI and send
+- [ ] **Auto-refresh trigger** – desktop notification on new messages (optional)
 
-### Akzeptanzkriterien
+### Acceptance Criteria
 
-- [ ] Eine empfangene Nachricht kann per Klick an eine konfigurierte Zieladresse replayed werden
-- [ ] Ein Template kann in der UI befüllt, abgeschickt und die Antwort (ACK/NAK) angezeigt werden
-- [ ] Raw-HL7 kann editiert und direkt gesendet werden
+- [ ] A received message can be replayed to a configured target address with a single click
+- [ ] A template can be filled out in the UI, sent, and the response (ACK/NAK) displayed
+- [ ] Raw HL7 can be edited and sent directly
 
 ---
 
-## Milestone 5 – Persistenz
+## Milestone 5 – Persistence
 
-**Goal:** Nachrichten überleben Server-Neustarts. Automatische Bereinigung nach konfigurierbarer Retention.
+**Goal:** Messages survive server restarts. Automatic cleanup after configurable retention.
 
 ### Requirements
 
-- Milestone 1 abgeschlossen (Konfigurationsdatei vorhanden)
+- Milestone 1 complete (configuration file in place)
 
 ### Tasks
 
-- [ ] **SQLite-Backend** – optionale Persistenz, aktivierbar über `hl7-forge.toml`
-- [ ] **Retention-Policy** – automatisches Löschen nach X Tagen oder X Nachrichten
-- [ ] **Export-Erweiterung** – CSV-Export, HL7-Datei-Export (`.hl7`), gefilterte Exports
+- [ ] **SQLite backend** – optional persistence, enabled via `hl7-forge.toml`
+- [ ] **Retention policy** – automatic deletion after X days or X messages
+- [ ] **Extended export** – CSV export, HL7 file export (`.hl7`), filtered exports
 
-### Akzeptanzkriterien
+### Acceptance Criteria
 
-- [ ] Nach Server-Neustart sind persistierte Nachrichten wieder sichtbar
-- [ ] Retention löscht Nachrichten automatisch nach konfiguriertem Alter/Anzahl
-- [ ] Export als CSV und `.hl7` funktioniert für gefilterte Ergebnisse
+- [ ] After a server restart, persisted messages are visible again
+- [ ] Retention deletes messages automatically after configured age/count
+- [ ] Export as CSV and `.hl7` works for filtered results
 
 ---
 
 ## Milestone 6 – FHIR & Monitoring
 
-**Goal:** Zukunftssicherheit durch FHIR-Preview und Observability durch Monitoring-Dashboard.
+**Goal:** Future-proofing through FHIR preview and observability through a monitoring dashboard.
 
 ### Requirements
 
-- Milestone 3 abgeschlossen (Nachrichten-Analyse als Basis für FHIR-Mapping)
+- Milestone 3 complete (message analysis as basis for FHIR mapping)
 
 ### Tasks
 
 **FHIR R4 Preview**
-- [ ] **HL7 v2 → FHIR R4 Mapping** – ADT-Nachrichten als FHIR Bundle anzeigen (Patient, Encounter)
-- [ ] **FHIR JSON-Ansicht** – zusätzlicher Tab in der Detailansicht
-- [ ] **FHIR HTTP Endpoint** – REST-Endpunkt für FHIR Bundles/Ressourcen
+- [ ] **HL7 v2 → FHIR R4 mapping** – display ADT messages as FHIR bundles (Patient, Encounter)
+- [ ] **FHIR JSON view** – additional tab in the detail view
+- [ ] **FHIR HTTP endpoint** – REST endpoint for FHIR bundles/resources
 
-**Monitoring & Statistiken**
-- [ ] **Dashboard-Ansicht** – Nachrichten pro Minute/Stunde, Typ-Verteilung, Error-Rate als Charts
-- [ ] **Latenz-Tracking** – Zeitdifferenz zwischen MSH-7 und Empfangszeitpunkt
-- [ ] **Alerting** – konfigurierbare Warnungen bei Fehlerquote > X% oder Ausfall > Y Minuten
-- [ ] **Health-Endpoint** – `/api/health` für Monitoring-Tools (Zabbix, PRTG)
+**Monitoring & Statistics**
+- [ ] **Dashboard view** – messages per minute/hour, type distribution, error rate as charts
+- [ ] **Latency tracking** – time difference between MSH-7 and receive time
+- [ ] **Alerting** – configurable warnings at error rate > X% or outage > Y minutes
+- [ ] **Health endpoint** – `/api/health` for monitoring tools (Zabbix, PRTG)
 
-**Erweiterte Features**
-- [ ] **Multi-Port-Listener** – mehrere MLLP-Ports gleichzeitig (getrennte Orchestra-Channels testen)
-- [ ] **TLS-Support** – verschlüsselte MLLP-Verbindungen (MLLP/S)
-- [ ] **Acknowledgement-Konfiguration** – anpassbare ACK-Antworten (z.B. immer NAK zum Testen von Retry-Logik)
-- [ ] **Regex-Filter** – erweiterte Suche mit regulären Ausdrücken
-- [ ] **Dark/Light Theme Toggle**
+**Extended Features**
+- [ ] **Multi-port listener** – multiple MLLP ports simultaneously (test separate Orchestra channels)
+- [ ] **TLS support** – encrypted MLLP connections (MLLP/S)
+- [ ] **ACK configuration** – customizable ACK responses (e.g. always send NAK to test retry logic)
+- [ ] **Regex filter** – extended search with regular expressions
+- [ ] **Dark/Light theme toggle**
 
-### Akzeptanzkriterien
+### Acceptance Criteria
 
-- [ ] ADT-Nachrichten können als FHIR Bundle (JSON) angezeigt werden
-- [ ] Dashboard zeigt Nachrichtenvolumen und Fehlerrate als Diagramm
-- [ ] `/api/health` liefert Serverstatus für externe Monitoring-Tools
-- [ ] Multi-Port-Listener empfängt auf konfigurierten Ports parallel
+- [ ] ADT messages can be displayed as a FHIR bundle (JSON)
+- [ ] Dashboard shows message volume and error rate as a chart
+- [ ] `/api/health` returns server status for external monitoring tools
+- [ ] Multi-port listener receives on configured ports in parallel
