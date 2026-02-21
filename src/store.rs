@@ -4,7 +4,10 @@ use std::sync::Arc;
 use tokio::sync::{broadcast, RwLock};
 use tracing::info;
 
-const DEFAULT_CAPACITY: usize = 100_000;
+// Size-based eviction (MAX_STORE_BYTES) is the primary safeguard for large messages
+// (e.g. MDM with Base64). Count limit is a secondary backstop.
+const DEFAULT_CAPACITY: usize = 10_000;
+const MAX_STORE_BYTES: usize = 512 * 1024 * 1024; // 512 MB
 const BROADCAST_CAPACITY: usize = 4096;
 
 /// Thread-safe in-memory message store with broadcast notifications
@@ -17,6 +20,7 @@ pub struct MessageStore {
 struct StoreInner {
     messages: VecDeque<Hl7Message>,
     capacity: usize,
+    current_bytes: usize,
 }
 
 impl MessageStore {
@@ -26,6 +30,7 @@ impl MessageStore {
             inner: Arc::new(RwLock::new(StoreInner {
                 messages: VecDeque::with_capacity(1024),
                 capacity: DEFAULT_CAPACITY,
+                current_bytes: 0,
             })),
             tx,
         }
@@ -37,13 +42,26 @@ impl MessageStore {
 
         let mut inner = self.inner.write().await;
 
-        // Evict oldest messages if at capacity
-        if inner.messages.len() >= inner.capacity {
-            let drain_count = inner.capacity / 10; // remove 10%
+        // Evict oldest 10% when either size or count limit is breached
+        if inner.current_bytes >= MAX_STORE_BYTES || inner.messages.len() >= inner.capacity {
+            let drain_count = inner.messages.len() / 10;
+            let freed_bytes: usize = inner.messages
+                .iter()
+                .take(drain_count)
+                .map(|m| m.raw.len())
+                .sum();
             inner.messages.drain(..drain_count);
-            info!("Evicted {} old messages from store", drain_count);
+            inner.current_bytes = inner.current_bytes.saturating_sub(freed_bytes);
+            info!(
+                "Evicted {} messages from store ({} MB freed, store now {} messages / {} MB)",
+                drain_count,
+                freed_bytes / 1024 / 1024,
+                inner.messages.len(),
+                inner.current_bytes / 1024 / 1024,
+            );
         }
 
+        inner.current_bytes += msg.raw.len();
         inner.messages.push_back(msg);
         let count = inner.messages.len();
         drop(inner);
@@ -106,7 +124,9 @@ impl MessageStore {
 
     /// Clear all messages
     pub async fn clear(&self) {
-        self.inner.write().await.messages.clear();
+        let mut inner = self.inner.write().await;
+        inner.messages.clear();
+        inner.current_bytes = 0;
         info!("Message store cleared");
     }
 }

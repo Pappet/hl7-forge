@@ -341,9 +341,17 @@ function esc(str) {
 }
 
 // --- Init ---
+// Search is purely client-side (filters the local `messages` array via matchesSearch).
+// The debounce is a forward-looking safeguard: if a future /api/search call is added,
+// rapid keystrokes would otherwise hammer the server and cause RwLock contention on the
+// Rust side. Local renderMessageList() remains immediately reactive inside the handler.
+let _searchDebounceTimer = null;
 document.getElementById('search-input').addEventListener('input', (e) => {
-    searchQuery = e.target.value;
-    renderMessageList();
+    clearTimeout(_searchDebounceTimer);
+    _searchDebounceTimer = setTimeout(() => {
+        searchQuery = e.target.value;
+        renderMessageList();
+    }, 300);
 });
 
 toggleAutoscroll(); // set initial visual state

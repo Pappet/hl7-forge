@@ -7,7 +7,7 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
 use tokio::sync::watch;
 use tokio::time::{timeout, Duration};
-use tracing::{info, warn};
+use tracing::{debug, info, warn};
 
 /// MLLP framing constants
 const MLLP_START: u8 = 0x0B; // Vertical Tab (VT)
@@ -120,13 +120,21 @@ async fn handle_connection(
                 Ok(msg) => {
                     stats.parsed_ok.fetch_add(1, Ordering::Relaxed);
 
-                    // Build and send ACK
-                    let ack = build_ack(&msg, "AA");
-                    let ack_frame = wrap_mllp(&ack);
-                    match timeout(WRITE_TIMEOUT, socket.write_all(&ack_frame)).await {
-                        Ok(Ok(())) => {}
-                        Ok(Err(e)) => warn!("Failed to send ACK to {}: {}", peer, e),
-                        Err(_) => warn!("Write timeout sending ACK to {}", peer),
+                    // Never ACK an ACK — doing so would create an ACK storm
+                    if msg.message_type.starts_with("ACK") {
+                        debug!(
+                            "Received ACK message from {}, suppressing response to avoid ACK storm",
+                            peer
+                        );
+                    } else {
+                        // Build and send ACK
+                        let ack = build_ack(&msg, "AA");
+                        let ack_frame = wrap_mllp(&ack);
+                        match timeout(WRITE_TIMEOUT, socket.write_all(&ack_frame)).await {
+                            Ok(Ok(())) => {}
+                            Ok(Err(e)) => warn!("Failed to send ACK to {}: {}", peer, e),
+                            Err(_) => warn!("Write timeout sending ACK to {}", peer),
+                        }
                     }
 
                     // Store the message (async, non-blocking for the connection)
