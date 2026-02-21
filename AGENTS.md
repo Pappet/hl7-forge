@@ -197,3 +197,12 @@ The PowerShell test uses a persistent TCP connection for load testing (1000 mess
 - **Forgetting to reset `current_bytes`** when clearing or evicting messages
 - **Treating MLLP as plain TCP text** — always extract frame boundaries first
 - **Only running `cargo build`** without `cargo test` and `cargo clippy -- -D warnings`
+---
+
+## Communication Preferences
+
+When interacting with the user or external systems (like GitHub issues), you MUST provide detailed, structured, and comprehensive explanations. 
+
+Specifically for GitHub issues:
+- **Do not** write short, generic closing comments (e.g., "Fixed bug and pushed").
+- **Do** write a detailed `### Fix Details` section that explains *why* the issue occurred, the architectural or code-level changes made to fix it, and how the fix was verified. Reference specific files (`src/store.rs`, `static/app.js`, etc.) and the logic changed.

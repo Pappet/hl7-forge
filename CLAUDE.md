@@ -139,3 +139,12 @@ tests/
 ├── test.sh          # Linux/macOS functional + load test (netcat)
 └── test.ps1         # Windows functional + load test (.NET TcpClient, 1000 msg)
 ```
+---
+
+## Communication Preferences
+
+When interacting with the user or external systems (like GitHub issues), you MUST provide detailed, structured, and comprehensive explanations. 
+
+Specifically for GitHub issues:
+- **Do not** write short, generic closing comments (e.g., "Fixed bug and pushed").
+- **Do** write a detailed `### Fix Details` section that explains *why* the issue occurred, the architectural or code-level changes made to fix it, and how the fix was verified. Reference specific files (`src/store.rs`, `static/app.js`, etc.) and the logic changed.
