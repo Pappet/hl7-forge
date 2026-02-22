@@ -10,7 +10,10 @@ pub fn parse_message(raw: &str, source_addr: &str) -> Result<Hl7Message, String>
 
     // HL7 messages must start with MSH
     if !raw.starts_with("MSH") {
-        return Err(format!("Message does not start with MSH: {:?}", &raw[..raw.len().min(20)]));
+        return Err(format!(
+            "Message does not start with MSH: {:?}",
+            &raw[..raw.len().min(20)]
+        ));
     }
 
     // Extract delimiters from MSH-1 (field sep) and MSH-2 (encoding chars)
@@ -60,7 +63,12 @@ pub fn parse_message(raw: &str, source_addr: &str) -> Result<Hl7Message, String>
         let pid3 = get_field_value(pid, 3);
         if !pid3.is_empty() {
             // Take first component (ID itself, before ^^^authority)
-            msg.patient_id = Some(pid3.split(delimiters.component).next().unwrap_or(&pid3).to_string());
+            msg.patient_id = Some(
+                pid3.split(delimiters.component)
+                    .next()
+                    .unwrap_or(&pid3)
+                    .to_string(),
+            );
         }
 
         // PID-5: Patient Name (Family^Given^Middle^Suffix^Prefix)
@@ -96,10 +104,18 @@ fn parse_delimiters(raw: &str) -> Result<Delimiters, String> {
         ..Default::default()
     };
 
-    if bytes.len() > 4 { delims.component = bytes[4] as char; }
-    if bytes.len() > 5 { delims.repetition = bytes[5] as char; }
-    if bytes.len() > 6 { delims.escape = bytes[6] as char; }
-    if bytes.len() > 7 { delims.subcomponent = bytes[7] as char; }
+    if bytes.len() > 4 {
+        delims.component = bytes[4] as char;
+    }
+    if bytes.len() > 5 {
+        delims.repetition = bytes[5] as char;
+    }
+    if bytes.len() > 6 {
+        delims.escape = bytes[6] as char;
+    }
+    if bytes.len() > 7 {
+        delims.subcomponent = bytes[7] as char;
+    }
 
     Ok(delims)
 }
@@ -132,11 +148,14 @@ fn parse_segment(raw: &str, delimiters: Delimiters) -> Hl7Segment {
         for field in fields.iter_mut() {
             field.index += 1;
         }
-        fields.insert(0, Hl7Field {
-            index: 1,
-            value: sep.to_string(),
-            components: vec![sep.to_string()],
-        });
+        fields.insert(
+            0,
+            Hl7Field {
+                index: 1,
+                value: sep.to_string(),
+                components: vec![sep.to_string()],
+            },
+        );
     }
 
     Hl7Segment {
@@ -169,11 +188,7 @@ pub fn build_ack(original: &Hl7Message, ack_code: &str) -> String {
         uuid::Uuid::new_v4().to_string().replace('-', "")[..20].to_string(),
         original.version,
     );
-    let msa = format!(
-        "MSA|{}|{}",
-        ack_code,
-        original.message_control_id,
-    );
+    let msa = format!("MSA|{}|{}", ack_code, original.message_control_id,);
     format!("{}\r{}", msh, msa)
 }
 

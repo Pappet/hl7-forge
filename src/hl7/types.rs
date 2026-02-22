@@ -9,8 +9,8 @@ pub struct Hl7Message {
     pub raw: String,
     pub received_at: DateTime<Utc>,
     pub source_addr: String,
-    pub message_type: String,    // e.g. "ADT^A01"
-    pub trigger_event: String,   // e.g. "A01"
+    pub message_type: String,  // e.g. "ADT^A01"
+    pub trigger_event: String, // e.g. "A01"
     pub message_control_id: String,
     pub sending_application: String,
     pub sending_facility: String,
