@@ -12,7 +12,7 @@ const BROADCAST_CAPACITY: usize = 4096;
 
 #[derive(Clone)]
 pub enum StoreEvent {
-    NewMessage(Hl7MessageSummary),
+    NewMessage(Box<Hl7MessageSummary>),
     Cleared,
 }
 
@@ -74,7 +74,7 @@ impl MessageStore {
         drop(inner);
 
         // Broadcast to WebSocket subscribers (ignore if no receivers)
-        let _ = self.tx.send(StoreEvent::NewMessage(summary));
+        let _ = self.tx.send(StoreEvent::NewMessage(Box::new(summary)));
 
         if count % 1000 == 0 {
             info!("Store now holds {} messages", count);
