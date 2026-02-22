@@ -9,7 +9,33 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 
 ## [Unreleased]
 
-*(no pending changes)*
+### Added
+- Templates for Bugs and Feature Requests
+
+### Changed
+- Translated all German text to English across the codebase
+- Updated ROADMAP with completed Phase 1 tasks, specific sections, and guidelines
+- Added detailed issue comment preferences for AI agents
+
+### Fixed
+- Fixed UI sync on clear database
+
+### Commit History (chronological)
+
+#### 2026-02-22
+
+| Commit | Description |
+|--------|-------------|
+| [`89ba306`](https://github.com/Pappet/hl7-forge/commit/89ba3063590a0ee3aef05f0e3ebf5b07921dcfd4) | `chore:` Add Templates for Bugs and Feature Requests |
+
+#### 2026-02-21
+
+| Commit | Description |
+|--------|-------------|
+| [`efb0bcc`](https://github.com/Pappet/hl7-forge/commit/efb0bcc2025500ba7e26e56494dfc8aefbbd0e33) | `docs:` Update ROADMAP with completed Phase 1 tasks, refine deployment and memory management sections, clarify non-goals, and add development guidelines. |
+| [`8128ab4`](https://github.com/Pappet/hl7-forge/commit/8128ab456f0a0ff23c3739481fd2194a8934a3aa) | `docs:` add detailed issue comment preferences for AI agents |
+| [`a1837a4`](https://github.com/Pappet/hl7-forge/commit/a1837a45d7af2898ee1f693e78d509b56688f51a) | `fix:` Fix UI sync on clear database |
+| [`09121a5`](https://github.com/Pappet/hl7-forge/commit/09121a50a319c494c233f050df7eb561aa4c49f0) | `docs:` translate all German text to English across the codebase |
 
 ### Planned – Milestone 1: Team-Ready Server
 
