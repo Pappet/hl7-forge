@@ -10,16 +10,25 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 ## [Unreleased]
 
 ### Added
+- **Configuration file** (`hl7-forge.toml`) — ports, memory limits, log level, MLLP timeouts and max message size configurable without recompilation
+  - Load priority: config file (next to binary or CWD) → environment variables (`MLLP_PORT`, `WEB_PORT`, `RUST_LOG`) → built-in defaults
+  - New `src/config.rs` module with `Config`, `ServerConfig`, `LoggingConfig`, `StoreConfig`, `MllpConfig` structs
+  - Example `hl7-forge.toml` included with all defaults commented out
 - Templates for Bugs and Feature Requests
 - CONTRIBUTING, SECURITY, and Pull Request templates
 
 ### Changed
+- `MessageStore::new()` now accepts `StoreConfig` — store capacity and memory limit are configurable
+- `start_mllp_server()` now accepts `MllpConfig` — timeouts and max message size are configurable
+- Hardcoded constants (`DEFAULT_CAPACITY`, `MAX_STORE_BYTES`, `MAX_MESSAGE_SIZE`, `READ_TIMEOUT`, `WRITE_TIMEOUT`) replaced with config values
+- Effective configuration is logged at startup
 - Translated all German text to English across the codebase
 - Updated ROADMAP with completed Phase 1 tasks, specific sections, and guidelines
 - Added detailed issue comment preferences for AI agents
 
 ### Fixed
 - Fixed UI sync on clear database
+- Fixed clippy warnings: derivable impl, char comparison pattern, `to_string` in format args, large enum variant
 
 ### Commit History (chronological)
 
@@ -27,6 +36,7 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 
 | Commit | Description |
 |--------|-------------|
+| [`da5738a`](https://github.com/Pappet/hl7-forge/commit/da5738a5ced7625ddf524b87fd0a5e6558b1f275) | `feat:` add hl7-forge.toml configuration file support |
 | [`29e5e8c`](https://github.com/Pappet/hl7-forge/commit/29e5e8c6a7336400a1e02e05687ad1976cfec330) | `docs:` add CONTRIBUTING, SECURITY, and PR template |
 | [`89ba306`](https://github.com/Pappet/hl7-forge/commit/89ba3063590a0ee3aef05f0e3ebf5b07921dcfd4) | `chore:` Add Templates for Bugs and Feature Requests |
 
@@ -43,12 +53,12 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 
 > Goal: HL7 Forge runs stably as a Windows service on the dev server, is configurable without recompilation, and holds up under high load.
 
-- **Configuration file** (`hl7-forge.toml`) — ports, memory limits, log level, and retention configurable without recompilation
+- ~~**Configuration file** (`hl7-forge.toml`)~~ — **Done** (see Added above)
 - **Windows Service** — installable via `sc create` / NSSM, automatic start on server reboot
 - **Windows Event Log integration** — startup banner in Windows Event Log for ops monitoring
 - **Portable binary** — single `.exe` without runtime dependencies, xcopy deployment
 - **Backpressure handling** — evict oldest messages when the store is full instead of OOM
-- **Memory budget** — configurable RAM limit (e.g. 512 MB), automatic eviction on excess
+- ~~**Memory budget**~~ — **Done** (configurable via `hl7-forge.toml` `[store] max_memory_mb`)
 - **Connection limits** — cap maximum concurrent MLLP connections
 - **Graceful shutdown** — cleanly terminate active connections on `Ctrl+C` or service stop
 
@@ -231,7 +241,7 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 
 ### Known Issues
 
-- Memory limit (`MAX_STORE_BYTES`) is currently hardcoded — will be configurable via `hl7-forge.toml` in Milestone 1
+- None
 
 ---
 

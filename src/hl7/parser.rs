@@ -19,7 +19,7 @@ pub fn parse_message(raw: &str, source_addr: &str) -> Result<Hl7Message, String>
 
     // Split into segments (HL7 uses \r as segment terminator, but be lenient)
     let segment_strs: Vec<&str> = raw
-        .split(|c| c == '\r' || c == '\n')
+        .split(['\r', '\n'])
         .filter(|s| !s.trim().is_empty())
         .collect();
 
@@ -166,7 +166,7 @@ pub fn build_ack(original: &Hl7Message, ack_code: &str) -> String {
         original.sending_facility,
         now,
         original.trigger_event,
-        uuid::Uuid::new_v4().to_string().replace('-', "")[..20].to_string(),
+        &uuid::Uuid::new_v4().to_string().replace('-', "")[..20],
         original.version,
     );
     let msa = format!(

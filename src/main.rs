@@ -1,8 +1,10 @@
+mod config;
 mod hl7;
 mod mllp;
 mod store;
 mod web;
 
+use config::Config;
 use mllp::MllpStats;
 use store::MessageStore;
 use tracing::{info, warn};
@@ -11,24 +13,21 @@ use web::{create_router, AppState};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    // Initialize logging
+    // Load configuration (file → env vars → defaults) before tracing init
+    let config = Config::load();
+
+    // Initialize logging — use config level as fallback when RUST_LOG is not set
     tracing_subscriber::fmt()
         .with_env_filter(
-            EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info")),
+            EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| EnvFilter::new(&config.logging.level)),
         )
         .init();
 
-    let mllp_port: u16 = std::env::var("MLLP_PORT")
-        .ok()
-        .and_then(|p| p.parse().ok())
-        .unwrap_or(2575);
+    let mllp_port = config.server.mllp_port;
+    let web_port = config.server.web_port;
 
-    let web_port: u16 = std::env::var("WEB_PORT")
-        .ok()
-        .and_then(|p| p.parse().ok())
-        .unwrap_or(8080);
-
-    let store = MessageStore::new();
+    let store = MessageStore::new(config.store.clone());
     let stats = MllpStats::new();
 
     info!("╔══════════════════════════════════════════╗");
@@ -37,6 +36,7 @@ async fn main() -> anyhow::Result<()> {
     info!("║  MLLP Server:  0.0.0.0:{}              ║", mllp_port);
     info!("║  Web UI:       http://localhost:{}     ║", web_port);
     info!("╚══════════════════════════════════════════╝");
+    info!("Effective configuration:\n{}", config);
 
     let (shutdown_tx, shutdown_rx) = tokio::sync::watch::channel(false);
 
@@ -44,9 +44,13 @@ async fn main() -> anyhow::Result<()> {
     let mllp_store = store.clone();
     let mllp_stats = stats.clone();
     let mllp_shutdown = shutdown_rx.clone();
+    let mllp_config = config.mllp.clone();
     let mllp_handle = tokio::spawn(async move {
         let addr = format!("0.0.0.0:{}", mllp_port);
-        if let Err(e) = mllp::start_mllp_server(&addr, mllp_store, mllp_stats, mllp_shutdown).await {
+        if let Err(e) =
+            mllp::start_mllp_server(&addr, mllp_store, mllp_stats, mllp_shutdown, mllp_config)
+                .await
+        {
             warn!("MLLP server error: {}", e);
         }
     });

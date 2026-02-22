@@ -1,18 +1,15 @@
+use crate::config::StoreConfig;
 use crate::hl7::types::{Hl7Message, Hl7MessageSummary};
 use std::collections::VecDeque;
 use std::sync::Arc;
 use tokio::sync::{broadcast, RwLock};
 use tracing::info;
 
-// Size-based eviction (MAX_STORE_BYTES) is the primary safeguard for large messages
-// (e.g. MDM with Base64). Count limit is a secondary backstop.
-const DEFAULT_CAPACITY: usize = 10_000;
-const MAX_STORE_BYTES: usize = 512 * 1024 * 1024; // 512 MB
 const BROADCAST_CAPACITY: usize = 4096;
 
 #[derive(Clone)]
 pub enum StoreEvent {
-    NewMessage(Hl7MessageSummary),
+    NewMessage(Box<Hl7MessageSummary>),
     Cleared,
 }
 
@@ -26,16 +23,18 @@ pub struct MessageStore {
 struct StoreInner {
     messages: VecDeque<Hl7Message>,
     capacity: usize,
+    max_bytes: usize,
     current_bytes: usize,
 }
 
 impl MessageStore {
-    pub fn new() -> Self {
+    pub fn new(config: StoreConfig) -> Self {
         let (tx, _) = broadcast::channel(BROADCAST_CAPACITY);
         Self {
             inner: Arc::new(RwLock::new(StoreInner {
                 messages: VecDeque::with_capacity(1024),
-                capacity: DEFAULT_CAPACITY,
+                capacity: config.max_messages,
+                max_bytes: config.max_memory_bytes(),
                 current_bytes: 0,
             })),
             tx,
@@ -49,7 +48,7 @@ impl MessageStore {
         let mut inner = self.inner.write().await;
 
         // Evict oldest 10% when either size or count limit is breached
-        if inner.current_bytes >= MAX_STORE_BYTES || inner.messages.len() >= inner.capacity {
+        if inner.current_bytes >= inner.max_bytes || inner.messages.len() >= inner.capacity {
             let drain_count = inner.messages.len() / 10;
             let freed_bytes: usize = inner.messages
                 .iter()
@@ -73,7 +72,7 @@ impl MessageStore {
         drop(inner);
 
         // Broadcast to WebSocket subscribers (ignore if no receivers)
-        let _ = self.tx.send(StoreEvent::NewMessage(summary));
+        let _ = self.tx.send(StoreEvent::NewMessage(Box::new(summary)));
 
         if count % 1000 == 0 {
             info!("Store now holds {} messages", count);

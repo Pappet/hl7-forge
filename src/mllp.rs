@@ -1,3 +1,4 @@
+use crate::config::MllpConfig;
 use crate::hl7::parser::{build_ack, parse_message};
 use crate::hl7::types::Hl7Message;
 use crate::store::MessageStore;
@@ -6,17 +7,13 @@ use std::sync::Arc;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
 use tokio::sync::watch;
-use tokio::time::{timeout, Duration};
+use tokio::time::timeout;
 use tracing::{debug, info, warn};
 
 /// MLLP framing constants
 const MLLP_START: u8 = 0x0B; // Vertical Tab (VT)
 const MLLP_END_1: u8 = 0x1C; // File Separator (FS)
 const MLLP_END_2: u8 = 0x0D; // Carriage Return (CR)
-
-const MAX_MESSAGE_SIZE: usize = 10 * 1024 * 1024; // 10 MB hard limit per connection buffer
-const READ_TIMEOUT: Duration = Duration::from_secs(60);
-const WRITE_TIMEOUT: Duration = Duration::from_secs(30);
 
 /// Stats for the MLLP server
 #[derive(Clone)]
@@ -44,7 +41,9 @@ pub async fn start_mllp_server(
     store: MessageStore,
     stats: MllpStats,
     mut shutdown: watch::Receiver<bool>,
+    config: MllpConfig,
 ) -> anyhow::Result<()> {
+    let config = Arc::new(config);
     let listener = TcpListener::bind(bind_addr).await?;
     info!("MLLP server listening on {}", bind_addr);
 
@@ -59,13 +58,14 @@ pub async fn start_mllp_server(
                 let (socket, peer_addr) = result?;
                 let store = store.clone();
                 let stats = stats.clone();
+                let config = Arc::clone(&config);
                 let peer = peer_addr.to_string();
 
                 stats.active_connections.fetch_add(1, Ordering::Relaxed);
                 info!("New MLLP connection from {}", peer);
 
                 tokio::spawn(async move {
-                    if let Err(e) = handle_connection(socket, &peer, &store, &stats).await {
+                    if let Err(e) = handle_connection(socket, &peer, &store, &stats, &config).await {
                         warn!("Connection error from {}: {}", peer, e);
                     }
                     stats.active_connections.fetch_sub(1, Ordering::Relaxed);
@@ -83,12 +83,16 @@ async fn handle_connection(
     peer: &str,
     store: &MessageStore,
     stats: &MllpStats,
+    config: &MllpConfig,
 ) -> anyhow::Result<()> {
     let mut buf = vec![0u8; 64 * 1024]; // 64 KB read buffer
     let mut accumulated = Vec::with_capacity(8 * 1024);
+    let max_size = config.max_message_size();
+    let read_timeout = config.read_timeout();
+    let write_timeout = config.write_timeout();
 
     loop {
-        let n = match timeout(READ_TIMEOUT, socket.read(&mut buf)).await {
+        let n = match timeout(read_timeout, socket.read(&mut buf)).await {
             Ok(Ok(0)) | Err(_) => {
                 // Connection closed or read timeout
                 if accumulated.is_empty() {
@@ -103,10 +107,10 @@ async fn handle_connection(
 
         accumulated.extend_from_slice(&buf[..n]);
 
-        if accumulated.len() > MAX_MESSAGE_SIZE {
+        if accumulated.len() > max_size {
             warn!(
                 "Buffer exceeded {} MB from {}, closing connection",
-                MAX_MESSAGE_SIZE / 1024 / 1024,
+                config.max_message_size_mb,
                 peer
             );
             return Ok(());
@@ -130,7 +134,7 @@ async fn handle_connection(
                         // Build and send ACK
                         let ack = build_ack(&msg, "AA");
                         let ack_frame = wrap_mllp(&ack);
-                        match timeout(WRITE_TIMEOUT, socket.write_all(&ack_frame)).await {
+                        match timeout(write_timeout, socket.write_all(&ack_frame)).await {
                             Ok(Ok(())) => {}
                             Ok(Err(e)) => warn!("Failed to send ACK to {}: {}", peer, e),
                             Err(_) => warn!("Write timeout sending ACK to {}", peer),
@@ -155,7 +159,7 @@ async fn handle_connection(
                         "MSH|^~\\&|HL7Forge|HL7Forge|||||ACK||P|2.5\rMSA|AE|UNKNOWN|Message parse error"
                             .to_string();
                     let nack_frame = wrap_mllp(&nack);
-                    let _ = timeout(WRITE_TIMEOUT, socket.write_all(&nack_frame)).await;
+                    let _ = timeout(write_timeout, socket.write_all(&nack_frame)).await;
                 }
             }
 
