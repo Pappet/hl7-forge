@@ -1,0 +1,77 @@
+name-template: 'v$RESOLVED_VERSION'
+tag-template: 'v$RESOLVED_VERSION'
+
+# Version resolution based on labels
+version-resolver:
+  major:
+    labels:
+      - 'breaking'
+  minor:
+    labels:
+      - 'enhancement'
+  patch:
+    labels:
+      - 'bug'
+      - 'documentation'
+      - 'chore'
+  default: patch
+
+# Group PRs into sections by label
+categories:
+  - title: '⚠️ Breaking Changes'
+    labels:
+      - 'breaking'
+  - title: '🚀 Features'
+    labels:
+      - 'enhancement'
+  - title: '🐛 Bug Fixes'
+    labels:
+      - 'bug'
+  - title: '📝 Documentation'
+    labels:
+      - 'documentation'
+  - title: '🧹 Maintenance'
+    labels:
+      - 'chore'
+      - 'ci'
+      - 'refactor'
+
+# Exclude certain labels from release notes
+exclude-labels:
+  - 'skip-changelog'
+
+# Template for the release body
+template: |
+  ## What's Changed
+
+  $CHANGES
+
+  **Full Changelog**: https://github.com/$OWNER/$REPOSITORY/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION
+
+# Auto-label PRs based on file paths
+autolabeler:
+  - label: 'comp: mllp'
+    files:
+      - 'src/mllp.rs'
+  - label: 'comp: parser'
+    files:
+      - 'src/hl7/**'
+  - label: 'comp: web-ui'
+    files:
+      - 'static/**'
+  - label: 'comp: api'
+    files:
+      - 'src/web.rs'
+  - label: 'comp: config'
+    files:
+      - 'src/config.rs'
+  - label: 'comp: store'
+    files:
+      - 'src/store.rs'
+  - label: 'documentation'
+    files:
+      - '*.md'
+      - 'docs/**'
+  - label: 'ci'
+    files:
+      - '.github/**'
