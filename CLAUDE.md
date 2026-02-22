@@ -16,6 +16,16 @@ cargo clippy -- -D warnings    # Must pass clean before every commit
 Environment variables: `MLLP_PORT` (default 2575), `WEB_PORT` (default 8080), `RUST_LOG` for tracing.
 
 Manual MLLP testing: `./test.sh` (Linux/macOS) or `.\tests\test.ps1` (Windows) — sends ADT^A01, ORU^R01, SIU^S12 plus error cases and a load test.
+## Branch Protection & CI
+
+The `main` branch is protected. All changes must be made via Pull Requests. 
+Before a PR can be merged, the automated CI workflow will run the following checks and they all **must pass**:
+1. `cargo fmt --check`
+2. `cargo clippy -- -D warnings`
+3. `cargo build`
+4. `cargo test`
+
+You must ensure your code satisfies these requirements locally before pushing.
 
 ## Commit & Changelog Workflow
 

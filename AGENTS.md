@@ -25,6 +25,17 @@ cargo clippy -- -D warnings    # Zero warnings policy — must pass clean
 
 If any of these three commands fails, the task is not done.
 
+## Branch Protection & CI
+
+The `main` branch is protected. Direct pushes are not allowed. 
+All changes must go through a Pull Request and pass an automated CI workflow that runs:
+1. `cargo fmt --check`
+2. `cargo clippy -- -D warnings`
+3. `cargo build`
+4. `cargo test`
+
+Only PRs that pass these checks can be merged. Ensure these run successfully on your local branch before creating a PR.
+
 ## Changelog — Mandatory on Every Commit
 
 `CHANGELOG.md` must be updated as part of every commit. Do not push without it.

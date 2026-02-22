@@ -10,6 +10,8 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 ## [Unreleased]
 
 ### Added
+- Branch protection rules (main branch requires PRs and successful CI checks)
+- GitHub Actions CI workflow (`.github/workflows/ci.yml`) for `fmt`, `clippy`, `build`, and `test`
 - Templates for Bugs and Feature Requests
 - CONTRIBUTING, SECURITY, and Pull Request templates
 
@@ -27,6 +29,7 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 
 | Commit | Description |
 |--------|-------------|
+| [`5cf9f29`](https://github.com/Pappet/hl7-forge/commit/5cf9f29) | `docs:` document Branch Protection and CI workflow rules in CLAUDE.md, AGENTS.md, and CHANGELOG.md |
 | [`29e5e8c`](https://github.com/Pappet/hl7-forge/commit/29e5e8c6a7336400a1e02e05687ad1976cfec330) | `docs:` add CONTRIBUTING, SECURITY, and PR template |
 | [`89ba306`](https://github.com/Pappet/hl7-forge/commit/89ba3063590a0ee3aef05f0e3ebf5b07921dcfd4) | `chore:` Add Templates for Bugs and Feature Requests |
 
