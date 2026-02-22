@@ -1,0 +1,79 @@
+name: ✨ Enhancement / Feature Request
+description: Suggest a new feature or improvement for HL7 Forge
+title: "[Enhancement]: "
+labels: ["enhancement"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have an idea to make HL7 Forge better? We'd love to hear it!
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Related Component
+      description: Which area of HL7 Forge does this relate to?
+      options:
+        - MLLP Server (TCP listener, framing, ACK/NACK)
+        - HL7 Parser (message parsing, validation, HL7 versions)
+        - Web UI (browser SPA, display, UX)
+        - WebSocket (real-time updates)
+        - REST API (endpoints, data format)
+        - Message Store (persistence, capacity, export)
+        - Configuration (hl7-forge.toml, environment variables)
+        - Build / CI / Deployment
+        - Documentation
+        - New Component
+    validations:
+      required: true
+
+  - type: dropdown
+    id: roadmap
+    attributes:
+      label: Related Roadmap Milestone
+      description: Does this fit an existing milestone? See ROADMAP.md
+      options:
+        - "Milestone 1 — Team-Ready (config, service, backpressure)"
+        - "Milestone 2 — Multi-User (sessions, tagging, bookmarks)"
+        - "Milestone 3 — Message Analysis (field dictionary, validation, diff)"
+        - "Milestone 4 — Workflow & Testing (replay, editor, generator)"
+        - "Milestone 5 — Persistence (SQLite, retention, CSV/HL7 export)"
+        - "Milestone 6 — FHIR & Monitoring (FHIR R4, dashboard, alerting)"
+        - "Not related to any milestone"
+    validations:
+      required: false
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / Motivation
+      description: What problem does this solve? Why is it needed?
+      placeholder: "Currently, when working with multiple HL7 senders, there is no way to distinguish which system sent a message at a glance..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe the feature or improvement you'd like to see.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Have you considered any alternative approaches?
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Screenshots, mockups, links to similar tools, HL7 spec references, etc.
+    validations:
+      required: false
