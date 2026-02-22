@@ -11,6 +11,7 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 
 ### Added
 - Templates for Bugs and Feature Requests
+- CONTRIBUTING, SECURITY, and Pull Request templates
 
 ### Changed
 - Translated all German text to English across the codebase
@@ -26,6 +27,7 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 
 | Commit | Description |
 |--------|-------------|
+| [`29e5e8c`](https://github.com/Pappet/hl7-forge/commit/29e5e8c6a7336400a1e02e05687ad1976cfec330) | `docs:` add CONTRIBUTING, SECURITY, and PR template |
 | [`89ba306`](https://github.com/Pappet/hl7-forge/commit/89ba3063590a0ee3aef05f0e3ebf5b07921dcfd4) | `chore:` Add Templates for Bugs and Feature Requests |
 
 #### 2026-02-21
