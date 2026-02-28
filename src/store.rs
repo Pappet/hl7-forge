@@ -11,6 +11,7 @@ const MAX_STORE_BYTES: usize = 512 * 1024 * 1024; // 512 MB
 const BROADCAST_CAPACITY: usize = 4096;
 
 #[derive(Clone)]
+#[allow(clippy::large_enum_variant)]
 pub enum StoreEvent {
     NewMessage(Hl7MessageSummary),
     Cleared,
@@ -51,7 +52,8 @@ impl MessageStore {
         // Evict oldest 10% when either size or count limit is breached
         if inner.current_bytes >= MAX_STORE_BYTES || inner.messages.len() >= inner.capacity {
             let drain_count = inner.messages.len() / 10;
-            let freed_bytes: usize = inner.messages
+            let freed_bytes: usize = inner
+                .messages
                 .iter()
                 .take(drain_count)
                 .map(|m| m.raw.len())
@@ -88,7 +90,8 @@ impl MessageStore {
     /// Get all message summaries (lightweight)
     pub async fn list_summaries(&self, offset: usize, limit: usize) -> Vec<Hl7MessageSummary> {
         let inner = self.inner.read().await;
-        inner.messages
+        inner
+            .messages
             .iter()
             .rev() // newest first
             .skip(offset)
@@ -107,14 +110,23 @@ impl MessageStore {
     pub async fn search(&self, query: &str, limit: usize) -> Vec<Hl7MessageSummary> {
         let query_lower = query.to_lowercase();
         let inner = self.inner.read().await;
-        inner.messages
+        inner
+            .messages
             .iter()
             .rev()
             .filter(|m| {
                 m.message_type.to_lowercase().contains(&query_lower)
                     || m.sending_facility.to_lowercase().contains(&query_lower)
-                    || m.patient_name.as_deref().unwrap_or("").to_lowercase().contains(&query_lower)
-                    || m.patient_id.as_deref().unwrap_or("").to_lowercase().contains(&query_lower)
+                    || m.patient_name
+                        .as_deref()
+                        .unwrap_or("")
+                        .to_lowercase()
+                        .contains(&query_lower)
+                    || m.patient_id
+                        .as_deref()
+                        .unwrap_or("")
+                        .to_lowercase()
+                        .contains(&query_lower)
                     || m.message_control_id.to_lowercase().contains(&query_lower)
                     || m.source_addr.contains(&query_lower)
             })

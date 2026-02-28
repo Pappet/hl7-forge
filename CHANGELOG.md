@@ -10,6 +10,7 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 ## [Unreleased]
 
 ### Added
+- STYLE_GUIDE.md detailing design, architecture, and workflow conventions
 - Branch protection rules (main branch requires PRs and successful CI checks)
 - GitHub Actions CI workflow (`.github/workflows/ci.yml`) for `fmt`, `clippy`, `build`, and `test`
 - Templates for Bugs and Feature Requests
@@ -24,6 +25,12 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 - Fixed UI sync on clear database
 
 ### Commit History (chronological)
+
+#### 2026-02-28
+
+| Commit | Description |
+|--------|-------------|
+| [`4ea0538`](https://github.com/Pappet/hl7-forge/commit/4ea05380ab3adaef719f6afb5eb23bb45dd8e5f0) | `docs:` Add STYLE_GUIDE.md detailing design, architecture, and workflow conventions |
 
 #### 2026-02-22
 

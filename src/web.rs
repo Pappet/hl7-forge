@@ -1,5 +1,5 @@
-use crate::store::{MessageStore, StoreEvent};
 use crate::mllp::MllpStats;
+use crate::store::{MessageStore, StoreEvent};
 use axum::extract::ws::{Message, WebSocket, WebSocketUpgrade};
 use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
@@ -54,10 +54,7 @@ async fn list_messages(
     Json(summaries)
 }
 
-async fn get_message(
-    State(state): State<AppState>,
-    Path(id): Path<String>,
-) -> impl IntoResponse {
+async fn get_message(State(state): State<AppState>, Path(id): Path<String>) -> impl IntoResponse {
     match state.store.get_by_id(&id).await {
         Some(msg) => Json(serde_json::to_value(msg).unwrap()).into_response(),
         None => (StatusCode::NOT_FOUND, "Message not found").into_response(),
@@ -98,10 +95,7 @@ async fn clear_messages(State(state): State<AppState>) -> impl IntoResponse {
 
 // --- WebSocket ---
 
-async fn ws_handler(
-    ws: WebSocketUpgrade,
-    State(state): State<AppState>,
-) -> impl IntoResponse {
+async fn ws_handler(ws: WebSocketUpgrade, State(state): State<AppState>) -> impl IntoResponse {
     ws.on_upgrade(move |socket| handle_ws(socket, state))
 }
 
@@ -175,7 +169,9 @@ async fn static_handler(uri: axum::http::Uri) -> impl IntoResponse {
         None => {
             // SPA fallback: serve index.html for unknown routes
             match StaticAssets::get("index.html") {
-                Some(content) => Html(String::from_utf8_lossy(&content.data).to_string()).into_response(),
+                Some(content) => {
+                    Html(String::from_utf8_lossy(&content.data).to_string()).into_response()
+                }
                 None => (StatusCode::NOT_FOUND, "Not found").into_response(),
             }
         }

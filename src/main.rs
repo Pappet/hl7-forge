@@ -32,7 +32,10 @@ async fn main() -> anyhow::Result<()> {
     let stats = MllpStats::new();
 
     info!("╔══════════════════════════════════════════╗");
-    info!("║          HL7 Forge v{}                ║", env!("CARGO_PKG_VERSION"));
+    info!(
+        "║          HL7 Forge v{}                ║",
+        env!("CARGO_PKG_VERSION")
+    );
     info!("╠══════════════════════════════════════════╣");
     info!("║  MLLP Server:  0.0.0.0:{}              ║", mllp_port);
     info!("║  Web UI:       http://localhost:{}     ║", web_port);
@@ -46,7 +49,8 @@ async fn main() -> anyhow::Result<()> {
     let mllp_shutdown = shutdown_rx.clone();
     let mllp_handle = tokio::spawn(async move {
         let addr = format!("0.0.0.0:{}", mllp_port);
-        if let Err(e) = mllp::start_mllp_server(&addr, mllp_store, mllp_stats, mllp_shutdown).await {
+        if let Err(e) = mllp::start_mllp_server(&addr, mllp_store, mllp_stats, mllp_shutdown).await
+        {
             warn!("MLLP server error: {}", e);
         }
     });
