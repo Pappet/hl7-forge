@@ -8,7 +8,7 @@ use config::Config;
 use mllp::MllpStats;
 use store::MessageStore;
 use tracing::{info, warn};
-use tracing_subscriber::EnvFilter;
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
 use web::{create_router, AppState};
 
 #[tokio::main]
@@ -17,11 +17,39 @@ async fn main() -> anyhow::Result<()> {
     let config = Config::load();
 
     // Initialize logging — use config level as fallback when RUST_LOG is not set
-    tracing_subscriber::fmt()
-        .with_env_filter(
-            EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| EnvFilter::new(&config.logging.level)),
-        )
+    let env_filter = EnvFilter::try_from_default_env()
+        .unwrap_or_else(|_| EnvFilter::new(&config.logging.level));
+
+    let fmt_layer = tracing_subscriber::fmt::layer();
+
+    let (file_layer, _appender_guard) = if let Some(file_path) = &config.logging.file {
+        if !file_path.is_empty() {
+            let condition = rolling_file::RollingConditionBasic::new()
+                .max_size(config.logging.max_size_mb * 1024 * 1024);
+            let appender = rolling_file::BasicRollingFileAppender::new(
+                file_path,
+                condition,
+                config.logging.max_files,
+            )
+            .unwrap_or_else(|e| panic!("Failed to setup file logging at {}: {}", file_path, e));
+
+            let (non_blocking, guard) = tracing_appender::non_blocking(appender);
+            let layer = tracing_subscriber::fmt::layer()
+                .with_ansi(false)
+                .with_writer(non_blocking);
+
+            (Some(layer), Some(guard))
+        } else {
+            (None, None)
+        }
+    } else {
+        (None, None)
+    };
+
+    tracing_subscriber::registry()
+        .with(env_filter)
+        .with(fmt_layer)
+        .with(file_layer)
         .init();
 
     let mllp_port = config.server.mllp_port;
