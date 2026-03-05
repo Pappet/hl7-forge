@@ -53,6 +53,10 @@ cargo build --release
 # Run (defaults: MLLP :2575, Web UI :8080)
 cargo run --release
 
+# Configure via config file (highest priority)
+# Copy the provided hl7-forge.toml next to the binary or current working directory.
+# Edit to change ports, timeouts, memory limits, and logging.
+
 # Custom ports via environment variables
 MLLP_PORT=4000 WEB_PORT=9090 cargo run --release
 ```
