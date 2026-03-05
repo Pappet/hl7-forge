@@ -136,7 +136,7 @@ async fn handle_connection(
             stats.received.fetch_add(1, Ordering::Relaxed);
 
             match parse_message(&message, peer) {
-                Ok(msg) => {
+                Ok(mut msg) => {
                     stats.parsed_ok.fetch_add(1, Ordering::Relaxed);
 
                     // Never ACK an ACK — doing so would create an ACK storm
@@ -148,6 +148,8 @@ async fn handle_connection(
                     } else {
                         // Build and send ACK
                         let ack = build_ack(&msg, "AA");
+                        msg.ack_response = Some(ack.clone());
+                        msg.ack_code = Some("AA".to_string());
                         let ack_frame = wrap_mllp(&ack);
                         match timeout(write_timeout, socket.write_all(&ack_frame)).await {
                             Ok(Ok(())) => {}
@@ -163,16 +165,19 @@ async fn handle_connection(
                     stats.parse_errors.fetch_add(1, Ordering::Relaxed);
                     warn!("Parse error from {}: {}", peer, e);
 
-                    // Store the failed message so it is visible in the UI
-                    let mut failed = Hl7Message::new_empty(message.clone(), peer.to_string());
-                    failed.message_type = "UNKNOWN".to_string();
-                    failed.parse_error = Some(e.clone());
-                    store.insert(failed).await;
-
                     // Send NACK (AE = Application Error)
                     let nack =
                         "MSH|^~\\&|HL7Forge|HL7Forge|||||ACK||P|2.5\rMSA|AE|UNKNOWN|Message parse error"
                             .to_string();
+
+                    // Store the failed message so it is visible in the UI
+                    let mut failed = Hl7Message::new_empty(message.clone(), peer.to_string());
+                    failed.message_type = "UNKNOWN".to_string();
+                    failed.parse_error = Some(e.clone());
+                    failed.ack_response = Some(nack.clone());
+                    failed.ack_code = Some("AE".to_string());
+                    store.insert(failed).await;
+
                     let nack_frame = wrap_mllp(&nack);
                     let _ = timeout(write_timeout, socket.write_all(&nack_frame)).await;
                 }

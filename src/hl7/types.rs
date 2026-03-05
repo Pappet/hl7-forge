@@ -21,6 +21,8 @@ pub struct Hl7Message {
     pub patient_name: Option<String>,
     pub patient_id: Option<String>,
     pub parse_error: Option<String>,
+    pub ack_response: Option<String>,
+    pub ack_code: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -78,6 +80,8 @@ impl Hl7Message {
             patient_name: None,
             patient_id: None,
             parse_error: None,
+            ack_response: None,
+            ack_code: None,
         }
     }
 }
@@ -96,6 +100,8 @@ pub struct Hl7MessageSummary {
     pub patient_id: Option<String>,
     pub segment_count: usize,
     pub parse_error: Option<String>,
+    pub ack_response: Option<String>,
+    pub ack_code: Option<String>,
 }
 
 impl From<&Hl7Message> for Hl7MessageSummary {
@@ -112,6 +118,8 @@ impl From<&Hl7Message> for Hl7MessageSummary {
             patient_id: msg.patient_id.clone(),
             segment_count: msg.segments.len(),
             parse_error: msg.parse_error.clone(),
+            ack_response: msg.ack_response.clone(),
+            ack_code: msg.ack_code.clone(),
         }
     }
 }
