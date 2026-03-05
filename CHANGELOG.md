@@ -10,6 +10,7 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 ## [Unreleased]
 
 ### Added
+- **Graceful shutdown** — MLLP server active connections are cleanly drained on `Ctrl+C` or service stop before exiting (#7)
 - **Configuration file** (`hl7-forge.toml`) — ports, memory limits, log level, MLLP timeouts and max message size configurable without recompilation
   - Load priority: config file (next to binary or CWD) → environment variables (`MLLP_PORT`, `WEB_PORT`, `RUST_LOG`) → built-in defaults
   - New `src/config.rs` module with `Config`, `ServerConfig`, `LoggingConfig`, `StoreConfig`, `MllpConfig` structs
@@ -77,7 +78,7 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 - **Backpressure handling** — evict oldest messages when the store is full instead of OOM
 - ~~**Memory budget**~~ — **Done** (configurable via `hl7-forge.toml` `[store] max_memory_mb`)
 - **Connection limits** — cap maximum concurrent MLLP connections
-- **Graceful shutdown** — cleanly terminate active connections on `Ctrl+C` or service stop
+- ~~**Graceful shutdown**~~ — **Done** (see Added above)
 
 ### Planned – Milestone 2: Multi-User Experience
 

@@ -46,7 +46,7 @@ HL7 Forge replaces HL7 Inspector as the primary testing tool for the integration
 ### Stability & Performance
 - [ ] **Memory Management** – configurable memory budget (e.g. max 512 MB RAM) with automatic eviction of oldest messages to prevent OOM
 - [ ] **Connection limits** – cap maximum concurrent MLLP connections
-- [ ] **Graceful shutdown** – cleanly terminate active connections on service stop
+- [x] **Graceful shutdown** – cleanly terminate active connections on service stop (#7)
 
 ## Phase 3 – Orchestra Integration & Workflow
 
