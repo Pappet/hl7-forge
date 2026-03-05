@@ -74,8 +74,8 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 - ~~**Configuration file** (`hl7-forge.toml`)~~ — **Done** (see Added above)
 - **Windows Service** — installable via `sc create` / NSSM, automatic start on server reboot
 - **Windows Event Log integration** — startup banner in Windows Event Log for ops monitoring
-- **Portable binary** — single `.exe` without runtime dependencies, xcopy deployment
-- **Backpressure handling** — evict oldest messages when the store is full instead of OOM
+- ~~**Portable binary**~~ — **Done** (single `.exe` without runtime dependencies, xcopy deployment)
+- ~~**Backpressure handling**~~ — **Done** (evict oldest messages when the store is full instead of OOM)
 - ~~**Memory budget**~~ — **Done** (configurable via `hl7-forge.toml` `[store] max_memory_mb`)
 - **Connection limits** — cap maximum concurrent MLLP connections
 - ~~**Graceful shutdown**~~ — **Done** (see Added above)
