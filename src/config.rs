@@ -192,7 +192,11 @@ impl std::fmt::Display for Config {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         writeln!(f, "  MLLP port:          {}", self.server.mllp_port)?;
         writeln!(f, "  Web port:           {}", self.server.web_port)?;
-        writeln!(f, "  Shutdown timeout:   {}s", self.server.shutdown_timeout_secs)?;
+        writeln!(
+            f,
+            "  Shutdown timeout:   {}s",
+            self.server.shutdown_timeout_secs
+        )?;
         writeln!(f, "  Log level:          {}", self.logging.level)?;
         if let Some(file) = &self.logging.file {
             writeln!(
