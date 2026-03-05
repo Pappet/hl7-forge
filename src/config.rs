@@ -192,7 +192,11 @@ impl std::fmt::Display for Config {
         writeln!(f, "  Web port:           {}", self.server.web_port)?;
         writeln!(f, "  Log level:          {}", self.logging.level)?;
         if let Some(file) = &self.logging.file {
-            writeln!(f, "  File log:           {} (max {}MB, {} files)", file, self.logging.max_size_mb, self.logging.max_files)?;
+            writeln!(
+                f,
+                "  File log:           {} (max {}MB, {} files)",
+                file, self.logging.max_size_mb, self.logging.max_files
+            )?;
         } else {
             writeln!(f, "  File log:           disabled")?;
         }

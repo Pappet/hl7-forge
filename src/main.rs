@@ -17,8 +17,8 @@ async fn main() -> anyhow::Result<()> {
     let config = Config::load();
 
     // Initialize logging — use config level as fallback when RUST_LOG is not set
-    let env_filter = EnvFilter::try_from_default_env()
-        .unwrap_or_else(|_| EnvFilter::new(&config.logging.level));
+    let env_filter =
+        EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new(&config.logging.level));
 
     let fmt_layer = tracing_subscriber::fmt::layer();
 
