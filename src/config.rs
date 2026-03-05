@@ -192,16 +192,8 @@ impl std::fmt::Display for Config {
             "  Max message size:   {} MB",
             self.mllp.max_message_size_mb
         )?;
-        writeln!(
-            f,
-            "  Read timeout:       {}s",
-            self.mllp.read_timeout_secs
-        )?;
-        write!(
-            f,
-            "  Write timeout:      {}s",
-            self.mllp.write_timeout_secs
-        )
+        writeln!(f, "  Read timeout:       {}s", self.mllp.read_timeout_secs)?;
+        write!(f, "  Write timeout:      {}s", self.mllp.write_timeout_secs)
     }
 }
 

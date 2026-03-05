@@ -110,8 +110,7 @@ async fn handle_connection(
         if accumulated.len() > max_size {
             warn!(
                 "Buffer exceeded {} MB from {}, closing connection",
-                config.max_message_size_mb,
-                peer
+                config.max_message_size_mb, peer
             );
             return Ok(());
         }

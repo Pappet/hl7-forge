@@ -51,8 +51,7 @@ async fn main() -> anyhow::Result<()> {
     let mllp_handle = tokio::spawn(async move {
         let addr = format!("0.0.0.0:{}", mllp_port);
         if let Err(e) =
-            mllp::start_mllp_server(&addr, mllp_store, mllp_stats, mllp_shutdown, mllp_config)
-                .await
+            mllp::start_mllp_server(&addr, mllp_store, mllp_stats, mllp_shutdown, mllp_config).await
         {
             warn!("MLLP server error: {}", e);
         }
