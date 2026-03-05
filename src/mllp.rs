@@ -60,12 +60,13 @@ pub async fn start_mllp_server(
                 let stats = stats.clone();
                 let config = Arc::clone(&config);
                 let peer = peer_addr.to_string();
+                let shutdown_clone = shutdown.clone();
 
                 stats.active_connections.fetch_add(1, Ordering::Relaxed);
                 info!("New MLLP connection from {}", peer);
 
                 tokio::spawn(async move {
-                    if let Err(e) = handle_connection(socket, &peer, &store, &stats, &config).await {
+                    if let Err(e) = handle_connection(socket, &peer, &store, &stats, &config, shutdown_clone).await {
                         warn!("Connection error from {}: {}", peer, e);
                     }
                     stats.active_connections.fetch_sub(1, Ordering::Relaxed);
@@ -84,6 +85,7 @@ async fn handle_connection(
     store: &MessageStore,
     stats: &MllpStats,
     config: &MllpConfig,
+    mut shutdown: tokio::sync::watch::Receiver<bool>,
 ) -> anyhow::Result<()> {
     let mut buf = vec![0u8; 64 * 1024]; // 64 KB read buffer
     let mut accumulated = Vec::with_capacity(8 * 1024);
@@ -91,18 +93,32 @@ async fn handle_connection(
     let read_timeout = config.read_timeout();
     let write_timeout = config.write_timeout();
 
+    let mut shutdown_requested = false;
+
     loop {
-        let n = match timeout(read_timeout, socket.read(&mut buf)).await {
-            Ok(Ok(0)) | Err(_) => {
-                // Connection closed or read timeout
+        let n = tokio::select! {
+            result = timeout(read_timeout, socket.read(&mut buf)) => {
+                match result {
+                    Ok(Ok(0)) | Err(_) => {
+                        // Connection closed or read timeout
+                        if accumulated.is_empty() {
+                            break;
+                        }
+                        warn!("Read timeout or connection closed from {}", peer);
+                        break;
+                    }
+                    Ok(Ok(n)) => n,
+                    Ok(Err(e)) => return Err(e.into()),
+                }
+            }
+            _ = shutdown.changed(), if !shutdown_requested => {
+                shutdown_requested = true;
                 if accumulated.is_empty() {
                     break;
                 }
-                warn!("Read timeout or connection closed from {}", peer);
-                break;
+                // Continue reading to finish the current frame
+                continue;
             }
-            Ok(Ok(n)) => n,
-            Ok(Err(e)) => return Err(e.into()),
         };
 
         accumulated.extend_from_slice(&buf[..n]);
@@ -164,6 +180,11 @@ async fn handle_connection(
 
             // Remove processed bytes
             accumulated.drain(..consumed);
+        }
+
+        if shutdown_requested && accumulated.is_empty() {
+            info!("Gracefully closing connection from {} after draining", peer);
+            break;
         }
     }
 

@@ -119,6 +119,32 @@ async fn main() -> anyhow::Result<()> {
     }
 
     let _ = shutdown_tx.send(true);
+
+    // Wait for active MLLP connections to drain
+    let shutdown_timeout = std::time::Duration::from_secs(config.server.shutdown_timeout_secs);
+    info!(
+        "Waiting up to {} seconds for MLLP connections to drain...",
+        config.server.shutdown_timeout_secs
+    );
+    let start = std::time::Instant::now();
+    loop {
+        let active = stats
+            .active_connections
+            .load(std::sync::atomic::Ordering::Relaxed);
+        if active == 0 {
+            info!("All MLLP connections drained");
+            break;
+        }
+        if start.elapsed() >= shutdown_timeout {
+            warn!(
+                "Shutdown timeout reached. Forcing exit with {} active connections",
+                active
+            );
+            break;
+        }
+        tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+    }
+
     info!("HL7 Forge stopped.");
     Ok(())
 }

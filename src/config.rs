@@ -20,6 +20,7 @@ pub struct Config {
 pub struct ServerConfig {
     pub mllp_port: u16,
     pub web_port: u16,
+    pub shutdown_timeout_secs: u64,
 }
 
 #[derive(Debug, Deserialize)]
@@ -53,6 +54,7 @@ impl Default for ServerConfig {
         Self {
             mllp_port: 2575,
             web_port: 8080,
+            shutdown_timeout_secs: 10,
         }
     }
 }
@@ -190,6 +192,11 @@ impl std::fmt::Display for Config {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         writeln!(f, "  MLLP port:          {}", self.server.mllp_port)?;
         writeln!(f, "  Web port:           {}", self.server.web_port)?;
+        writeln!(
+            f,
+            "  Shutdown timeout:   {}s",
+            self.server.shutdown_timeout_secs
+        )?;
         writeln!(f, "  Log level:          {}", self.logging.level)?;
         if let Some(file) = &self.logging.file {
             writeln!(
@@ -221,6 +228,7 @@ mod tests {
         let config = Config::default();
         assert_eq!(config.server.mllp_port, 2575);
         assert_eq!(config.server.web_port, 8080);
+        assert_eq!(config.server.shutdown_timeout_secs, 10);
         assert_eq!(config.logging.level, "info");
         assert_eq!(config.logging.file, None);
         assert_eq!(config.logging.max_size_mb, 50);
@@ -249,6 +257,7 @@ mod tests {
 [server]
 mllp_port = 3000
 web_port = 9090
+shutdown_timeout_secs = 5
 
 [logging]
 level = "debug"
@@ -268,6 +277,7 @@ write_timeout_secs = 60
         let config: Config = toml::from_str(toml_str).unwrap();
         assert_eq!(config.server.mllp_port, 3000);
         assert_eq!(config.server.web_port, 9090);
+        assert_eq!(config.server.shutdown_timeout_secs, 5);
         assert_eq!(config.logging.level, "debug");
         assert_eq!(config.logging.file.as_deref(), Some("logs/test.log"));
         assert_eq!(config.logging.max_size_mb, 100);
