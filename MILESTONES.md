@@ -14,21 +14,21 @@ Derived from [ROADMAP.md](ROADMAP.md), phases 2–4. Phase 1 (MVP) is complete; 
 
 ### Tasks
 
-- [ ] **Configuration file** (`hl7-forge.toml`) – ports, memory limits, log level, retention configurable
+- [x] **Configuration file** (`hl7-forge.toml`) – ports, memory limits, log level, retention configurable
 - [ ] **Windows Service** – installable as a Windows service (`sc create` / NSSM), automatic start on server boot
 - [ ] **Startup banner in Event Log** – Windows Event Log integration for ops monitoring
-- [ ] **Portable binary** – single `.exe` without dependencies, xcopy deployment
-- [ ] **Backpressure handling** – evict oldest messages when the store is full instead of OOM
-- [ ] **Configurable memory budget** – e.g. max 512 MB RAM, automatic eviction
+- [x] **Portable binary** – single `.exe` without dependencies, xcopy deployment
+- [x] **Backpressure handling** – evict oldest messages when the store is full instead of OOM
+- [x] **Configurable memory budget** – e.g. max 512 MB RAM, automatic eviction
 - [ ] **Connection limits** – cap maximum concurrent MLLP connections
-- [ ] **Graceful shutdown** – cleanly terminate active connections on service stop
+- [x] **Graceful shutdown** – cleanly terminate active connections on service stop
 
 ### Acceptance Criteria
 
-- [ ] Server starts via `hl7-forge.toml` with configured ports and limits
+- [x] Server starts via `hl7-forge.toml` with configured ports and limits
 - [ ] Server runs as a Windows service and starts automatically after reboot
-- [ ] When the memory budget is reached, old messages are evicted — no OOM
-- [ ] `Ctrl+C` or service stop terminates active MLLP connections cleanly
+- [x] When the memory budget is reached, old messages are evicted — no OOM
+- [x] `Ctrl+C` or service stop terminates active MLLP connections cleanly
 
 ---
 

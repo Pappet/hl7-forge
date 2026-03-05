@@ -39,12 +39,12 @@ HL7 Forge replaces HL7 Inspector as the primary testing tool for the integration
 - [ ] **Bookmark/Pin** – mark important messages so they don't get lost in the stream
 
 ### Deployment & Configuration
-- [ ] **Configuration file** (`hl7-forge.toml`) – ports, memory limits, log level, retention configurable without recompilation
-- [ ] **File Logging** – standard rotating log files for operation monitoring
-- [ ] **Portable binary** – single `.exe`, no dependencies, xcopy deployment
+- [x] **Configuration file** (`hl7-forge.toml`) – ports, memory limits, log level, retention configurable without recompilation
+- [x] **File Logging** – standard rotating log files for operation monitoring
+- [x] **Portable binary** – single `.exe`, no dependencies, xcopy deployment
 
 ### Stability & Performance
-- [ ] **Memory Management** – configurable memory budget (e.g. max 512 MB RAM) with automatic eviction of oldest messages to prevent OOM
+- [x] **Memory Management** – configurable memory budget (e.g. max 512 MB RAM) with automatic eviction of oldest messages to prevent OOM
 - [ ] **Connection limits** – cap maximum concurrent MLLP connections
 - [x] **Graceful shutdown** – cleanly terminate active connections on service stop (#7)
 
