@@ -219,4 +219,16 @@ mod tests {
         assert!(ack.starts_with("MSH|^~\\&|HL7Forge"));
         assert!(ack.contains("MSA|AA|MSG00001"));
     }
+
+    #[test]
+    fn test_msh_field_indexing_quirk() {
+        let msg = parse_message(SAMPLE_ADT, "127.0.0.1:9999").unwrap();
+        let msh = msg.segments.first().unwrap();
+        assert_eq!(msh.name, "MSH");
+        assert_eq!(get_field_value(msh, 1), "|");
+        assert_eq!(get_field_value(msh, 2), "^~\\&");
+        assert_eq!(get_field_value(msh, 3), "SENDING_APP");
+        assert_eq!(get_field_value(msh, 4), "SENDING_FAC");
+        assert_eq!(get_field_value(msh, 9), "ADT^A01^ADT_A01");
+    }
 }

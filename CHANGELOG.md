@@ -19,6 +19,7 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 - GitHub Actions CI workflow (`.github/workflows/ci.yml`) for `fmt`, `clippy`, `build`, and `test`
 - Templates for Bugs and Feature Requests
 - CONTRIBUTING, SECURITY, and Pull Request templates
+- **Tests**: Add regression test for MSH field indexing quirk (#11)
 
 ### Changed
 - `MessageStore::new()` now accepts `StoreConfig` — store capacity and memory limit are configurable
@@ -34,6 +35,12 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 - Fixed clippy warnings: derivable impl, char comparison pattern, `to_string` in format args, large enum variant
 
 ### Commit History (chronological)
+
+#### 2026-03-05
+
+| Commit | Description |
+|--------|-------------|
+| [`16d4da8`](https://github.com/Pappet/hl7-forge/commit/16d4da82c54484485c7af0d56d00cef1f78e7b49) | `test:` Add regression tests for MSH field indexing quirk (#11) |
 
 #### 2026-02-28
 
