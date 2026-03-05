@@ -26,6 +26,9 @@ pub struct ServerConfig {
 #[serde(default)]
 pub struct LoggingConfig {
     pub level: String,
+    pub file: Option<String>,
+    pub max_size_mb: u64,
+    pub max_files: usize,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -58,6 +61,9 @@ impl Default for LoggingConfig {
     fn default() -> Self {
         Self {
             level: "info".to_string(),
+            file: None,
+            max_size_mb: 50,
+            max_files: 5,
         }
     }
 }
@@ -185,6 +191,15 @@ impl std::fmt::Display for Config {
         writeln!(f, "  MLLP port:          {}", self.server.mllp_port)?;
         writeln!(f, "  Web port:           {}", self.server.web_port)?;
         writeln!(f, "  Log level:          {}", self.logging.level)?;
+        if let Some(file) = &self.logging.file {
+            writeln!(
+                f,
+                "  File log:           {} (max {}MB, {} files)",
+                file, self.logging.max_size_mb, self.logging.max_files
+            )?;
+        } else {
+            writeln!(f, "  File log:           disabled")?;
+        }
         writeln!(f, "  Max messages:       {}", self.store.max_messages)?;
         writeln!(f, "  Max memory:         {} MB", self.store.max_memory_mb)?;
         writeln!(
@@ -207,6 +222,9 @@ mod tests {
         assert_eq!(config.server.mllp_port, 2575);
         assert_eq!(config.server.web_port, 8080);
         assert_eq!(config.logging.level, "info");
+        assert_eq!(config.logging.file, None);
+        assert_eq!(config.logging.max_size_mb, 50);
+        assert_eq!(config.logging.max_files, 5);
         assert_eq!(config.store.max_messages, 10_000);
         assert_eq!(config.store.max_memory_mb, 512);
         assert_eq!(config.mllp.max_message_size_mb, 10);
@@ -234,6 +252,9 @@ web_port = 9090
 
 [logging]
 level = "debug"
+file = "logs/test.log"
+max_size_mb = 100
+max_files = 10
 
 [store]
 max_messages = 5000
@@ -248,6 +269,9 @@ write_timeout_secs = 60
         assert_eq!(config.server.mllp_port, 3000);
         assert_eq!(config.server.web_port, 9090);
         assert_eq!(config.logging.level, "debug");
+        assert_eq!(config.logging.file.as_deref(), Some("logs/test.log"));
+        assert_eq!(config.logging.max_size_mb, 100);
+        assert_eq!(config.logging.max_files, 10);
         assert_eq!(config.store.max_messages, 5000);
         assert_eq!(config.store.max_memory_mb, 256);
         assert_eq!(config.mllp.max_message_size_mb, 20);
@@ -266,6 +290,7 @@ mllp_port = 4000
         // All other fields should use defaults
         assert_eq!(config.server.web_port, 8080);
         assert_eq!(config.logging.level, "info");
+        assert_eq!(config.logging.file, None);
         assert_eq!(config.store.max_messages, 10_000);
         assert_eq!(config.mllp.read_timeout_secs, 60);
     }
