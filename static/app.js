@@ -147,12 +147,21 @@ function renderMessageList() {
             ? `<span class="msg-type" style="color:var(--error)" title="${esc(msg.parse_error)}">⚠ PARSE ERROR</span>`
             : `<span class="msg-type">${esc(msg.message_type)}</span>`;
 
+        let ackColor = '';
+        if (msg.ack_code === 'AA') ackColor = 'color: var(--success);';
+        else if (msg.ack_code === 'AE' || msg.ack_code === 'AR') ackColor = 'color: var(--error);';
+
+        const ackHtml = msg.ack_code
+            ? `<span class="msg-ack" style="${ackColor}">${esc(msg.ack_code)}</span>`
+            : `<span class="msg-ack">—</span>`;
+
         row.innerHTML = `
             ${typeHtml}
             <span class="msg-source">${esc(msg.sending_facility)}</span>
             <span class="msg-patient">${esc(msg.patient_name || msg.patient_id || '—')}</span>
             <span class="msg-time">${timeStr}</span>
             <span class="msg-segs">${msg.segment_count}</span>
+            ${ackHtml}
         `;
         fragment.appendChild(row);
     }
@@ -261,6 +270,18 @@ function renderTab() {
             return `<div class="segment-line"><span style="color:var(--accent);font-weight:600">${esc(segName)}</span>${esc(line.substring(3))}</div>`;
         }).join('')
             }</div>`;
+    } else if (activeTab === 'ack') {
+        const ack = msg.ack_response;
+        if (!ack) {
+            content.innerHTML = `<div class="empty-state"><p>No ACK was generated for this message</p></div>`;
+        } else {
+            const lines = ack.split(/\r?\n|\r/).filter(l => l.trim());
+            content.innerHTML = `<div class="raw-view">${lines.map(line => {
+                const segName = line.substring(0, 3);
+                return `<div class="segment-line"><span style="color:var(--accent);font-weight:600">${esc(segName)}</span>${esc(line.substring(3))}</div>`;
+            }).join('')
+                }</div>`;
+        }
     } else if (activeTab === 'json') {
         content.innerHTML = `<pre class="raw-view">${esc(JSON.stringify(msg, null, 2))}</pre>`;
     }

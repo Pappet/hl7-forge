@@ -31,7 +31,7 @@ Designed as a drop-in replacement for HL7 Inspector: runs as a central service, 
 | ⚡ **MLLP Server** | Async TCP listener with correct `0x0B`/`0x1C 0x0D` framing, auto ACK/NACK |
 | 🖥️ **Real-time Web UI** | Browser SPA with WebSocket push — no page reload, no framework |
 | 🔍 **Deep Parser** | Dynamic delimiter detection, full segment/field decomposition |
-| 📋 **Three Views** | Parsed segments, raw HL7, and JSON per message |
+| 📋 **Four Views** | Parsed segments, raw HL7, sent ACK/NACK, and JSON per message |
 | 🔎 **Search & Filter** | By message type, patient name, facility, message control ID, source IP |
 | 💾 **Smart Store** | In-memory, 100k message capacity with automatic 10% eviction |
 | 📥 **JSON Export** | Export full message list with one click |
