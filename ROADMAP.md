@@ -33,9 +33,9 @@ HL7 Forge replaces HL7 Inspector as the primary testing tool for the integration
 *Focus: Multiple developers working against the same server simultaneously*
 
 ### Multi-User & Sessions
-- [ ] **Session-based views** – each developer sees their own filter configuration, scroll position and selection without affecting others
-- [ ] **Color-coded source markers** – messages visually distinguishable by sender system/IP (e.g. Orchestra Dev vs. Orchestra Test)
-- [ ] **Message tagging** – manual tagging of messages (e.g. "Bug #1234", "Test scenario A") for attribution during shared use
+- [x] **Session-based views** – each developer sees their own filter configuration, scroll position and selection without affecting others
+- [x] **Color-coded source markers** – messages visually distinguishable by sender system/IP (e.g. Orchestra Dev vs. Orchestra Test)
+- [x] **Message tagging** – manual tagging of messages (e.g. "Bug #1234", "Test scenario A") for attribution during shared use
 - [ ] **Bookmark/Pin** – mark important messages so they don't get lost in the stream
 
 ### Deployment & Configuration
@@ -45,7 +45,7 @@ HL7 Forge replaces HL7 Inspector as the primary testing tool for the integration
 
 ### Stability & Performance
 - [x] **Memory Management** – configurable memory budget (e.g. max 512 MB RAM) with automatic eviction of oldest messages to prevent OOM
-- [ ] **Connection limits** – cap maximum concurrent MLLP connections
+- [x] **Connection limits** – cap maximum concurrent MLLP connections
 - [x] **Graceful shutdown** – cleanly terminate active connections on service stop (#7)
 
 ## Phase 3 – Orchestra Integration & Workflow
