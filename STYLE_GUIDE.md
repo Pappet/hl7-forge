@@ -19,6 +19,13 @@ HL7 Forge uses a beautiful, zero-dependency dark theme built on raw css variable
     *   Success (Green): `#4caf84`
     *   Warning (Yellow): `#e5a54b`
     *   Error (Red): `#e05454`
+*   **Curated Source Palette (Data/List Markers):**
+    *   `hsl(210, 90%, 65%)` (Blue), `hsl(150, 70%, 55%)` (Green)
+    *   `hsl(30,  85%, 60%)` (Orange), `hsl(280, 75%, 65%)` (Purple)
+    *   `hsl(0,   80%, 62%)` (Red), `hsl(180, 70%, 50%)` (Teal)
+    *   `hsl(50,  85%, 55%)` (Gold), `hsl(330, 75%, 62%)` (Pink)
+    *   `hsl(200, 80%, 55%)` (Sky), `hsl(100, 60%, 50%)` (Lime)
+    *   `hsl(260, 65%, 60%)` (Indigo), `hsl(15,  90%, 58%)` (Coral)
 
 **Design Principles:**
 *   **Typography:** System fonts for UI elements (`-apple-system, system-ui, sans-serif`) to feel native, and strict monospace for data/code elements (`SF Mono, Cascadia Code, Consolas, monospace`).
