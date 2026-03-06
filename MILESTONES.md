@@ -1,6 +1,6 @@
 # HL7 Forge – Milestones
 
-Derived from [ROADMAP.md](ROADMAP.md), phases 2–4. Phase 1 (MVP) is complete; phase 5 (nice-to-have) is deliberately excluded.
+Derived from [ROADMAP.md](ROADMAP.md).
 
 ---
 
@@ -15,11 +15,12 @@ Derived from [ROADMAP.md](ROADMAP.md), phases 2–4. Phase 1 (MVP) is complete; 
 ### Tasks
 
 - [x] **Configuration file** (`hl7-forge.toml`) – ports, memory limits, log level, retention configurable
+- [x] **File Logging** – standard rotating log files for operation monitoring
 - [ ] **Windows Service** – installable as a Windows service (`sc create` / NSSM), automatic start on server boot
 - [ ] **Startup banner in Event Log** – Windows Event Log integration for ops monitoring
 - [x] **Portable binary** – single `.exe` without dependencies, xcopy deployment
 - [x] **Backpressure handling** – evict oldest messages when the store is full instead of OOM
-- [x] **Configurable memory budget** – e.g. max 512 MB RAM, automatic eviction
+- [x] **Memory Management** – e.g. max 512 MB RAM, automatic eviction
 - [ ] **Connection limits** – cap maximum concurrent MLLP connections
 - [x] **Graceful shutdown** – cleanly terminate active connections on service stop
 

@@ -5,7 +5,7 @@ HL7 Forge is a high-performance MLLP server with a real-time web UI for inspecti
 
 ## Project Stats
 - **Language**: Rust
-- **Status**: Milestone 1 completed (Team-Ready Server)
+- **Status**: Milestone 1 (Team-Ready Server) in progress
 
 ## Architectural Decisions
 1. **Single Binary + Embedded SPA**: The frontend (HTML/JS/CSS) is embedded into the Rust binary at compile time via `rust-embed`. This ensures zero runtime dependencies.

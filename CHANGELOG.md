@@ -10,6 +10,7 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 ## [Unreleased]
 
 ### Added
+- **ACK UI**: Sent ACK/NACK messages (AA, AE, AR) are now stored and viewable in an "ACK" tab (#19)
 - **Graceful shutdown** — MLLP server active connections are cleanly drained on `Ctrl+C` or service stop before exiting (#7)
 - **Configuration file** (`hl7-forge.toml`) — ports, memory limits, log level, MLLP timeouts and max message size configurable without recompilation
   - Load priority: config file (next to binary or CWD) → environment variables (`MLLP_PORT`, `WEB_PORT`, `RUST_LOG`) → built-in defaults
@@ -36,6 +37,12 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 - Fixed clippy warnings: derivable impl, char comparison pattern, `to_string` in format args, large enum variant
 
 ### Commit History (chronological)
+
+#### 2026-03-06
+
+| Commit | Description |
+|--------|-------------|
+| [`a143155`](https://github.com/Pappet/hl7-forge/commit/a143155) | `feat:` show ACK message in message selection (#19) |
 
 #### 2026-03-05
 
@@ -72,6 +79,7 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 > Goal: HL7 Forge runs stably as a Windows service on the dev server, is configurable without recompilation, and holds up under high load.
 
 - ~~**Configuration file** (`hl7-forge.toml`)~~ — **Done** (see Added above)
+- ~~**File Logging**~~ — **Done** (standard rotating log files)
 - **Windows Service** — installable via `sc create` / NSSM, automatic start on server reboot
 - **Windows Event Log integration** — startup banner in Windows Event Log for ops monitoring
 - ~~**Portable binary**~~ — **Done** (single `.exe` without runtime dependencies, xcopy deployment)
