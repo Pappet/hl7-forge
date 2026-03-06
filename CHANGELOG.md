@@ -10,6 +10,7 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 ## [Unreleased]
 
 ### Added
+- **Message tagging** — manual tagging of messages for attribution (e.g., "Bug #1234"); tags filterable via search and synchronized across clients (#26)
 - **WebSocket exponential backoff** — reconnection uses exponential backoff (1s → 2s → 4s → … → 60s cap) with ±25% jitter to prevent thundering herd; status bar shows reconnection countdown (#12)
 - **Resizable panel splitter** — drag the border between message list and detail panel to resize; double-click to reset; width persists across sessions via localStorage (#4)
 - **Color-coded source markers** — messages in the list show a colored dot mapped by source IP address (with an optional "Color by Port" toggle), along with a source legend for quick identification (#25)

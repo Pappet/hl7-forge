@@ -11,6 +11,7 @@ const BROADCAST_CAPACITY: usize = 4096;
 #[allow(clippy::large_enum_variant)]
 pub enum StoreEvent {
     NewMessage(Box<Hl7MessageSummary>),
+    TagsUpdated(Box<Hl7MessageSummary>),
     Cleared,
 }
 
@@ -137,6 +138,36 @@ impl MessageStore {
     /// Total message count
     pub async fn count(&self) -> usize {
         self.inner.read().await.messages.len()
+    }
+
+    /// Add a tag to a message and broadcast the update
+    pub async fn add_tag(&self, id: &str, tag: String) -> bool {
+        let mut inner = self.inner.write().await;
+        if let Some(msg) = inner.messages.iter_mut().find(|m| m.id == id) {
+            if !msg.tags.contains(&tag) {
+                msg.tags.push(tag);
+                let summary = Hl7MessageSummary::from(&*msg);
+                drop(inner);
+                let _ = self.tx.send(StoreEvent::TagsUpdated(Box::new(summary)));
+                return true;
+            }
+        }
+        false
+    }
+
+    /// Remove a tag from a message and broadcast the update
+    pub async fn remove_tag(&self, id: &str, tag: &str) -> bool {
+        let mut inner = self.inner.write().await;
+        if let Some(msg) = inner.messages.iter_mut().find(|m| m.id == id) {
+            if let Some(pos) = msg.tags.iter().position(|t| t == tag) {
+                msg.tags.remove(pos);
+                let summary = Hl7MessageSummary::from(&*msg);
+                drop(inner);
+                let _ = self.tx.send(StoreEvent::TagsUpdated(Box::new(summary)));
+                return true;
+            }
+        }
+        false
     }
 
     /// Clear all messages
