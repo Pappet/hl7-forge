@@ -13,6 +13,59 @@ let paused = false;
 let pendingMessages = [];
 let renderScheduled = false;
 
+// --- Source Color Mapping ---
+// 12 visually distinct colors optimised for dark backgrounds (HSL, high sat, medium lightness)
+const SOURCE_PALETTE = [
+    'hsl(210, 90%, 65%)',   // blue
+    'hsl(150, 70%, 55%)',   // green
+    'hsl(30,  85%, 60%)',   // orange
+    'hsl(280, 75%, 65%)',   // purple
+    'hsl(0,   80%, 62%)',   // red
+    'hsl(180, 70%, 50%)',   // teal
+    'hsl(50,  85%, 55%)',   // gold
+    'hsl(330, 75%, 62%)',   // pink
+    'hsl(200, 80%, 55%)',   // sky
+    'hsl(100, 60%, 50%)',   // lime
+    'hsl(260, 65%, 60%)',   // indigo
+    'hsl(15,  90%, 58%)',   // coral
+];
+let sourceColorMap = {};  // source_addr → palette color
+let sourceColorIndex = 0;
+
+function hashString(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0;
+    }
+    return Math.abs(hash);
+}
+
+function getSourceColor(addr) {
+    if (!addr) return 'var(--text-muted)';
+    if (sourceColorMap[addr]) return sourceColorMap[addr];
+    const color = SOURCE_PALETTE[hashString(addr) % SOURCE_PALETTE.length];
+    sourceColorMap[addr] = color;
+    return color;
+}
+
+function renderSourceLegend() {
+    const container = document.getElementById('source-legend');
+    if (!container) return;
+    const sources = Object.keys(sourceColorMap);
+    if (sources.length === 0) {
+        container.style.display = 'none';
+        return;
+    }
+    container.style.display = '';
+    container.innerHTML = sources.map(addr => {
+        const color = sourceColorMap[addr];
+        return `<span class="source-legend-item">
+            <span class="source-dot" style="background:${color};box-shadow:0 0 4px ${color}"></span>
+            ${esc(addr)}
+        </span>`;
+    }).join('');
+}
+
 // --- WebSocket ---
 function connectWs() {
     const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -63,6 +116,8 @@ function connectWs() {
 // Task 2: buffer incoming messages, flush at most every 250 ms
 function addMessage(summary) {
     pendingMessages.unshift(summary);
+    // Register source for color mapping
+    if (summary.source_addr) getSourceColor(summary.source_addr);
     document.getElementById('stat-total').textContent =
         messages.length + pendingMessages.length;
     if (!paused) {
@@ -86,6 +141,7 @@ function flushAndRender() {
         document.getElementById('stat-total').textContent = messages.length;
     }
     renderMessageList();
+    renderSourceLegend();
 }
 
 async function loadMessages() {
@@ -94,8 +150,13 @@ async function loadMessages() {
         if (!resp.ok) return;
         messages = await resp.json();
         pendingMessages = [];
+        // Register all source addresses for color mapping
+        for (const m of messages) {
+            if (m.source_addr) getSourceColor(m.source_addr);
+        }
         document.getElementById('stat-total').textContent = messages.length;
         renderMessageList();
+        renderSourceLegend();
     } catch (e) {
         console.error('Failed to load messages:', e);
     }
@@ -152,6 +213,10 @@ function renderMessageList() {
         const time = new Date(msg.received_at);
         const timeStr = time.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
+        // Source color dot
+        const srcColor = getSourceColor(msg.source_addr);
+        const dotHtml = `<span class="source-dot" style="background:${srcColor};box-shadow:0 0 4px ${srcColor}" title="${escAttr(msg.source_addr)}"></span>`;
+
         // Task 1: red marker for messages that failed to parse
         const typeHtml = msg.parse_error
             ? `<span class="msg-type" style="color:var(--error)" title="${escAttr(msg.parse_error)}">⚠ PARSE ERROR</span>`
@@ -166,6 +231,7 @@ function renderMessageList() {
             : `<span class="msg-ack">—</span>`;
 
         row.innerHTML = `
+            ${dotHtml}
             ${typeHtml}
             <span class="msg-source">${esc(msg.sending_facility)}</span>
             <span class="msg-patient">${esc(msg.patient_name || msg.patient_id || '—')}</span>
