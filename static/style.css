@@ -135,11 +135,60 @@ button.danger:hover {
 
 /* Message list panel */
 .list-panel {
-    width: 55%;
-    min-width: 400px;
+    flex: 0 0 55%;
+    min-width: 300px;
     display: flex;
     flex-direction: column;
+}
+
+/* Panel splitter (drag handle) */
+.panel-splitter {
+    flex: 0 0 6px;
+    background: var(--bg-secondary);
+    cursor: col-resize;
+    position: relative;
+    border-left: 1px solid var(--border);
     border-right: 1px solid var(--border);
+    transition: background 0.15s;
+    z-index: 10;
+}
+
+.panel-splitter::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 2px;
+    height: 32px;
+    background: var(--text-muted);
+    border-radius: 1px;
+    opacity: 0.4;
+    transition: opacity 0.15s, height 0.15s;
+}
+
+.panel-splitter:hover {
+    background: var(--bg-tertiary);
+}
+
+.panel-splitter:hover::after {
+    opacity: 0.8;
+    height: 48px;
+    background: var(--accent);
+}
+
+.panel-splitter:active::after {
+    opacity: 1;
+    background: var(--accent);
+}
+
+body.resizing {
+    cursor: col-resize !important;
+    user-select: none !important;
+}
+
+body.resizing * {
+    cursor: col-resize !important;
 }
 
 .search-bar {
