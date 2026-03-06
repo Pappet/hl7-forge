@@ -21,3 +21,4 @@
 # max_message_size_mb = 10
 # read_timeout_secs = 60
 # write_timeout_secs = 30
+# max_connections = 100

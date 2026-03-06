@@ -45,6 +45,7 @@ pub struct MllpConfig {
     pub max_message_size_mb: usize,
     pub read_timeout_secs: u64,
     pub write_timeout_secs: u64,
+    pub max_connections: usize,
 }
 
 // --- Defaults ---
@@ -85,6 +86,7 @@ impl Default for MllpConfig {
             max_message_size_mb: 10,
             read_timeout_secs: 60,
             write_timeout_secs: 30,
+            max_connections: 100,
         }
     }
 }
@@ -215,7 +217,8 @@ impl std::fmt::Display for Config {
             self.mllp.max_message_size_mb
         )?;
         writeln!(f, "  Read timeout:       {}s", self.mllp.read_timeout_secs)?;
-        write!(f, "  Write timeout:      {}s", self.mllp.write_timeout_secs)
+        writeln!(f, "  Write timeout:      {}s", self.mllp.write_timeout_secs)?;
+        write!(f, "  Max connections:    {}", self.mllp.max_connections)
     }
 }
 
@@ -238,6 +241,7 @@ mod tests {
         assert_eq!(config.mllp.max_message_size_mb, 10);
         assert_eq!(config.mllp.read_timeout_secs, 60);
         assert_eq!(config.mllp.write_timeout_secs, 30);
+        assert_eq!(config.mllp.max_connections, 100);
     }
 
     #[test]
@@ -273,6 +277,7 @@ max_memory_mb = 256
 max_message_size_mb = 20
 read_timeout_secs = 120
 write_timeout_secs = 60
+max_connections = 50
 "#;
         let config: Config = toml::from_str(toml_str).unwrap();
         assert_eq!(config.server.mllp_port, 3000);
@@ -287,6 +292,7 @@ write_timeout_secs = 60
         assert_eq!(config.mllp.max_message_size_mb, 20);
         assert_eq!(config.mllp.read_timeout_secs, 120);
         assert_eq!(config.mllp.write_timeout_secs, 60);
+        assert_eq!(config.mllp.max_connections, 50);
     }
 
     #[test]

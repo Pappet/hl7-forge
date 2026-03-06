@@ -1,23 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HL7 Forge</title>
     <link rel="stylesheet" href="/style.css">
 </head>
+
 <body>
     <header>
         <div class="logo">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="var(--accent)" stroke="var(--accent)"/>
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="var(--accent)" stroke="var(--accent)" />
             </svg>
             HL7 Forge
         </div>
         <div class="stats-bar">
-            <div class="stat"><span class="stat-dot green" id="ws-dot"></span><span id="ws-status">Connecting...</span></div>
+            <div class="stat"><span class="stat-dot green" id="ws-dot"></span><span id="ws-status">Connecting...</span>
+            </div>
             <div class="stat"><span class="stat-dot blue"></span>Messages: <span id="stat-total">0</span></div>
-            <div class="stat"><span class="stat-dot yellow"></span>Connections: <span id="stat-connections">0</span></div>
+            <div class="stat"><span class="stat-dot yellow"></span>Connections: <span id="stat-connections">0</span>
+            </div>
+            <div class="stat" style="display:none"><span class="stat-dot"
+                    style="background:var(--warning)"></span>Rejected: <span id="stat-rejected">0</span></div>
             <div class="stat"><span class="stat-dot red"></span>Errors: <span id="stat-errors">0</span></div>
         </div>
         <div class="header-actions">
@@ -44,7 +50,7 @@
             <div class="message-list" id="message-list">
                 <div class="empty-state" id="empty-state">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
                     </svg>
                     <p>Waiting for HL7 messages...</p>
                     <span class="hint">MLLP Server listening on port <span id="mllp-port">2575</span></span>
@@ -55,7 +61,8 @@
         <div class="detail-panel">
             <div class="detail-header">
                 <h2 id="detail-title">Select a message</h2>
-                <span id="detail-meta" style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);"></span>
+                <span id="detail-meta"
+                    style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);"></span>
             </div>
             <div class="detail-tabs">
                 <button class="detail-tab active" data-tab="parsed" onclick="switchTab('parsed')">Segments</button>
@@ -73,4 +80,5 @@
 
     <script src="/app.js" defer></script>
 </body>
+
 </html>

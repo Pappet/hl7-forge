@@ -90,6 +90,7 @@ async fn main() -> anyhow::Result<()> {
         store: store.clone(),
         stats: stats.clone(),
         mllp_port,
+        max_connections: config.mllp.max_connections,
     };
     let app = create_router(app_state);
     let web_addr = format!("0.0.0.0:{}", web_port);

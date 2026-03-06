@@ -19,6 +19,7 @@ pub struct AppState {
     pub store: MessageStore,
     pub stats: MllpStats,
     pub mllp_port: u16,
+    pub max_connections: usize,
 }
 
 pub fn create_router(state: AppState) -> Router {
@@ -84,6 +85,8 @@ async fn get_stats(State(state): State<AppState>) -> impl IntoResponse {
         "parsed_ok": state.stats.parsed_ok.load(Ordering::Relaxed),
         "parse_errors": state.stats.parse_errors.load(Ordering::Relaxed),
         "active_connections": state.stats.active_connections.load(Ordering::Relaxed),
+        "rejected_connections": state.stats.rejected_connections.load(Ordering::Relaxed),
+        "max_connections": state.max_connections,
         "mllp_port": state.mllp_port,
     }))
 }

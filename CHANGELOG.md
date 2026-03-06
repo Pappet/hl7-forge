@@ -10,6 +10,7 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 ## [Unreleased]
 
 ### Added
+- **Connection limits** — configurable `max_connections` (default 100) for the MLLP server using a `tokio::sync::Semaphore`; rejected connections are counted and exposed via `/api/stats` (#6)
 - **ACK UI**: Sent ACK/NACK messages (AA, AE, AR) are now stored and viewable in an "ACK" tab (#19)
 - **Graceful shutdown** — MLLP server active connections are cleanly drained on `Ctrl+C` or service stop before exiting (#7)
 - **Configuration file** (`hl7-forge.toml`) — ports, memory limits, log level, MLLP timeouts and max message size configurable without recompilation
@@ -86,7 +87,7 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 - ~~**Portable binary**~~ — **Done** (single `.exe` without runtime dependencies, xcopy deployment)
 - ~~**Backpressure handling**~~ — **Done** (evict oldest messages when the store is full instead of OOM)
 - ~~**Memory budget**~~ — **Done** (configurable via `hl7-forge.toml` `[store] max_memory_mb`)
-- **Connection limits** — cap maximum concurrent MLLP connections
+- ~~**Connection limits**~~ — **Done** (configurable `max_connections`, see Added above)
 - ~~**Graceful shutdown**~~ — **Done** (see Added above)
 
 ### Planned – Milestone 2: Multi-User Experience
