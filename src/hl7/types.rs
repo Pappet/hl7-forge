@@ -23,6 +23,7 @@ pub struct Hl7Message {
     pub parse_error: Option<String>,
     pub ack_response: Option<String>,
     pub ack_code: Option<String>,
+    pub tags: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -82,6 +83,7 @@ impl Hl7Message {
             parse_error: None,
             ack_response: None,
             ack_code: None,
+            tags: Vec::new(),
         }
     }
 }
@@ -102,6 +104,7 @@ pub struct Hl7MessageSummary {
     pub parse_error: Option<String>,
     pub ack_response: Option<String>,
     pub ack_code: Option<String>,
+    pub tags: Vec<String>,
 }
 
 impl From<&Hl7Message> for Hl7MessageSummary {
@@ -120,6 +123,7 @@ impl From<&Hl7Message> for Hl7MessageSummary {
             parse_error: msg.parse_error.clone(),
             ack_response: msg.ack_response.clone(),
             ack_code: msg.ack_code.clone(),
+            tags: msg.tags.clone(),
         }
     }
 }

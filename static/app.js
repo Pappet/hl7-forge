@@ -182,6 +182,8 @@ function connectWs() {
             loadMessages();
         } else if (data.type === 'new_message') {
             addMessage(data.data);
+        } else if (data.type === 'tags_updated') {
+            updateMessageTags(data.data);
         } else if (data.type === 'lagged') {
             console.warn(`Missed ${data.missed} messages, reloading...`);
             loadMessages();
@@ -198,6 +200,21 @@ function connectWs() {
             document.getElementById('stat-total').textContent = '0';
         }
     };
+}
+
+function updateMessageTags(summary) {
+    const listMsg = messages.find(m => m.id === summary.id);
+    if (listMsg) listMsg.tags = summary.tags;
+
+    const pendingMsg = pendingMessages.find(m => m.id === summary.id);
+    if (pendingMsg) pendingMsg.tags = summary.tags;
+
+    if (selectedMessage && selectedMessage.id === summary.id) {
+        selectedMessage.tags = summary.tags;
+        renderDetail();
+    }
+
+    renderMessageList();
 }
 
 // Task 2: buffer incoming messages, flush at most every 250 ms
@@ -318,6 +335,10 @@ function renderMessageList() {
             ? `<span class="msg-type" style="color:var(--error)" title="${escAttr(msg.parse_error)}">⚠ PARSE ERROR</span>`
             : `<span class="msg-type">${esc(msg.message_type)}</span>`;
 
+        const tagsHtml = (msg.tags && msg.tags.length > 0)
+            ? `<div class="msg-tags-list">` + msg.tags.map(t => `<span class="msg-tag-small">${esc(t)}</span>`).join('') + `</div>`
+            : '';
+
         let ackColor = '';
         if (msg.ack_code === 'AA') ackColor = 'color: var(--success);';
         else if (msg.ack_code === 'AE' || msg.ack_code === 'AR') ackColor = 'color: var(--error);';
@@ -328,7 +349,10 @@ function renderMessageList() {
 
         row.innerHTML = `
             ${dotHtml}
-            ${typeHtml}
+            <div style="display:flex; flex-direction:column; gap:2px; overflow:hidden;">
+                ${typeHtml}
+                ${tagsHtml}
+            </div>
             <span class="msg-source">${esc(msg.sending_facility)}</span>
             <span class="msg-patient">${esc(msg.patient_name || msg.patient_id || '—')}</span>
             <span class="msg-time">${timeStr}</span>
@@ -354,7 +378,8 @@ function matchesSearch(msg, query) {
         (msg.patient_name || '').toLowerCase().includes(q) ||
         (msg.patient_id || '').toLowerCase().includes(q) ||
         (msg.message_control_id || '').toLowerCase().includes(q) ||
-        (msg.source_addr || '').toLowerCase().includes(q)
+        (msg.source_addr || '').toLowerCase().includes(q) ||
+        (msg.tags || []).some(t => t.toLowerCase().includes(q))
     );
 }
 
@@ -381,6 +406,23 @@ function renderDetail() {
         `${msg.message_type} — ${msg.patient_name || msg.patient_id || 'Unknown'}`;
     document.getElementById('detail-meta').textContent =
         `${msg.source_addr} | ${msg.message_control_id} | v${msg.version}`;
+
+    const tagsContainer = document.getElementById('detail-tags') || (() => {
+        const el = document.createElement('div');
+        el.id = 'detail-tags';
+        el.className = 'detail-tags-container';
+        document.getElementById('detail-meta').parentElement.appendChild(el);
+        return el;
+    })();
+
+    tagsContainer.innerHTML = (msg.tags || []).map(t =>
+        `<span class="msg-tag">${esc(t)} <span class="msg-tag-remove" onclick="removeTag('${msg.id}', '${escAttr(t)}')">×</span></span>`
+    ).join('') + `
+        <div class="msg-tag-add">
+            <input type="text" id="add-tag-input" placeholder="Add tag" onkeypress="if(event.key === 'Enter') addTag('${msg.id}', this.value)">
+            <button onclick="addTag('${msg.id}', document.getElementById('add-tag-input').value)">+</button>
+        </div>
+    `;
 
     renderTab();
 }
@@ -529,6 +571,31 @@ async function clearMessages() {
         document.getElementById('detail-meta').textContent = '';
     } catch (e) {
         console.error('Failed to clear messages:', e);
+    }
+}
+
+async function addTag(id, tag) {
+    if (!tag || !tag.trim()) return;
+    try {
+        const resp = await fetch(`/api/messages/${id}/tags`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tag: tag.trim() })
+        });
+        if (!resp.ok) throw new Error('Failed to add tag');
+    } catch (e) {
+        showToast(e.message);
+    }
+}
+
+async function removeTag(id, tag) {
+    try {
+        const resp = await fetch(`/api/messages/${id}/tags/${encodeURIComponent(tag)}`, {
+            method: 'DELETE'
+        });
+        if (!resp.ok) throw new Error('Failed to remove tag');
+    } catch (e) {
+        showToast(e.message);
     }
 }
 

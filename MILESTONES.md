@@ -45,7 +45,7 @@ Derived from [ROADMAP.md](ROADMAP.md).
 
 - [ ] **Session-based views** – each developer sees their own filter configuration, scroll position and selection
 - [ ] **Color-coded source markers** – messages visually distinguishable by sender system/IP
-- [ ] **Message tagging** – manual tagging (e.g. "Bug #1234", "Test scenario A") for attribution
+- [x] **Message tagging** – manual tagging (e.g. "Bug #1234", "Test scenario A") for attribution
 - [ ] **Bookmark/Pin** – mark important messages so they don't get lost in the stream
 
 ### Acceptance Criteria

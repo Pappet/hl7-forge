@@ -29,6 +29,8 @@ pub fn create_router(state: AppState) -> Router {
         .route("/api/messages/:id", get(get_message))
         .route("/api/search", get(search_messages))
         .route("/api/stats", get(get_stats))
+        .route("/api/messages/:id/tags", axum::routing::post(add_tag))
+        .route("/api/messages/:id/tags/:tag", axum::routing::delete(remove_tag))
         .route("/api/clear", axum::routing::post(clear_messages))
         // WebSocket
         .route("/ws", get(ws_handler))
@@ -96,6 +98,38 @@ async fn clear_messages(State(state): State<AppState>) -> impl IntoResponse {
     Json(serde_json::json!({"status": "cleared"}))
 }
 
+#[derive(Deserialize)]
+struct AddTagPayload {
+    tag: String,
+}
+
+async fn add_tag(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+    Json(payload): Json<AddTagPayload>,
+) -> impl IntoResponse {
+    let tag = payload.tag.trim().to_string();
+    if tag.is_empty() {
+        return (StatusCode::BAD_REQUEST, "Tag cannot be empty").into_response();
+    }
+    if state.store.add_tag(&id, tag).await {
+        (StatusCode::OK, "Tag added").into_response()
+    } else {
+        (StatusCode::NOT_FOUND, "Message not found or tag already exists").into_response()
+    }
+}
+
+async fn remove_tag(
+    State(state): State<AppState>,
+    Path((id, tag)): Path<(String, String)>,
+) -> impl IntoResponse {
+    if state.store.remove_tag(&id, &tag).await {
+        (StatusCode::OK, "Tag removed").into_response()
+    } else {
+        (StatusCode::NOT_FOUND, "Message or tag not found").into_response()
+    }
+}
+
 // --- WebSocket ---
 
 async fn ws_handler(ws: WebSocketUpgrade, State(state): State<AppState>) -> impl IntoResponse {
@@ -121,6 +155,15 @@ async fn handle_ws(mut socket: WebSocket, state: AppState) {
                     Ok(StoreEvent::NewMessage(summary)) => {
                         let payload = serde_json::json!({
                             "type": "new_message",
+                            "data": summary,
+                        });
+                        if socket.send(Message::Text(payload.to_string())).await.is_err() {
+                            break; // client disconnected
+                        }
+                    }
+                    Ok(StoreEvent::TagsUpdated(summary)) => {
+                        let payload = serde_json::json!({
+                            "type": "tags_updated",
                             "data": summary,
                         });
                         if socket.send(Message::Text(payload.to_string())).await.is_err() {

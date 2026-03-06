@@ -677,3 +677,86 @@ body.resizing * {
     background: var(--bg-tertiary);
     border-radius: 3px;
 }
+
+/* Tags styling */
+.msg-tags-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 2px;
+}
+
+.msg-tag-small {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-size: 9px;
+    padding: 1px 4px;
+    border-radius: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 60px;
+}
+
+.detail-tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+    align-items: center;
+}
+
+.msg-tag {
+    background: rgba(108, 140, 255, 0.1);
+    border: 1px solid var(--accent-dim);
+    color: var(--accent);
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.msg-tag-remove {
+    cursor: pointer;
+    font-weight: bold;
+    opacity: 0.7;
+    transition: opacity 0.15s;
+    padding: 0 2px;
+}
+
+.msg-tag-remove:hover {
+    opacity: 1;
+    color: var(--error);
+}
+
+.msg-tag-add {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.msg-tag-add input {
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    font-size: 11px;
+    font-family: var(--font-mono);
+    padding: 3px 6px;
+    border-radius: 4px;
+    outline: none;
+    width: 80px;
+}
+
+.msg-tag-add input:focus {
+    border-color: var(--accent);
+}
+
+.msg-tag-add button {
+    padding: 2px 6px;
+    font-size: 12px;
+    line-height: 1;
+    height: 20px;
+}
