@@ -31,6 +31,7 @@ const SOURCE_PALETTE = [
 ];
 let seenSources = new Set();
 let colorByPort = false;
+let highlightedSource = null;
 
 function hashString(str) {
     let hash = 0;
@@ -52,6 +53,13 @@ function registerSource(addr) {
 
 function toggleColorByPort(e) {
     colorByPort = e.target.checked;
+    highlightedSource = null; // reset highlight on toggle
+    renderMessageList();
+    renderSourceLegend();
+}
+
+function toggleHighlightSource(label) {
+    highlightedSource = (highlightedSource === label) ? null : label;
     renderMessageList();
     renderSourceLegend();
 }
@@ -74,7 +82,11 @@ function renderSourceLegend() {
 
     let html = sortedLabels.map(label => {
         const color = SOURCE_PALETTE[hashString(label) % SOURCE_PALETTE.length];
-        return `<span class="source-legend-item">
+        const isHighlighted = highlightedSource === label;
+        const isDimmed = highlightedSource && highlightedSource !== label;
+        const classes = `source-legend-item${isHighlighted ? ' highlighted' : ''}${isDimmed ? ' dimmed' : ''}`;
+
+        return `<span class="${classes}" onclick="toggleHighlightSource('${esc(label)}')">
             <span class="source-dot" style="background:${color};box-shadow:0 0 4px ${color}"></span>
             ${esc(label)}
         </span>`;
@@ -230,7 +242,16 @@ function renderMessageList() {
     const fragment = document.createDocumentFragment();
     for (const msg of filtered) {
         const row = document.createElement('div');
-        row.className = 'message-row' + (msg.id === selectedId ? ' selected' : '');
+
+        let rowClass = 'message-row';
+        if (msg.id === selectedId) rowClass += ' selected';
+
+        const srcKey = colorByPort ? msg.source_addr : (msg.source_addr ? msg.source_addr.split(':')[0] : '');
+        if (highlightedSource && srcKey !== highlightedSource) {
+            rowClass += ' dimmed';
+        }
+
+        row.className = rowClass;
         row.dataset.id = msg.id;
         row.onclick = () => selectMessage(msg.id);
 

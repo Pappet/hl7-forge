@@ -232,8 +232,12 @@ body.resizing * {
     border-bottom: 1px solid var(--border);
     font-size: 12px;
     cursor: pointer;
-    transition: background 0.1s;
+    transition: background 0.1s, opacity 0.15s;
     align-items: center;
+}
+
+.message-row.dimmed {
+    opacity: 0.25;
 }
 
 .message-row:hover {
@@ -359,6 +363,24 @@ body.resizing * {
     align-items: center;
     gap: 5px;
     white-space: nowrap;
+    cursor: pointer;
+    transition: opacity 0.15s, background-color 0.15s, border-color 0.15s;
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid transparent;
+}
+
+.source-legend-item:hover {
+    background-color: var(--bg-tertiary);
+}
+
+.source-legend-item.dimmed {
+    opacity: 0.4;
+}
+
+.source-legend-item.highlighted {
+    background-color: var(--bg-tertiary);
+    border-color: var(--border);
 }
 
 /* Custom CSS Toggle Switch */
