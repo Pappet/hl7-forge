@@ -99,9 +99,9 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 
 > Goal: Multiple developers work productively against the same server simultaneously without interfering with each other.
 
-- **Session-based views** — each developer sees their own filter configuration, scroll position and selection without affecting others
-- **Color-coded source markers** — messages visually distinguishable by sender system/IP
-- **Message tagging** — manual tagging of messages (e.g. "Bug #1234", "Test scenario A") for attribution during shared use
+- ~~**Session-based views**~~ — **Done** (see Added above)
+- ~~**Color-coded source markers**~~ — **Done** (see Added above)
+- ~~**Message tagging**~~ — **Done** (see Added above)
 - **Bookmark/Pin** — mark important messages so they don't get lost in the live stream
 
 ### Planned – Milestone 3: Message Analysis

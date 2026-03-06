@@ -21,7 +21,7 @@ Derived from [ROADMAP.md](ROADMAP.md).
 - [x] **Portable binary** – single `.exe` without dependencies, xcopy deployment
 - [x] **Backpressure handling** – evict oldest messages when the store is full instead of OOM
 - [x] **Memory Management** – e.g. max 512 MB RAM, automatic eviction
-- [ ] **Connection limits** – cap maximum concurrent MLLP connections
+- [x] **Connection limits** – cap maximum concurrent MLLP connections
 - [x] **Graceful shutdown** – cleanly terminate active connections on service stop
 
 ### Acceptance Criteria
@@ -43,16 +43,17 @@ Derived from [ROADMAP.md](ROADMAP.md).
 
 ### Tasks
 
-- [ ] **Session-based views** – each developer sees their own filter configuration, scroll position and selection
-- [ ] **Color-coded source markers** – messages visually distinguishable by sender system/IP
+- [x] **Session-based views** – each developer sees their own filter configuration, scroll position and selection
+- [x] **Color-coded source markers** – messages visually distinguishable by sender system/IP
 - [x] **Message tagging** – manual tagging (e.g. "Bug #1234", "Test scenario A") for attribution
 - [ ] **Bookmark/Pin** – mark important messages so they don't get lost in the stream
 
 ### Acceptance Criteria
 
-- [ ] Two browser tabs show independent filters and selections
-- [ ] Messages from different source IPs are visually distinguishable
-- [ ] Tags and bookmarks persist across page reloads (session scope)
+- [x] Two browser tabs show independent filters and selections
+- [x] Messages from different source IPs are visually distinguishable
+- [x] Tags persist across page reloads (session scope)
+- [ ] Bookmarks persist across page reloads (session scope)
 
 ---
 
