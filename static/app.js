@@ -456,78 +456,6 @@ function escAttr(str) {
         .replace(/>/g, '&gt;');
 }
 
-// --- Panel Splitter ---
-const SPLITTER_STORAGE_KEY = 'hl7forge_splitter_width';
-const SPLITTER_DEFAULT_RATIO = 0.55;
-const SPLITTER_MIN_PX = 300;
-const SPLITTER_MAX_RATIO = 0.80;
-
-function initSplitter() {
-    const splitter = document.getElementById('panel-splitter');
-    const listPanel = document.querySelector('.list-panel');
-    const container = document.querySelector('.main-container');
-
-    if (!splitter || !listPanel || !container) return;
-
-    // Restore saved width
-    const saved = localStorage.getItem(SPLITTER_STORAGE_KEY);
-    if (saved) {
-        const px = parseInt(saved, 10);
-        if (!isNaN(px) && px >= SPLITTER_MIN_PX) {
-            listPanel.style.flexBasis = px + 'px';
-        }
-    }
-
-    let dragging = false;
-
-    function onDragStart(e) {
-        e.preventDefault();
-        dragging = true;
-        document.body.classList.add('resizing');
-        document.addEventListener('mousemove', onDragMove);
-        document.addEventListener('mouseup', onDragEnd);
-        document.addEventListener('touchmove', onDragMove, { passive: false });
-        document.addEventListener('touchend', onDragEnd);
-    }
-
-    function onDragMove(e) {
-        if (!dragging) return;
-        if (e.type === 'touchmove') e.preventDefault();
-
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const rect = container.getBoundingClientRect();
-        const maxPx = rect.width * SPLITTER_MAX_RATIO;
-
-        let newWidth = clientX - rect.left;
-        newWidth = Math.max(SPLITTER_MIN_PX, Math.min(newWidth, maxPx));
-
-        listPanel.style.flexBasis = newWidth + 'px';
-    }
-
-    function onDragEnd() {
-        if (!dragging) return;
-        dragging = false;
-        document.body.classList.remove('resizing');
-        document.removeEventListener('mousemove', onDragMove);
-        document.removeEventListener('mouseup', onDragEnd);
-        document.removeEventListener('touchmove', onDragMove);
-        document.removeEventListener('touchend', onDragEnd);
-
-        // Persist width
-        const currentWidth = listPanel.getBoundingClientRect().width;
-        localStorage.setItem(SPLITTER_STORAGE_KEY, Math.round(currentWidth));
-    }
-
-    // Double-click resets to default
-    splitter.addEventListener('dblclick', () => {
-        listPanel.style.flexBasis = (SPLITTER_DEFAULT_RATIO * 100) + '%';
-        localStorage.removeItem(SPLITTER_STORAGE_KEY);
-    });
-
-    splitter.addEventListener('mousedown', onDragStart);
-    splitter.addEventListener('touchstart', onDragStart, { passive: false });
-}
-
 // --- Init ---
 // Search is purely client-side (filters the local `messages` array via matchesSearch).
 // The debounce is a forward-looking safeguard: if a future /api/search call is added,
@@ -547,7 +475,6 @@ document.addEventListener('click', (e) => {
     if (el) toggleSegment(el.dataset.segKey);
 });
 
-initSplitter();
 toggleAutoscroll(); // set initial visual state
 connectWs();
 setInterval(pollStats, 3000);
