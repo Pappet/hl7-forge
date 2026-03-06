@@ -19,12 +19,20 @@ HL7 Forge uses a beautiful, zero-dependency dark theme built on raw css variable
     *   Success (Green): `#4caf84`
     *   Warning (Yellow): `#e5a54b`
     *   Error (Red): `#e05454`
+*   **Curated Source Palette (Data/List Markers):**
+    *   `hsl(210, 90%, 65%)` (Blue), `hsl(150, 70%, 55%)` (Green)
+    *   `hsl(30,  85%, 60%)` (Orange), `hsl(280, 75%, 65%)` (Purple)
+    *   `hsl(0,   80%, 62%)` (Red), `hsl(180, 70%, 50%)` (Teal)
+    *   `hsl(50,  85%, 55%)` (Gold), `hsl(330, 75%, 62%)` (Pink)
+    *   `hsl(200, 80%, 55%)` (Sky), `hsl(100, 60%, 50%)` (Lime)
+    *   `hsl(260, 65%, 60%)` (Indigo), `hsl(15,  90%, 58%)` (Coral)
 
 **Design Principles:**
 *   **Typography:** System fonts for UI elements (`-apple-system, system-ui, sans-serif`) to feel native, and strict monospace for data/code elements (`SF Mono, Cascadia Code, Consolas, monospace`).
 *   **Micro-Animations:** Keep interactions smooth but extremely fast. Use `0.15s` transitions for background color changes on buttons and list rows.
 *   **Feedback:** Flash animations for new incoming data (e.g., a row flashing `rgba(108, 140, 255, 0.15)` and fading out over `0.6s`).
 *   **Density:** Data-heavy interfaces should be compact. Use `12px` to `13px` base font sizes with small paddings (e.g., `9px 16px` for list rows) and subtle uppercase headers for grids.
+*   **Input Controls:** Avoid native browser checkboxes or radios if they break the dark theme immersion. Use custom CSS toggle switches (e.g., `.theme-toggle` with a `.toggle-slider`) that utilize the `var(--bg-tertiary)` background, `var(--border)` for resting states, and activate with the primary `var(--accent)` color and a `rgba(108, 140, 255, 0.15)` background glow.
 
 ## 2. Frontend Architecture (The "No-Build Vanilla" Rule)
 The hallmark of HL7 Forge's frontend is its extremely fast, zero-dependency nature.
