@@ -81,8 +81,9 @@ function renderSourceLegend() {
     }).join('');
 
     html += `
-        <label class="toggle-color-port" style="margin-left:auto; cursor:pointer; display:flex; align-items:center; gap:6px; color:var(--text-muted)">
-            <input type="checkbox" onchange="toggleColorByPort(event)" ${colorByPort ? 'checked' : ''}>
+        <label class="theme-toggle" style="margin-left:auto; cursor:pointer; display:flex; align-items:center; gap:8px; color:var(--text-muted)">
+            <input type="checkbox" onchange="toggleColorByPort(event)" style="display:none" ${colorByPort ? 'checked' : ''}>
+            <span class="toggle-slider"></span>
             Color by Port
         </label>
     `;
