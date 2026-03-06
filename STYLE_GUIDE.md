@@ -25,6 +25,7 @@ HL7 Forge uses a beautiful, zero-dependency dark theme built on raw css variable
 *   **Micro-Animations:** Keep interactions smooth but extremely fast. Use `0.15s` transitions for background color changes on buttons and list rows.
 *   **Feedback:** Flash animations for new incoming data (e.g., a row flashing `rgba(108, 140, 255, 0.15)` and fading out over `0.6s`).
 *   **Density:** Data-heavy interfaces should be compact. Use `12px` to `13px` base font sizes with small paddings (e.g., `9px 16px` for list rows) and subtle uppercase headers for grids.
+*   **Input Controls:** Avoid native browser checkboxes or radios if they break the dark theme immersion. Use custom CSS toggle switches (e.g., `.theme-toggle` with a `.toggle-slider`) that utilize the `var(--bg-tertiary)` background, `var(--border)` for resting states, and activate with the primary `var(--accent)` color and a `rgba(108, 140, 255, 0.15)` background glow.
 
 ## 2. Frontend Architecture (The "No-Build Vanilla" Rule)
 The hallmark of HL7 Forge's frontend is its extremely fast, zero-dependency nature.
