@@ -30,7 +30,10 @@ pub fn create_router(state: AppState) -> Router {
         .route("/api/search", get(search_messages))
         .route("/api/stats", get(get_stats))
         .route("/api/messages/:id/tags", axum::routing::post(add_tag))
-        .route("/api/messages/:id/tags/:tag", axum::routing::delete(remove_tag))
+        .route(
+            "/api/messages/:id/tags/:tag",
+            axum::routing::delete(remove_tag),
+        )
         .route("/api/clear", axum::routing::post(clear_messages))
         // WebSocket
         .route("/ws", get(ws_handler))
@@ -115,7 +118,11 @@ async fn add_tag(
     if state.store.add_tag(&id, tag).await {
         (StatusCode::OK, "Tag added").into_response()
     } else {
-        (StatusCode::NOT_FOUND, "Message not found or tag already exists").into_response()
+        (
+            StatusCode::NOT_FOUND,
+            "Message not found or tag already exists",
+        )
+            .into_response()
     }
 }
 
