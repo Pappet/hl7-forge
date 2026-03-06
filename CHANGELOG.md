@@ -33,6 +33,7 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 - Added detailed issue comment preferences for AI agents
 
 ### Fixed
+- Fixed XSS vulnerabilities in message parsed view by escaping segment data and removing inline onclick handlers (#20)
 - Fixed UI sync on clear database
 - Fixed clippy warnings: derivable impl, char comparison pattern, `to_string` in format args, large enum variant
 

@@ -144,7 +144,7 @@ function renderMessageList() {
 
         // Task 1: red marker for messages that failed to parse
         const typeHtml = msg.parse_error
-            ? `<span class="msg-type" style="color:var(--error)" title="${esc(msg.parse_error)}">⚠ PARSE ERROR</span>`
+            ? `<span class="msg-type" style="color:var(--error)" title="${escAttr(msg.parse_error)}">⚠ PARSE ERROR</span>`
             : `<span class="msg-type">${esc(msg.message_type)}</span>`;
 
         let ackColor = '';
@@ -236,12 +236,12 @@ function renderTab() {
             return;
         }
         content.innerHTML = msg.segments.map((seg, segIdx) => {
-            const key = `${msg.message_control_id}-${segIdx}`;
+            const key = `${msg.id}-${segIdx}`;
             const collapsed = collapsedSegments.has(key);
             const icon = collapsed ? '▸' : '▾';
             return `
             <div class="segment-block">
-                <div class="segment-name" onclick="toggleSegment('${key}')">
+                <div class="segment-name" data-seg-key="${key}">
                     <span class="collapse-icon">${icon}</span>
                     ${esc(seg.name)}
                     <span class="field-count">(${seg.fields.length})</span>
@@ -251,10 +251,10 @@ function renderTab() {
                     <tbody>
                     ${seg.fields.map(f => `
                         <tr>
-                            <td class="field-idx">${seg.name}-${f.index}</td>
+                            <td class="field-idx">${esc(seg.name)}-${f.index}</td>
                             <td class="field-val">${esc(f.value) || '<span class="field-empty">empty</span>'}</td>
                             <td class="field-components">${f.components.length > 1
-                    ? f.components.map((c, i) => `<span title="${seg.name}-${f.index}.${i + 1}">${esc(c)}</span>`).join(' <span style="color:var(--text-muted)">^</span> ')
+                    ? f.components.map((c, i) => `<span title="${escAttr(seg.name + '-' + f.index + '.' + (i + 1))}">${esc(c)}</span>`).join(' <span style="color:var(--text-muted)">^</span> ')
                     : ''
                 }</td>
                         </tr>
@@ -371,6 +371,15 @@ function esc(str) {
     return div.innerHTML;
 }
 
+function escAttr(str) {
+    if (!str) return '';
+    return str.replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#x27;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
 // --- Init ---
 // Search is purely client-side (filters the local `messages` array via matchesSearch).
 // The debounce is a forward-looking safeguard: if a future /api/search call is added,
@@ -383,6 +392,11 @@ document.getElementById('search-input').addEventListener('input', (e) => {
         searchQuery = e.target.value;
         renderMessageList();
     }, 300);
+});
+
+document.addEventListener('click', (e) => {
+    const el = e.target.closest('.segment-name');
+    if (el) toggleSegment(el.dataset.segKey);
 });
 
 toggleAutoscroll(); // set initial visual state
