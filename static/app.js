@@ -29,8 +29,8 @@ const SOURCE_PALETTE = [
     'hsl(260, 65%, 60%)',   // indigo
     'hsl(15,  90%, 58%)',   // coral
 ];
-let sourceColorMap = {};  // source_addr → palette color
-let sourceColorIndex = 0;
+let seenSources = new Set();
+let colorByPort = false;
 
 function hashString(str) {
     let hash = 0;
@@ -42,28 +42,52 @@ function hashString(str) {
 
 function getSourceColor(addr) {
     if (!addr) return 'var(--text-muted)';
-    if (sourceColorMap[addr]) return sourceColorMap[addr];
-    const color = SOURCE_PALETTE[hashString(addr) % SOURCE_PALETTE.length];
-    sourceColorMap[addr] = color;
-    return color;
+    const colorKey = colorByPort ? addr : addr.split(':')[0];
+    return SOURCE_PALETTE[hashString(colorKey) % SOURCE_PALETTE.length];
+}
+
+function registerSource(addr) {
+    if (addr) seenSources.add(addr);
+}
+
+function toggleColorByPort(e) {
+    colorByPort = e.target.checked;
+    renderMessageList();
+    renderSourceLegend();
 }
 
 function renderSourceLegend() {
     const container = document.getElementById('source-legend');
     if (!container) return;
-    const sources = Object.keys(sourceColorMap);
-    if (sources.length === 0) {
+    if (seenSources.size === 0) {
         container.style.display = 'none';
         return;
     }
-    container.style.display = '';
-    container.innerHTML = sources.map(addr => {
-        const color = sourceColorMap[addr];
+    container.style.display = 'flex';
+
+    const uniqueLabels = new Set();
+    seenSources.forEach(addr => {
+        uniqueLabels.add(colorByPort ? addr : addr.split(':')[0]);
+    });
+
+    const sortedLabels = Array.from(uniqueLabels).sort();
+
+    let html = sortedLabels.map(label => {
+        const color = SOURCE_PALETTE[hashString(label) % SOURCE_PALETTE.length];
         return `<span class="source-legend-item">
             <span class="source-dot" style="background:${color};box-shadow:0 0 4px ${color}"></span>
-            ${esc(addr)}
+            ${esc(label)}
         </span>`;
     }).join('');
+
+    html += `
+        <label class="theme-toggle" style="margin-left:auto; cursor:pointer; display:flex; align-items:center; gap:8px; color:var(--text-muted)">
+            <input type="checkbox" onchange="toggleColorByPort(event)" style="display:none" ${colorByPort ? 'checked' : ''}>
+            <span class="toggle-slider"></span>
+            Color by Port
+        </label>
+    `;
+    container.innerHTML = html;
 }
 
 // --- WebSocket ---
@@ -117,7 +141,7 @@ function connectWs() {
 function addMessage(summary) {
     pendingMessages.unshift(summary);
     // Register source for color mapping
-    if (summary.source_addr) getSourceColor(summary.source_addr);
+    registerSource(summary.source_addr);
     document.getElementById('stat-total').textContent =
         messages.length + pendingMessages.length;
     if (!paused) {
@@ -152,7 +176,7 @@ async function loadMessages() {
         pendingMessages = [];
         // Register all source addresses for color mapping
         for (const m of messages) {
-            if (m.source_addr) getSourceColor(m.source_addr);
+            registerSource(m.source_addr);
         }
         document.getElementById('stat-total').textContent = messages.length;
         renderMessageList();
