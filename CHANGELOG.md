@@ -10,6 +10,8 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 ## [Unreleased]
 
 ### Added
+- **Color-coded source markers** — messages in the list show a colored dot mapped by source IP address, along with a source legend for quick identification (#25)
+- **Session-based views** — each developer sees their own filter configuration, active tab, and scroll position independent of other users via `sessionStorage` (#24)
 - **Connection limits** — configurable `max_connections` (default 100) for the MLLP server using a `tokio::sync::Semaphore`; rejected connections are counted and exposed via `/api/stats` (#6)
 - **ACK UI**: Sent ACK/NACK messages (AA, AE, AR) are now stored and viewable in an "ACK" tab (#19)
 - **Graceful shutdown** — MLLP server active connections are cleanly drained on `Ctrl+C` or service stop before exiting (#7)
