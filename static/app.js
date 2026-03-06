@@ -62,12 +62,14 @@ function toggleColorByPort(e) {
     highlightedSource = null; // reset highlight on toggle
     renderMessageList();
     renderSourceLegend();
+    saveSession();
 }
 
 function toggleHighlightSource(label) {
     highlightedSource = (highlightedSource === label) ? null : label;
     renderMessageList();
     renderSourceLegend();
+    saveSession();
 }
 
 function renderSourceLegend() {
@@ -106,6 +108,45 @@ function renderSourceLegend() {
         </label>
     `;
     container.innerHTML = html;
+}
+
+// --- Session Persistence ---
+const SESSION_KEY = 'hl7forge_session';
+const SESSION_STATE_KEY = SESSION_KEY + '_state';
+const sessionId = sessionStorage.getItem(SESSION_KEY) || crypto.randomUUID();
+sessionStorage.setItem(SESSION_KEY, sessionId);
+
+function saveSession() {
+    try {
+        sessionStorage.setItem(SESSION_STATE_KEY, JSON.stringify({
+            selectedId,
+            activeTab,
+            autoscroll,
+            searchQuery,
+            paused,
+            collapsedSegments: [...collapsedSegments],
+            colorByPort,
+            highlightedSource
+        }));
+    } catch (_) { /* sessionStorage full or unavailable */ }
+}
+
+function loadSession() {
+    try {
+        const raw = sessionStorage.getItem(SESSION_STATE_KEY);
+        if (!raw) return;
+        const saved = JSON.parse(raw);
+        if (saved.selectedId != null) selectedId = saved.selectedId;
+        if (saved.activeTab) activeTab = saved.activeTab;
+        if (typeof saved.autoscroll === 'boolean') autoscroll = saved.autoscroll;
+        if (typeof saved.searchQuery === 'string') searchQuery = saved.searchQuery;
+        if (typeof saved.paused === 'boolean') paused = saved.paused;
+        if (typeof saved.colorByPort === 'boolean') colorByPort = saved.colorByPort;
+        if (saved.highlightedSource !== undefined) highlightedSource = saved.highlightedSource;
+        if (Array.isArray(saved.collapsedSegments)) {
+            collapsedSegments = new Set(saved.collapsedSegments);
+        }
+    } catch (_) { /* corrupted or unavailable */ }
 }
 
 // --- WebSocket ---
@@ -320,6 +361,7 @@ function matchesSearch(msg, query) {
 async function selectMessage(id) {
     selectedId = id;
     renderMessageList();
+    saveSession();
 
     try {
         const resp = await fetch(`/api/messages/${id}`);
@@ -349,6 +391,7 @@ function switchTab(tab) {
         t.classList.toggle('active', t.dataset.tab === tab);
     });
     renderTab();
+    saveSession();
 }
 
 function renderTab() {
@@ -425,6 +468,7 @@ function toggleSegment(key) {
         collapsedSegments.add(key);
     }
     renderTab();
+    saveSession();
 }
 
 // --- Actions ---
@@ -433,6 +477,7 @@ function toggleAutoscroll() {
     const btn = document.getElementById('btn-autoscroll');
     btn.style.borderColor = autoscroll ? 'var(--success)' : 'var(--border)';
     btn.style.color = autoscroll ? 'var(--success)' : 'var(--text-primary)';
+    saveSession();
 }
 
 // Task 2: pause/resume live updates
@@ -449,6 +494,7 @@ function togglePause() {
         btn.style.color = '';
         flushAndRender();
     }
+    saveSession();
 }
 
 async function exportMessages() {
@@ -584,6 +630,10 @@ function initSplitter() {
 }
 
 // --- Init ---
+
+// Restore session state BEFORE first render so restored values take effect
+loadSession();
+
 // Search is purely client-side (filters the local `messages` array via matchesSearch).
 // The debounce is a forward-looking safeguard: if a future /api/search call is added,
 // rapid keystrokes would otherwise hammer the server and cause RwLock contention on the
@@ -594,6 +644,7 @@ document.getElementById('search-input').addEventListener('input', (e) => {
     _searchDebounceTimer = setTimeout(() => {
         searchQuery = e.target.value;
         renderMessageList();
+        saveSession();
     }, 300);
 });
 
@@ -602,7 +653,27 @@ document.addEventListener('click', (e) => {
     if (el) toggleSegment(el.dataset.segKey);
 });
 
+// Apply restored session state to UI elements
+(function applyRestoredSession() {
+    if (searchQuery) document.getElementById('search-input').value = searchQuery;
+
+    if (activeTab !== 'parsed') {
+        document.querySelectorAll('.detail-tab').forEach(t => {
+            t.classList.toggle('active', t.dataset.tab === activeTab);
+        });
+    }
+
+    if (paused) {
+        const btn = document.getElementById('btn-pause');
+        btn.textContent = '▶ Live';
+        btn.style.borderColor = 'var(--warning)';
+        btn.style.color = 'var(--warning)';
+    }
+})();
+
 initSplitter();
-toggleAutoscroll(); // set initial visual state
+// Set autoscroll visual state — toggleAutoscroll flips the value, so pre-flip it
+autoscroll = !autoscroll;
+toggleAutoscroll();
 connectWs();
 setInterval(pollStats, 3000);
