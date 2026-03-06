@@ -8,6 +8,12 @@ let searchQuery = '';
 let ws = null;
 let collapsedSegments = new Set();
 
+// WebSocket reconnection with exponential backoff
+const WS_RECONNECT_INITIAL = 1000;   // 1 second
+const WS_RECONNECT_MAX = 60000;  // 60 seconds
+const WS_RECONNECT_MULT = 2;      // double each time
+let wsReconnectDelay = WS_RECONNECT_INITIAL;
+
 // Task 2: batching state
 let paused = false;
 let pendingMessages = [];
@@ -108,14 +114,18 @@ function connectWs() {
     ws = new WebSocket(`${proto}//${location.host}/ws`);
 
     ws.onopen = () => {
+        wsReconnectDelay = WS_RECONNECT_INITIAL; // reset on success
         document.getElementById('ws-dot').className = 'stat-dot green';
         document.getElementById('ws-status').textContent = 'Connected';
     };
 
     ws.onclose = () => {
         document.getElementById('ws-dot').className = 'stat-dot red';
-        document.getElementById('ws-status').textContent = 'Disconnected';
-        setTimeout(connectWs, 2000);
+        const jitter = wsReconnectDelay * (0.75 + Math.random() * 0.5);
+        const delaySec = Math.round(jitter / 1000);
+        document.getElementById('ws-status').textContent = `Reconnecting in ${delaySec}s\u2026`;
+        setTimeout(connectWs, jitter);
+        wsReconnectDelay = Math.min(wsReconnectDelay * WS_RECONNECT_MULT, WS_RECONNECT_MAX);
     };
 
     ws.onerror = (event) => {
