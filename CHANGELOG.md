@@ -10,6 +10,7 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 ## [Unreleased]
 
 ### Added
+- **Resizable panel splitter** — drag the border between message list and detail panel to resize; double-click to reset; width persists across sessions via localStorage (#4)
 - **Color-coded source markers** — messages in the list show a colored dot mapped by source IP address, along with a source legend for quick identification (#25)
 - **Session-based views** — each developer sees their own filter configuration, active tab, and scroll position independent of other users via `sessionStorage` (#24)
 - **Connection limits** — configurable `max_connections` (default 100) for the MLLP server using a `tokio::sync::Semaphore`; rejected connections are counted and exposed via `/api/stats` (#6)
