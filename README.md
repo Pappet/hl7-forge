@@ -35,7 +35,7 @@ Designed as a drop-in replacement for HL7 Inspector: runs as a central service, 
 | 🔎 **Search & Filter** | By message type, patient name, facility, message control ID, source IP |
 | 💾 **Smart Store** | In-memory, 100k message capacity with automatic 10% eviction |
 | 📥 **JSON Export** | Export full message list with one click |
-| 🛡️ **Hardened** | 10 MB payload cap, 60s read timeout, graceful shutdown on `Ctrl+C` |
+| 🛡️ **Hardened** | 10 MB payload cap, 60s read timeout, configurable connection limits, graceful shutdown |
 | 📦 **Single Binary** | Frontend embedded via `rust-embed` — zero runtime dependencies |
 
 ---

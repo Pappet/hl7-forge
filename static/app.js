@@ -108,8 +108,18 @@ async function pollStats() {
         if (!resp.ok) return;
         const stats = await resp.json();
         document.getElementById('stat-total').textContent = stats.total_messages;
-        document.getElementById('stat-connections').textContent = stats.active_connections;
+        document.getElementById('stat-connections').textContent =
+            `${stats.active_connections} / ${stats.max_connections}`;
         document.getElementById('stat-errors').textContent = stats.parse_errors;
+        const rejectedEl = document.getElementById('stat-rejected');
+        if (rejectedEl) {
+            if (stats.rejected_connections > 0) {
+                rejectedEl.parentElement.style.display = '';
+                rejectedEl.textContent = stats.rejected_connections;
+            } else {
+                rejectedEl.parentElement.style.display = 'none';
+            }
+        }
         if (stats.mllp_port) {
             document.getElementById('mllp-port').textContent = stats.mllp_port;
         }

@@ -7,6 +7,7 @@ use std::sync::Arc;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
 use tokio::sync::watch;
+use tokio::sync::Semaphore;
 use tokio::time::timeout;
 use tracing::{debug, info, warn};
 
@@ -22,6 +23,7 @@ pub struct MllpStats {
     pub parsed_ok: Arc<AtomicU64>,
     pub parse_errors: Arc<AtomicU64>,
     pub active_connections: Arc<AtomicU64>,
+    pub rejected_connections: Arc<AtomicU64>,
 }
 
 impl MllpStats {
@@ -31,6 +33,7 @@ impl MllpStats {
             parsed_ok: Arc::new(AtomicU64::new(0)),
             parse_errors: Arc::new(AtomicU64::new(0)),
             active_connections: Arc::new(AtomicU64::new(0)),
+            rejected_connections: Arc::new(AtomicU64::new(0)),
         }
     }
 }
@@ -43,9 +46,14 @@ pub async fn start_mllp_server(
     mut shutdown: watch::Receiver<bool>,
     config: MllpConfig,
 ) -> anyhow::Result<()> {
+    let max_connections = config.max_connections;
+    let semaphore = Arc::new(Semaphore::new(max_connections));
     let config = Arc::new(config);
     let listener = TcpListener::bind(bind_addr).await?;
-    info!("MLLP server listening on {}", bind_addr);
+    info!(
+        "MLLP server listening on {} (max {} connections)",
+        bind_addr, max_connections
+    );
 
     loop {
         tokio::select! {
@@ -62,16 +70,31 @@ pub async fn start_mllp_server(
                 let peer = peer_addr.to_string();
                 let shutdown_clone = shutdown.clone();
 
-                stats.active_connections.fetch_add(1, Ordering::Relaxed);
-                info!("New MLLP connection from {}", peer);
+                // Try to acquire a connection permit
+                match Arc::clone(&semaphore).try_acquire_owned() {
+                    Ok(permit) => {
+                        stats.active_connections.fetch_add(1, Ordering::Relaxed);
+                        info!("New MLLP connection from {}", peer);
 
-                tokio::spawn(async move {
-                    if let Err(e) = handle_connection(socket, &peer, &store, &stats, &config, shutdown_clone).await {
-                        warn!("Connection error from {}: {}", peer, e);
+                        tokio::spawn(async move {
+                            if let Err(e) = handle_connection(socket, &peer, &store, &stats, &config, shutdown_clone).await {
+                                warn!("Connection error from {}: {}", peer, e);
+                            }
+                            stats.active_connections.fetch_sub(1, Ordering::Relaxed);
+                            info!("MLLP connection closed: {}", peer);
+                            drop(permit); // Release the semaphore permit
+                        });
                     }
-                    stats.active_connections.fetch_sub(1, Ordering::Relaxed);
-                    info!("MLLP connection closed: {}", peer);
-                });
+                    Err(_) => {
+                        stats.rejected_connections.fetch_add(1, Ordering::Relaxed);
+                        warn!(
+                            "Connection from {} rejected: max connections ({}) reached",
+                            peer, max_connections
+                        );
+                        // Socket is dropped here, closing the TCP connection
+                        drop(socket);
+                    }
+                }
             }
         }
     }
@@ -253,5 +276,15 @@ mod tests {
         assert_eq!(wrapped[0], MLLP_START);
         assert_eq!(wrapped[wrapped.len() - 2], MLLP_END_1);
         assert_eq!(wrapped[wrapped.len() - 1], MLLP_END_2);
+    }
+
+    #[test]
+    fn test_mllp_stats_new() {
+        let stats = MllpStats::new();
+        assert_eq!(stats.received.load(Ordering::Relaxed), 0);
+        assert_eq!(stats.parsed_ok.load(Ordering::Relaxed), 0);
+        assert_eq!(stats.parse_errors.load(Ordering::Relaxed), 0);
+        assert_eq!(stats.active_connections.load(Ordering::Relaxed), 0);
+        assert_eq!(stats.rejected_connections.load(Ordering::Relaxed), 0);
     }
 }
