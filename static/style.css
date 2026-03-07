@@ -226,7 +226,7 @@ body.resizing * {
 
 .message-row {
     display: grid;
-    grid-template-columns: 12px 100px 90px 1fr 140px 60px 40px;
+    grid-template-columns: 12px 100px 90px 1fr 140px 60px 40px 24px;
     gap: 12px;
     padding: 9px 16px;
     border-bottom: 1px solid var(--border);
@@ -298,7 +298,7 @@ body.resizing * {
 
 .list-header {
     display: grid;
-    grid-template-columns: 12px 100px 90px 1fr 140px 60px 40px;
+    grid-template-columns: 12px 100px 90px 1fr 140px 60px 40px 24px;
     gap: 12px;
     padding: 7px 16px;
     font-size: 10px;
@@ -759,4 +759,44 @@ body.resizing * {
     font-size: 12px;
     line-height: 1;
     height: 20px;
+}
+
+/* Bookmark star in message row */
+.msg-bookmark {
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--text-muted);
+    transition: color 0.15s;
+    text-align: center;
+    user-select: none;
+}
+
+.msg-bookmark:hover {
+    color: var(--warning);
+}
+
+.msg-bookmark.active {
+    color: var(--warning);
+}
+
+/* Bookmark button in detail view */
+.detail-bookmark-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 14px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+}
+
+.detail-bookmark-btn:hover {
+    color: var(--warning);
+    border-color: var(--warning);
+}
+
+.detail-bookmark-btn.active {
+    color: var(--warning);
+    border-color: var(--warning);
 }

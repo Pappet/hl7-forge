@@ -2,6 +2,17 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Git Workflow — Branch + PR Required
+
+**Never commit directly to `main` or to an unrelated branch.** For every task:
+
+1. **Create a feature branch** from `main` with a descriptive name (e.g., `feat/bookmark-messages`, `fix/eviction-bug`).
+2. **Make all commits on that branch.**
+3. **Create a Pull Request** to `main` using `gh pr create` when the work is complete and all checks pass.
+4. Include the related issue number in the PR body (e.g., `Closes #27`).
+
+Do not push changes without a dedicated branch and PR — even for small fixes.
+
 ## Build & Run Commands
 
 ```bash

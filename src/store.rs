@@ -3,7 +3,7 @@ use crate::hl7::types::{Hl7Message, Hl7MessageSummary};
 use std::collections::VecDeque;
 use std::sync::Arc;
 use tokio::sync::{broadcast, RwLock};
-use tracing::info;
+use tracing::{info, warn};
 
 const BROADCAST_CAPACITY: usize = 4096;
 
@@ -12,6 +12,7 @@ const BROADCAST_CAPACITY: usize = 4096;
 pub enum StoreEvent {
     NewMessage(Box<Hl7MessageSummary>),
     TagsUpdated(Box<Hl7MessageSummary>),
+    BookmarkToggled(Box<Hl7MessageSummary>),
     Cleared,
 }
 
@@ -50,23 +51,40 @@ impl MessageStore {
         let mut inner = self.inner.write().await;
 
         // Evict oldest 10% when either size or count limit is breached
+        // Bookmarked messages are protected from eviction
         if inner.current_bytes >= inner.max_bytes || inner.messages.len() >= inner.capacity {
-            let drain_count = inner.messages.len() / 10;
-            let freed_bytes: usize = inner
-                .messages
-                .iter()
-                .take(drain_count)
-                .map(|m| m.raw.len())
-                .sum();
-            inner.messages.drain(..drain_count);
-            inner.current_bytes = inner.current_bytes.saturating_sub(freed_bytes);
-            info!(
-                "Evicted {} messages from store ({} MB freed, store now {} messages / {} MB)",
-                drain_count,
-                freed_bytes / 1024 / 1024,
-                inner.messages.len(),
-                inner.current_bytes / 1024 / 1024,
-            );
+            let target_count = inner.messages.len() / 10;
+            let mut evict_indices: Vec<usize> = Vec::with_capacity(target_count);
+            for (i, m) in inner.messages.iter().enumerate() {
+                if evict_indices.len() >= target_count {
+                    break;
+                }
+                if !m.bookmarked {
+                    evict_indices.push(i);
+                }
+            }
+            if evict_indices.is_empty() {
+                warn!(
+                    "Eviction triggered but all candidate messages are bookmarked — skipping eviction"
+                );
+            } else {
+                let freed_bytes: usize = evict_indices
+                    .iter()
+                    .map(|&i| inner.messages[i].raw.len())
+                    .sum();
+                // Remove in reverse order to keep indices valid
+                for &i in evict_indices.iter().rev() {
+                    inner.messages.remove(i);
+                }
+                inner.current_bytes = inner.current_bytes.saturating_sub(freed_bytes);
+                info!(
+                    "Evicted {} messages from store ({} MB freed, store now {} messages / {} MB)",
+                    evict_indices.len(),
+                    freed_bytes / 1024 / 1024,
+                    inner.messages.len(),
+                    inner.current_bytes / 1024 / 1024,
+                );
+            }
         }
 
         inner.current_bytes += msg.raw.len();
@@ -170,6 +188,20 @@ impl MessageStore {
         false
     }
 
+    /// Toggle bookmark on a message, returns the new bookmark state or None if not found
+    pub async fn toggle_bookmark(&self, id: &str) -> Option<bool> {
+        let mut inner = self.inner.write().await;
+        if let Some(msg) = inner.messages.iter_mut().find(|m| m.id == id) {
+            msg.bookmarked = !msg.bookmarked;
+            let new_state = msg.bookmarked;
+            let summary = Hl7MessageSummary::from(&*msg);
+            drop(inner);
+            let _ = self.tx.send(StoreEvent::BookmarkToggled(Box::new(summary)));
+            return Some(new_state);
+        }
+        None
+    }
+
     /// Clear all messages
     pub async fn clear(&self) {
         let mut inner = self.inner.write().await;
@@ -177,5 +209,89 @@ impl MessageStore {
         inner.current_bytes = 0;
         info!("Message store cleared");
         let _ = self.tx.send(StoreEvent::Cleared);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::config::StoreConfig;
+
+    fn make_store(max_messages: usize) -> MessageStore {
+        MessageStore::new(StoreConfig {
+            max_messages,
+            max_memory_mb: 512,
+        })
+    }
+
+    fn make_msg(id: &str) -> Hl7Message {
+        let mut msg = Hl7Message::new_empty(format!("raw-{id}"), "127.0.0.1:5000".into());
+        msg.id = id.to_string();
+        msg
+    }
+
+    #[tokio::test]
+    async fn test_toggle_bookmark_on_off() {
+        let store = make_store(100);
+        let msg = make_msg("a");
+        store.insert(msg).await;
+
+        // Toggle on
+        let result = store.toggle_bookmark("a").await;
+        assert_eq!(result, Some(true));
+        let fetched = store.get_by_id("a").await.unwrap();
+        assert!(fetched.bookmarked);
+
+        // Toggle off
+        let result = store.toggle_bookmark("a").await;
+        assert_eq!(result, Some(false));
+        let fetched = store.get_by_id("a").await.unwrap();
+        assert!(!fetched.bookmarked);
+    }
+
+    #[tokio::test]
+    async fn test_toggle_bookmark_not_found() {
+        let store = make_store(100);
+        assert_eq!(store.toggle_bookmark("nonexistent").await, None);
+    }
+
+    #[tokio::test]
+    async fn test_toggle_bookmark_broadcasts_event() {
+        let store = make_store(100);
+        let msg = make_msg("b");
+        store.insert(msg).await;
+
+        let mut rx = store.subscribe();
+        store.toggle_bookmark("b").await;
+
+        let event = rx.recv().await.unwrap();
+        match event {
+            StoreEvent::BookmarkToggled(summary) => {
+                assert_eq!(summary.id, "b");
+                assert!(summary.bookmarked);
+            }
+            _ => panic!("Expected BookmarkToggled event"),
+        }
+    }
+
+    #[tokio::test]
+    async fn test_bookmarked_message_survives_eviction() {
+        let store = make_store(10);
+
+        // Insert 10 messages, bookmark the first one
+        for i in 0..10 {
+            let msg = make_msg(&format!("msg-{i}"));
+            store.insert(msg).await;
+        }
+        store.toggle_bookmark("msg-0").await;
+
+        // Insert one more to trigger eviction (10% = 1 message evicted)
+        let msg = make_msg("trigger");
+        store.insert(msg).await;
+
+        // Bookmarked message should survive
+        assert!(store.get_by_id("msg-0").await.is_some());
+        // The first non-bookmarked message should be evicted
+        assert!(store.get_by_id("msg-1").await.is_none());
     }
 }
