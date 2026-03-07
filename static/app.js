@@ -499,7 +499,7 @@ function renderTab() {
                     <tbody>
                     ${seg.fields.map(f => `
                         <tr>
-                            <td class="field-idx">${esc(seg.name)}-${f.index}</td>
+                            <td class="field-idx ${f.description ? 'has-tooltip' : ''}" ${f.description ? `data-desc="${escAttr(seg.name + '-' + f.index + ': ' + f.description)}"` : ''}>${esc(seg.name)}-${f.index}</td>
                             <td class="field-val">${esc(f.value) || '<span class="field-empty">empty</span>'}</td>
                             <td class="field-components">${f.components.length > 1
                     ? f.components.map((c, i) => `<span title="${escAttr(seg.name + '-' + f.index + '.' + (i + 1))}">${esc(c)}</span>`).join(' <span style="color:var(--text-muted)">^</span> ')

@@ -98,14 +98,15 @@ This document tracks all milestones and planned features. Each milestone lists i
 
 ### Tasks
 
-- [ ] **HL7 field dictionary** — hover tooltips with field descriptions (e.g. "PID-5: Patient Name") based on HL7 v2.5/v2.6 spec
+- [x] **HL7 field dictionary** — hover tooltips with field descriptions (e.g. "PID-5: Patient Name") based on embedded HL7 v2.5.1 spec
+- [ ] **Dictionary Version Support** — verify what HL7 versions should be officially supported by the Forge and how to distribute/toggle them
 - [ ] **Message type detection** — ADT, ORM, ORU, SIU, MDM etc. with short description and typical segments
 - [ ] **Validation** — check required fields per message type, show warnings (e.g. "PID-3 missing in ADT^A01")
 - [ ] **Segment diff** — compare two messages side by side, highlight differences
 
 ### Acceptance Criteria
 
-- [ ] Hovering over an HL7 field shows its name and description from the spec
+- [x] Hovering over an HL7 field shows its name and description from the spec
 - [ ] Validation warnings appear for missing required fields
 - [ ] Diff view shows field differences between two messages highlighted in color
 

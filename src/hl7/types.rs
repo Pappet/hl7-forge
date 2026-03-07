@@ -39,6 +39,7 @@ pub struct Hl7Field {
     pub index: usize,
     pub value: String,
     pub components: Vec<String>,
+    pub description: Option<String>,
 }
 
 /// Separators / encoding characters from MSH-1 and MSH-2

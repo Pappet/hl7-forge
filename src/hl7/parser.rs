@@ -86,6 +86,14 @@ pub fn parse_message(raw: &str, source_addr: &str) -> Result<Hl7Message, String>
         }
     }
 
+    // Second pass: inject field descriptions from the embedded dictionary
+    let version = if msg.version.is_empty() {
+        "2.5.1"
+    } else {
+        &msg.version
+    };
+    crate::dictionary::inject_descriptions(&mut msg.segments, version);
+
     Ok(msg)
 }
 
@@ -138,6 +146,7 @@ fn parse_segment(raw: &str, delimiters: Delimiters) -> Hl7Segment {
             index: i,
             value: part.to_string(),
             components,
+            description: None,
         });
     }
 
@@ -154,6 +163,7 @@ fn parse_segment(raw: &str, delimiters: Delimiters) -> Hl7Segment {
                 index: 1,
                 value: sep.to_string(),
                 components: vec![sep.to_string()],
+                description: None,
             },
         );
     }
