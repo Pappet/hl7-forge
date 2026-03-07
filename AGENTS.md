@@ -180,18 +180,18 @@ Agents should make decisions with this context in mind:
 
 ---
 
-## Planned Work (Milestone 1 — Do Not Implement Speculatively)
+## Planned Work — Do Not Implement Speculatively
 
 The following features are planned but not yet implemented. Do not add them unless explicitly asked:
 
-- `hl7-forge.toml` configuration file
-- Windows Service integration / graceful shutdown on service stop
-- Connection limits (max concurrent MLLP connections)
-- Configurable memory budget (currently hardcoded `MAX_STORE_BYTES`)
+- HL7 field dictionary tooltips (Milestone 3)
+- Message type detection and validation (Milestone 3)
+- Segment diff view (Milestone 3)
+- Message replay / editor (Milestone 4)
 - SQLite persistence (Milestone 5)
 - FHIR R4 mapping (Milestone 6)
 
-Full roadmap in `ROADMAP.md` and `MILESTONES.md`.
+Full roadmap in `ROADMAP.md`.
 
 ---
 

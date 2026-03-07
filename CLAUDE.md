@@ -129,14 +129,13 @@ Key frontend behaviors:
 | DOM rendering | No prepend logic (batching at 250ms is sufficient) |
 | Dependencies | Minimize new crates; check `Cargo.toml` before adding |
 
-## Current Milestone: Milestone 1 — Team-Ready Server
+## Current Milestone: Milestone 3 — Message Analysis
 
-Next planned work (see `MILESTONES.md` for full details):
-- `hl7-forge.toml` configuration file (ports, memory limits, log level)
-- Windows Service support (graceful start/stop)
-- Graceful shutdown (drain in-flight MLLP connections on `Ctrl+C` / service stop)
-- Connection limits (max concurrent MLLP connections)
-- Memory budget via config (currently hardcoded `MAX_STORE_BYTES`)
+Next planned work (see `ROADMAP.md` for full details):
+- HL7 field dictionary (hover tooltips with field descriptions)
+- Message type detection with descriptions
+- Validation (required fields per message type)
+- Segment diff (compare two messages side by side)
 
 Do not implement features from later milestones speculatively.
 
