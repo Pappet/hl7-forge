@@ -10,14 +10,14 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 ## [Unreleased]
 
 ### Added
-- **Bookmark/pin messages** — star icon (★/☆) on each message row to bookmark important messages; "★ Bookmarks" filter button in header; bookmarked messages are protected from eviction; state syncs across tabs via WebSocket (#27)
+- **Bookmark/pin messages** — star icon on each message row to bookmark important messages; bookmarked messages are protected from eviction; state syncs across tabs via WebSocket (#27)
 - **Message tagging** — manual tagging of messages for attribution (e.g., "Bug #1234"); tags filterable via search and synchronized across clients (#26)
-- **WebSocket exponential backoff** — reconnection uses exponential backoff (1s → 2s → 4s → … → 60s cap) with ±25% jitter to prevent thundering herd; status bar shows reconnection countdown (#12)
+- **WebSocket exponential backoff** — reconnection uses exponential backoff (1s to 60s cap) with jitter to prevent thundering herd; status bar shows reconnection countdown (#12)
 - **Resizable panel splitter** — drag the border between message list and detail panel to resize; double-click to reset; width persists across sessions via localStorage (#4)
 - **Color-coded source markers** — messages in the list show a colored dot mapped by source IP address (with an optional "Color by Port" toggle), along with a source legend for quick identification (#25)
 - **Session-based views** — each developer sees their own filter configuration, active tab, and scroll position independent of other users via `sessionStorage` (#24)
 - **Connection limits** — configurable `max_connections` (default 100) for the MLLP server using a `tokio::sync::Semaphore`; rejected connections are counted and exposed via `/api/stats` (#6)
-- **ACK UI**: Sent ACK/NACK messages (AA, AE, AR) are now stored and viewable in an "ACK" tab (#19)
+- **ACK UI** — sent ACK/NACK messages (AA, AE, AR) are now stored and viewable in an "ACK" tab (#19)
 - **Graceful shutdown** — MLLP server active connections are cleanly drained on `Ctrl+C` or service stop before exiting (#7)
 - **Configuration file** (`hl7-forge.toml`) — ports, memory limits, log level, MLLP timeouts and max message size configurable without recompilation
   - Load priority: config file (next to binary or CWD) → environment variables (`MLLP_PORT`, `WEB_PORT`, `RUST_LOG`) → built-in defaults
@@ -38,6 +38,7 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 - Translated all German text to English across the codebase
 - Updated ROADMAP with completed Phase 1 tasks, specific sections, and guidelines
 - Added detailed issue comment preferences for AI agents
+- **Documentation refactor** — merged MILESTONES.md into ROADMAP.md; separated concerns across README (landing page), ROADMAP (planning), CHANGELOG (history), STYLE_GUIDE (rules), PROJECT_OVERVIEW (architecture + decisions)
 
 ### Fixed
 - Fixed XSS vulnerabilities in message parsed view by escaping segment data and removing inline onclick handlers (#20)
@@ -50,6 +51,8 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 
 | Commit | Description |
 |--------|-------------|
+| [`5e4c4ec`](https://github.com/Pappet/hl7-forge/commit/5e4c4ec7a360c0b9bb249cc7c138454ca99a3a52) | `docs:` Remove Windows Service tasks from Milestone 1, add issue-based branch naming |
+| [`70723f5`](https://github.com/Pappet/hl7-forge/commit/70723f5bffd6a9a33cd682ee8408c87bfb8e38a1) | `docs:` Refactor documentation structure, merge MILESTONES.md into ROADMAP.md |
 | [`5cc749f`](https://github.com/Pappet/hl7-forge/commit/5cc749fe76e9f29c6827d888b702ff09dba61e0c) | `feat:` Bookmark/pin messages with eviction protection (#27) |
 
 #### 2026-03-06
@@ -87,70 +90,6 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 | [`8128ab4`](https://github.com/Pappet/hl7-forge/commit/8128ab456f0a0ff23c3739481fd2194a8934a3aa) | `docs:` add detailed issue comment preferences for AI agents |
 | [`a1837a4`](https://github.com/Pappet/hl7-forge/commit/a1837a45d7af2898ee1f693e78d509b56688f51a) | `fix:` Fix UI sync on clear database |
 | [`09121a5`](https://github.com/Pappet/hl7-forge/commit/09121a50a319c494c233f050df7eb561aa4c49f0) | `docs:` translate all German text to English across the codebase |
-
-### Planned – Milestone 1: Team-Ready Server
-
-> Goal: HL7 Forge runs stably as a Windows service on the dev server, is configurable without recompilation, and holds up under high load.
-
-- ~~**Configuration file** (`hl7-forge.toml`)~~ — **Done** (see Added above)
-- ~~**File Logging**~~ — **Done** (standard rotating log files)
-- **Windows Service** — installable via `sc create` / NSSM, automatic start on server reboot
-- **Windows Event Log integration** — startup banner in Windows Event Log for ops monitoring
-- ~~**Portable binary**~~ — **Done** (single `.exe` without runtime dependencies, xcopy deployment)
-- ~~**Backpressure handling**~~ — **Done** (evict oldest messages when the store is full instead of OOM)
-- ~~**Memory budget**~~ — **Done** (configurable via `hl7-forge.toml` `[store] max_memory_mb`)
-- ~~**Connection limits**~~ — **Done** (configurable `max_connections`, see Added above)
-- ~~**Graceful shutdown**~~ — **Done** (see Added above)
-
-### Planned – Milestone 2: Multi-User Experience
-
-> Goal: Multiple developers work productively against the same server simultaneously without interfering with each other.
-
-- ~~**Session-based views**~~ — **Done** (see Added above)
-- ~~**Color-coded source markers**~~ — **Done** (see Added above)
-- ~~**Message tagging**~~ — **Done** (see Added above)
-- **Bookmark/Pin** — mark important messages so they don't get lost in the live stream
-
-### Planned – Milestone 3: Message Analysis
-
-> Goal: Developers understand HL7 messages directly in the UI — field names, validation, diff.
-
-- **HL7 field dictionary** — hover tooltips with field descriptions (e.g. "PID-5: Patient Name") based on HL7 v2.5/v2.6 spec
-- **Message type detection** — ADT, ORM, ORU, SIU, MDM etc. with short description and typical segments
-- **Validation** — check required fields per message type, show warnings (e.g. "PID-3 missing in ADT^A01")
-- **Segment diff** — compare two messages side by side, highlight differences in color
-
-### Planned – Milestone 4: Workflow & Testing
-
-> Goal: Rapid testing against Orchestra — send, edit, replay messages directly from the UI.
-
-- **Message replay** — resend stored messages to a configurable target address/port (MLLP client)
-- **Test message generator** — templates for ADT^A01, ORM^O01, ORU^R01 with editable fields
-- **Message editor** — edit raw HL7 in the UI and send directly
-- **Auto-refresh trigger** — desktop notification on incoming messages (optional)
-
-### Planned – Milestone 5: Persistence
-
-> Goal: Messages survive server restarts.
-
-- **SQLite backend** — optional persistence, enabled via `hl7-forge.toml`
-- **Retention policy** — automatic deletion after X days or X messages
-- **Extended export** — CSV export, HL7 file export (`.hl7`), filtered exports
-
-### Planned – Milestone 6: FHIR & Monitoring
-
-- **HL7 v2 → FHIR R4 mapping** — display ADT messages as FHIR bundles (Patient, Encounter)
-- **FHIR JSON view** — additional tab in the detail view
-- **FHIR HTTP endpoint** — REST endpoint for FHIR bundles/resources
-- **Dashboard view** — messages per minute/hour, type distribution, error rate as charts
-- **Latency tracking** — time difference between MSH-7 (message timestamp) and receive time
-- **Alerting** — configurable warnings at error rate > X% or message gap > Y minutes
-- **Health endpoint** — `/api/health` for monitoring tools (Zabbix, PRTG etc.)
-- **Multi-port listener** — multiple MLLP ports simultaneously (e.g. 2575 for ADT, 2576 for ORM)
-- **TLS support** — encrypted MLLP connections (MLLP/S)
-- **ACK configuration** — customizable ACK responses (e.g. always send NAK to test retry logic)
-- **Regex filter** — extended search with regular expressions across all fields
-- **Dark/Light theme toggle**
 
 ---
 
@@ -220,7 +159,7 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 - Extraction of key MSH fields: message type, trigger event, sending/receiving facility & application, message ID, timestamp
 - MSH field indices correctly aligned with the HL7 standard (+1 offset)
 - PID segment extraction: patient ID (PID-3), patient name (PID-5)
-- Robust error handling: parse errors result in a `⚠ PARSE ERROR` marker in the UI rather than a server crash; failed messages are stored in the store
+- Robust error handling: parse errors result in a PARSE ERROR marker in the UI rather than a server crash; failed messages are stored in the store
 - Structured segment and field representation (`Hl7Message`, `Hl7Segment`, `Hl7Field`, `Delimiters`)
 
 #### In-Memory Message Store
@@ -242,13 +181,13 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 #### Web UI (Embedded SPA, Vanilla JS)
 - **Real-time message list** via WebSocket — new messages appear instantly without page reload
 - **Batch rendering** every 250 ms — prevents DOM freezing at high message volumes
-- **Pause / Live mode** — `⏸` button buffers incoming messages; `▶` button flushes the buffer and returns to live mode
+- **Pause / Live mode** — button buffers incoming messages; flush and return to live mode
 - **Toast notifications** — subtle in-app notifications for relevant events
 - **Detail view** with three tabs: `Parsed`, `Raw`, `JSON`
 - **Client-side search filter** (debounced, 300 ms) — filter by message type, patient, facility, message control ID
 - **JSON export** — download individual messages as `.json`
 - Dark theme with CSS variables
-- `⚠ PARSE ERROR` marker in red for failed messages
+- PARSE ERROR marker in red for failed messages
 
 #### Build & Deployment
 - Single Rust binary, no external runtime dependencies
@@ -263,25 +202,6 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 - Route for the message detail view corrected from `{id}` to `:id` (correct Axum syntax) (`f33ccfc`)
 - Compiler warnings (`dead_code`, `unused_variables`) cleaned up (`f33ccfc`)
 - ACK storm prevention: incoming ACK messages are detected and never ACK'd back (`041cb04`)
-
-### Technical Stack
-
-| Component         | Crate / Technology              | Version |
-|-------------------|---------------------------------|---------|
-| Async runtime     | `tokio`                         | 1.x     |
-| Web framework     | `axum`                          | 0.7     |
-| HTTP middleware   | `tower-http` (CORS, static FS)  | 0.5     |
-| Serialization     | `serde` + `serde_json`          | 1.x     |
-| Timestamps        | `chrono`                        | 0.4     |
-| UUID generation   | `uuid` (v4)                     | 1.x     |
-| Logging           | `tracing` + `tracing-subscriber`| 0.1/0.3 |
-| Static files      | `rust-embed` + `mime_guess`     | 8.x/2.x |
-| Error handling    | `anyhow`                        | 1.x     |
-| Frontend          | Vanilla JS / HTML / CSS         | —       |
-
-### Known Issues
-
-- None
 
 ---
 

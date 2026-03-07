@@ -17,7 +17,7 @@ HL7 Forge is a single-binary MLLP server with an embedded real-time web UI for i
 
 **Never commit directly to `main` or to an unrelated branch.** For every task:
 
-1. **Create a feature branch** from `main` with a descriptive name (e.g., `feat/bookmark-messages`, `fix/eviction-bug`).
+1. **Create a feature branch** from `main` named after the issue (e.g., `feat/27-bookmark-messages`, `fix/15-eviction-bug`).
 2. **Make all commits on that branch.**
 3. **Create a Pull Request** to `main` using `gh pr create` when the work is complete and all checks pass.
 4. Include the related issue number in the PR body (e.g., `Closes #27`).
@@ -180,18 +180,18 @@ Agents should make decisions with this context in mind:
 
 ---
 
-## Planned Work (Milestone 1 — Do Not Implement Speculatively)
+## Planned Work — Do Not Implement Speculatively
 
 The following features are planned but not yet implemented. Do not add them unless explicitly asked:
 
-- `hl7-forge.toml` configuration file
-- Windows Service integration / graceful shutdown on service stop
-- Connection limits (max concurrent MLLP connections)
-- Configurable memory budget (currently hardcoded `MAX_STORE_BYTES`)
+- HL7 field dictionary tooltips (Milestone 3)
+- Message type detection and validation (Milestone 3)
+- Segment diff view (Milestone 3)
+- Message replay / editor (Milestone 4)
 - SQLite persistence (Milestone 5)
 - FHIR R4 mapping (Milestone 6)
 
-Full roadmap in `ROADMAP.md` and `MILESTONES.md`.
+Full roadmap in `ROADMAP.md`.
 
 ---
 

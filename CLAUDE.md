@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Never commit directly to `main` or to an unrelated branch.** For every task:
 
-1. **Create a feature branch** from `main` with a descriptive name (e.g., `feat/bookmark-messages`, `fix/eviction-bug`).
+1. **Create a feature branch** from `main` named after the issue (e.g., `feat/27-bookmark-messages`, `fix/15-eviction-bug`).
 2. **Make all commits on that branch.**
 3. **Create a Pull Request** to `main` using `gh pr create` when the work is complete and all checks pass.
 4. Include the related issue number in the PR body (e.g., `Closes #27`).
@@ -129,14 +129,13 @@ Key frontend behaviors:
 | DOM rendering | No prepend logic (batching at 250ms is sufficient) |
 | Dependencies | Minimize new crates; check `Cargo.toml` before adding |
 
-## Current Milestone: Milestone 1 — Team-Ready Server
+## Current Milestone: Milestone 3 — Message Analysis
 
-Next planned work (see `MILESTONES.md` for full details):
-- `hl7-forge.toml` configuration file (ports, memory limits, log level)
-- Windows Service support (graceful start/stop)
-- Graceful shutdown (drain in-flight MLLP connections on `Ctrl+C` / service stop)
-- Connection limits (max concurrent MLLP connections)
-- Memory budget via config (currently hardcoded `MAX_STORE_BYTES`)
+Next planned work (see `ROADMAP.md` for full details):
+- HL7 field dictionary (hover tooltips with field descriptions)
+- Message type detection with descriptions
+- Validation (required fields per message type)
+- Segment diff (compare two messages side by side)
 
 Do not implement features from later milestones speculatively.
 
