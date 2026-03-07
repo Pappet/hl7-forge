@@ -34,7 +34,7 @@ This document tracks all milestones and planned features. Each milestone lists i
 
 **Goal:** HL7 Forge runs stably as a Windows service on the dev server, is configurable without recompilation, and holds up under high load.
 
-**Status: In Progress** (2 tasks remaining)
+**Status: Complete**
 
 ### Requirements
 
@@ -44,8 +44,6 @@ This document tracks all milestones and planned features. Each milestone lists i
 
 - [x] **Configuration file** (`hl7-forge.toml`) — ports, memory limits, log level, retention configurable
 - [x] **File Logging** — standard rotating log files for operation monitoring
-- [ ] **Windows Service** — installable as a Windows service (`sc create` / NSSM), automatic start on server boot
-- [ ] **Startup banner in Event Log** — Windows Event Log integration for ops monitoring
 - [x] **Portable binary** — single `.exe` without dependencies, xcopy deployment
 - [x] **Backpressure handling** — evict oldest messages when the store is full instead of OOM
 - [x] **Memory Management** — configurable memory budget (e.g. max 512 MB RAM) with automatic eviction
@@ -55,9 +53,10 @@ This document tracks all milestones and planned features. Each milestone lists i
 ### Acceptance Criteria
 
 - [x] Server starts via `hl7-forge.toml` with configured ports and limits
-- [ ] Server runs as a Windows service and starts automatically after reboot
 - [x] When the memory budget is reached, old messages are evicted — no OOM
 - [x] `Ctrl+C` or service stop terminates active MLLP connections cleanly
+
+> **Note:** Windows Service installation is handled externally via NSSM (`nssm install HL7Forge hl7-forge.exe`). No native `windows-service` crate integration needed.
 
 ---
 

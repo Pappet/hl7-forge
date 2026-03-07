@@ -51,6 +51,7 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 
 | Commit | Description |
 |--------|-------------|
+| [`5e4c4ec`](https://github.com/Pappet/hl7-forge/commit/5e4c4ec7a360c0b9bb249cc7c138454ca99a3a52) | `docs:` Remove Windows Service tasks from Milestone 1, add issue-based branch naming |
 | [`70723f5`](https://github.com/Pappet/hl7-forge/commit/70723f5bffd6a9a33cd682ee8408c87bfb8e38a1) | `docs:` Refactor documentation structure, merge MILESTONES.md into ROADMAP.md |
 | [`5cc749f`](https://github.com/Pappet/hl7-forge/commit/5cc749fe76e9f29c6827d888b702ff09dba61e0c) | `feat:` Bookmark/pin messages with eviction protection (#27) |
 

@@ -17,7 +17,7 @@ HL7 Forge is a single-binary MLLP server with an embedded real-time web UI for i
 
 **Never commit directly to `main` or to an unrelated branch.** For every task:
 
-1. **Create a feature branch** from `main` with a descriptive name (e.g., `feat/bookmark-messages`, `fix/eviction-bug`).
+1. **Create a feature branch** from `main` named after the issue (e.g., `feat/27-bookmark-messages`, `fix/15-eviction-bug`).
 2. **Make all commits on that branch.**
 3. **Create a Pull Request** to `main` using `gh pr create` when the work is complete and all checks pass.
 4. Include the related issue number in the PR body (e.g., `Closes #27`).

@@ -108,11 +108,13 @@ chore: ...
 
 ## 9. Branch Naming
 
+Branches must include the issue number for traceability:
+
 ```
-feat/<name>
-fix/<name>
-docs/<name>
-refactor/<name>
+feat/<issue>-<name>       e.g. feat/27-bookmark-messages
+fix/<issue>-<name>        e.g. fix/15-eviction-bug
+docs/<name>               e.g. docs/refactor-documentation
+refactor/<issue>-<name>   e.g. refactor/30-store-cleanup
 ```
 
 ---
