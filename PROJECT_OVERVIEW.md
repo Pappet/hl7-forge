@@ -90,10 +90,11 @@ A thread-safe in-memory buffer with dual eviction:
 - **Trigger:** either limit hit → evict oldest 10% of non-bookmarked messages
 - **Rationale:** MDM messages with Base64-encoded attachments can be several MB each; count-only eviction is insufficient.
 
-### HL7 Parser (`src/hl7/`)
+### HL7 Parser & Dictionary (`src/hl7/`, `src/dictionary.rs`)
 
-- `parser.rs` — Parses raw HL7 text by extracting delimiters from the MSH segment, splitting on `\r`/`\n` into segments, and decomposing fields/components. Also builds ACK responses.
-- `types.rs` — Data structures: `Hl7Message`, `Hl7MessageSummary`, `Hl7Segment`, `Hl7Field`, `Delimiters`.
+- `hl7/parser.rs` — Parses raw HL7 text by extracting delimiters from the MSH segment, splitting on `\r`/`\n` into segments, and decomposing fields/components. Also builds ACK responses.
+- `hl7/types.rs` — Data structures: `Hl7Message`, `Hl7MessageSummary`, `Hl7Segment`, `Hl7Field`, `Delimiters`.
+- `dictionary.rs` — A compiled-in, high-speed `OnceLock` in-memory JSON dictionary engine providing field definitions based on the HL7 v2.5.1 specification.
 
 **MSH field indexing quirk:** MSH-1 is the field separator character itself (`|`). The parser inserts a synthetic `Hl7Field { index: 1, value: "|" }` and shifts all other fields up by 1, so that `get_field_value(msh, 3)` correctly returns Sending Application per the HL7 standard.
 
@@ -122,6 +123,7 @@ src/
 ├── mllp.rs          # TCP listener, MLLP framing, ACK/NACK dispatch
 ├── store.rs         # In-memory store with broadcast channel, dual eviction
 ├── web.rs           # Axum router, REST handlers, WebSocket handler
+├── dictionary.rs    # In-memory embedded HL7 dictionary engine 
 └── hl7/
     ├── mod.rs
     ├── parser.rs    # Raw HL7 → Hl7Message, delimiter extraction, ACK builder
@@ -130,6 +132,9 @@ static/
 ├── index.html       # HTML skeleton
 ├── style.css        # Dark theme, CSS variables
 └── app.js           # SPA logic (vanilla JS)
+assets/
+└── hl7/
+    └── v2.5.1.json  # Highly optimized canonical source of truth for dictionary fields
 tests/
 ├── test.sh          # Linux/macOS functional + load test (netcat, 100 messages)
 └── test.ps1         # Windows functional + load test (.NET TcpClient, 1000 messages)

@@ -9,6 +9,9 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 
 ## [Unreleased]
 
+### Added
+- **HL7 field dictionary** — hover over any field value or index in the message detail view to see a premium CSS tooltip with its official HL7 v2.5.1 specification description (e.g., "Patient Name" for PID-5). Powered by a zero-overhead, compiled-in JSON dictionary ensuring completely offline functionality (#48)
+
 ---
 
 ## [0.3.0] – 2026-03-07 – Multi-User Experience
