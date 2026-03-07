@@ -18,6 +18,7 @@ let wsReconnectDelay = WS_RECONNECT_INITIAL;
 let paused = false;
 let pendingMessages = [];
 let renderScheduled = false;
+let showBookmarkedOnly = false;
 
 // --- Source Color Mapping ---
 // 12 visually distinct colors optimised for dark backgrounds (HSL, high sat, medium lightness)
@@ -126,7 +127,8 @@ function saveSession() {
             paused,
             collapsedSegments: [...collapsedSegments],
             colorByPort,
-            highlightedSource
+            highlightedSource,
+            showBookmarkedOnly
         }));
     } catch (_) { /* sessionStorage full or unavailable */ }
 }
@@ -143,6 +145,7 @@ function loadSession() {
         if (typeof saved.paused === 'boolean') paused = saved.paused;
         if (typeof saved.colorByPort === 'boolean') colorByPort = saved.colorByPort;
         if (saved.highlightedSource !== undefined) highlightedSource = saved.highlightedSource;
+        if (typeof saved.showBookmarkedOnly === 'boolean') showBookmarkedOnly = saved.showBookmarkedOnly;
         if (Array.isArray(saved.collapsedSegments)) {
             collapsedSegments = new Set(saved.collapsedSegments);
         }
@@ -184,6 +187,8 @@ function connectWs() {
             addMessage(data.data);
         } else if (data.type === 'tags_updated') {
             updateMessageTags(data.data);
+        } else if (data.type === 'bookmark_toggled') {
+            updateMessageBookmark(data.data);
         } else if (data.type === 'lagged') {
             console.warn(`Missed ${data.missed} messages, reloading...`);
             loadMessages();
@@ -211,6 +216,21 @@ function updateMessageTags(summary) {
 
     if (selectedMessage && selectedMessage.id === summary.id) {
         selectedMessage.tags = summary.tags;
+        renderDetail();
+    }
+
+    renderMessageList();
+}
+
+function updateMessageBookmark(summary) {
+    const listMsg = messages.find(m => m.id === summary.id);
+    if (listMsg) listMsg.bookmarked = summary.bookmarked;
+
+    const pendingMsg = pendingMessages.find(m => m.id === summary.id);
+    if (pendingMsg) pendingMsg.bookmarked = summary.bookmarked;
+
+    if (selectedMessage && selectedMessage.id === summary.id) {
+        selectedMessage.bookmarked = summary.bookmarked;
         renderDetail();
     }
 
@@ -295,9 +315,12 @@ async function pollStats() {
 function renderMessageList() {
     const list = document.getElementById('message-list');
     const empty = document.getElementById('empty-state');
-    const filtered = searchQuery
+    let filtered = searchQuery
         ? messages.filter(m => matchesSearch(m, searchQuery))
         : messages;
+    if (showBookmarkedOnly) {
+        filtered = filtered.filter(m => m.bookmarked);
+    }
 
     if (filtered.length === 0) {
         empty.style.display = 'flex';
@@ -347,6 +370,9 @@ function renderMessageList() {
             ? `<span class="msg-ack" style="${ackColor}">${esc(msg.ack_code)}</span>`
             : `<span class="msg-ack">—</span>`;
 
+        const bookmarkClass = msg.bookmarked ? 'msg-bookmark active' : 'msg-bookmark';
+        const bookmarkIcon = msg.bookmarked ? '★' : '☆';
+
         row.innerHTML = `
             ${dotHtml}
             <div style="display:flex; flex-direction:column; gap:2px; overflow:hidden;">
@@ -358,6 +384,7 @@ function renderMessageList() {
             <span class="msg-time">${timeStr}</span>
             <span class="msg-segs">${msg.segment_count}</span>
             ${ackHtml}
+            <span class="${bookmarkClass}" onclick="toggleBookmark('${msg.id}', event)" title="Bookmark">${bookmarkIcon}</span>
         `;
         fragment.appendChild(row);
     }
@@ -415,7 +442,12 @@ function renderDetail() {
         return el;
     })();
 
-    tagsContainer.innerHTML = (msg.tags || []).map(t =>
+    const bookmarkBtnClass = msg.bookmarked ? 'detail-bookmark-btn active' : 'detail-bookmark-btn';
+    const bookmarkBtnIcon = msg.bookmarked ? '★' : '☆';
+
+    tagsContainer.innerHTML = `
+        <button class="${bookmarkBtnClass}" onclick="toggleBookmark('${msg.id}', event)" title="Toggle bookmark">${bookmarkBtnIcon} Bookmark</button>
+    ` + (msg.tags || []).map(t =>
         `<span class="msg-tag">${esc(t)} <span class="msg-tag-remove" onclick="removeTag('${msg.id}', '${escAttr(t)}')">×</span></span>`
     ).join('') + `
         <div class="msg-tag-add">
@@ -599,6 +631,32 @@ async function removeTag(id, tag) {
     }
 }
 
+async function toggleBookmark(id, event) {
+    event.stopPropagation();
+    try {
+        const resp = await fetch(`/api/messages/${id}/bookmark`, { method: 'POST' });
+        if (!resp.ok) throw new Error('Failed to toggle bookmark');
+    } catch (e) {
+        showToast(e.message);
+    }
+}
+
+function toggleBookmarkFilter() {
+    showBookmarkedOnly = !showBookmarkedOnly;
+    const btn = document.getElementById('btn-bookmarks');
+    if (showBookmarkedOnly) {
+        btn.textContent = '★ Bookmarks';
+        btn.style.borderColor = 'var(--warning)';
+        btn.style.color = 'var(--warning)';
+    } else {
+        btn.textContent = '☆ Bookmarks';
+        btn.style.borderColor = '';
+        btn.style.color = '';
+    }
+    renderMessageList();
+    saveSession();
+}
+
 // --- Utility ---
 function showToast(message, type = 'error') {
     const toast = document.createElement('div');
@@ -733,6 +791,13 @@ document.addEventListener('click', (e) => {
     if (paused) {
         const btn = document.getElementById('btn-pause');
         btn.textContent = '▶ Live';
+        btn.style.borderColor = 'var(--warning)';
+        btn.style.color = 'var(--warning)';
+    }
+
+    if (showBookmarkedOnly) {
+        const btn = document.getElementById('btn-bookmarks');
+        btn.textContent = '★ Bookmarks';
         btn.style.borderColor = 'var(--warning)';
         btn.style.color = 'var(--warning)';
     }

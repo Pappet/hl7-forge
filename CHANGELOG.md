@@ -10,6 +10,7 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 ## [Unreleased]
 
 ### Added
+- **Bookmark/pin messages** — star icon (★/☆) on each message row to bookmark important messages; "★ Bookmarks" filter button in header; bookmarked messages are protected from eviction; state syncs across tabs via WebSocket (#27)
 - **Message tagging** — manual tagging of messages for attribution (e.g., "Bug #1234"); tags filterable via search and synchronized across clients (#26)
 - **WebSocket exponential backoff** — reconnection uses exponential backoff (1s → 2s → 4s → … → 60s cap) with ±25% jitter to prevent thundering herd; status bar shows reconnection countdown (#12)
 - **Resizable panel splitter** — drag the border between message list and detail panel to resize; double-click to reset; width persists across sessions via localStorage (#4)
@@ -44,6 +45,12 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 - Fixed clippy warnings: derivable impl, char comparison pattern, `to_string` in format args, large enum variant
 
 ### Commit History (chronological)
+
+#### 2026-03-07
+
+| Commit | Description |
+|--------|-------------|
+| [`5cc749f`](https://github.com/Pappet/hl7-forge/commit/5cc749fe76e9f29c6827d888b702ff09dba61e0c) | `feat:` Bookmark/pin messages with eviction protection (#27) |
 
 #### 2026-03-06
 

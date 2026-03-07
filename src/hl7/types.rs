@@ -24,6 +24,7 @@ pub struct Hl7Message {
     pub ack_response: Option<String>,
     pub ack_code: Option<String>,
     pub tags: Vec<String>,
+    pub bookmarked: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -84,6 +85,7 @@ impl Hl7Message {
             ack_response: None,
             ack_code: None,
             tags: Vec::new(),
+            bookmarked: false,
         }
     }
 }
@@ -105,6 +107,7 @@ pub struct Hl7MessageSummary {
     pub ack_response: Option<String>,
     pub ack_code: Option<String>,
     pub tags: Vec<String>,
+    pub bookmarked: bool,
 }
 
 impl From<&Hl7Message> for Hl7MessageSummary {
@@ -124,6 +127,7 @@ impl From<&Hl7Message> for Hl7MessageSummary {
             ack_response: msg.ack_response.clone(),
             ack_code: msg.ack_code.clone(),
             tags: msg.tags.clone(),
+            bookmarked: msg.bookmarked,
         }
     }
 }

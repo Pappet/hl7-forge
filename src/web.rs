@@ -34,6 +34,10 @@ pub fn create_router(state: AppState) -> Router {
             "/api/messages/:id/tags/:tag",
             axum::routing::delete(remove_tag),
         )
+        .route(
+            "/api/messages/:id/bookmark",
+            axum::routing::post(toggle_bookmark),
+        )
         .route("/api/clear", axum::routing::post(clear_messages))
         // WebSocket
         .route("/ws", get(ws_handler))
@@ -137,6 +141,16 @@ async fn remove_tag(
     }
 }
 
+async fn toggle_bookmark(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+) -> impl IntoResponse {
+    match state.store.toggle_bookmark(&id).await {
+        Some(bookmarked) => Json(serde_json::json!({"bookmarked": bookmarked})).into_response(),
+        None => (StatusCode::NOT_FOUND, "Message not found").into_response(),
+    }
+}
+
 // --- WebSocket ---
 
 async fn ws_handler(ws: WebSocketUpgrade, State(state): State<AppState>) -> impl IntoResponse {
@@ -171,6 +185,15 @@ async fn handle_ws(mut socket: WebSocket, state: AppState) {
                     Ok(StoreEvent::TagsUpdated(summary)) => {
                         let payload = serde_json::json!({
                             "type": "tags_updated",
+                            "data": summary,
+                        });
+                        if socket.send(Message::Text(payload.to_string())).await.is_err() {
+                            break; // client disconnected
+                        }
+                    }
+                    Ok(StoreEvent::BookmarkToggled(summary)) => {
+                        let payload = serde_json::json!({
+                            "type": "bookmark_toggled",
                             "data": summary,
                         });
                         if socket.send(Message::Text(payload.to_string())).await.is_err() {

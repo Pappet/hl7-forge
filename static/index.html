@@ -29,6 +29,7 @@
         <div class="header-actions">
             <button onclick="togglePause()" id="btn-pause" title="Pause live updates">⏸ Pause</button>
             <button onclick="toggleAutoscroll()" id="btn-autoscroll" title="Auto-scroll">⬇ Auto</button>
+            <button onclick="toggleBookmarkFilter()" id="btn-bookmarks" title="Show bookmarked only">☆ Bookmarks</button>
             <button onclick="exportMessages()" title="Export JSON">📥 Export</button>
             <button class="danger" onclick="clearMessages()" title="Clear all">🗑 Clear</button>
         </div>
@@ -48,6 +49,7 @@
                 <span>Time</span>
                 <span>Segs</span>
                 <span>ACK</span>
+                <span></span>
             </div>
             <div class="message-list" id="message-list">
                 <div class="empty-state" id="empty-state">
