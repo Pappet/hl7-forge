@@ -1,4 +1,5 @@
 mod config;
+mod dictionary;
 mod hl7;
 mod mllp;
 mod store;
