@@ -7,7 +7,7 @@ HL7 Forge is a high-performance MLLP server with a real-time web UI for inspecti
 ## Project Status
 
 - **Language:** Rust
-- **Current Milestone:** Milestone 2 (Multi-User Experience) — complete
+- **Latest Release:** v0.3.0 — Milestones 1 & 2 complete
 - **Next Milestone:** Milestone 3 (Message Analysis)
 
 ---

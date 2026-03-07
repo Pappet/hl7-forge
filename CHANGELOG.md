@@ -9,6 +9,12 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 
 ## [Unreleased]
 
+---
+
+## [0.3.0] – 2026-03-07 – Multi-User Experience
+
+> Completes Milestone 1 (Team-Ready Server) and Milestone 2 (Multi-User Experience). HL7 Forge is now fully multi-user capable, production-configurable, and deployed as a stable Windows service.
+
 ### Added
 - **Bookmark/pin messages** — star icon on each message row to bookmark important messages; bookmarked messages are protected from eviction; state syncs across tabs via WebSocket (#27)
 - **Message tagging** — manual tagging of messages for attribution (e.g., "Bug #1234"); tags filterable via search and synchronized across clients (#26)
@@ -36,9 +42,7 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 - Hardcoded constants (`DEFAULT_CAPACITY`, `MAX_STORE_BYTES`, `MAX_MESSAGE_SIZE`, `READ_TIMEOUT`, `WRITE_TIMEOUT`) replaced with config values
 - Effective configuration is logged at startup
 - Translated all German text to English across the codebase
-- Updated ROADMAP with completed Phase 1 tasks, specific sections, and guidelines
-- Added detailed issue comment preferences for AI agents
-- **Documentation refactor** — merged MILESTONES.md into ROADMAP.md; separated concerns across README (landing page), ROADMAP (planning), CHANGELOG (history), STYLE_GUIDE (rules), PROJECT_OVERVIEW (architecture + decisions)
+- Documentation refactor — merged MILESTONES.md into ROADMAP.md; separated concerns across README (landing page), ROADMAP (planning), CHANGELOG (history), STYLE_GUIDE (rules), PROJECT_OVERVIEW (architecture + decisions)
 
 ### Fixed
 - Fixed XSS vulnerabilities in message parsed view by escaping segment data and removing inline onclick handlers (#20)
@@ -205,6 +209,7 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 
 ---
 
-[Unreleased]: https://github.com/Pappet/hl7-forge/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/Pappet/hl7-forge/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/Pappet/hl7-forge/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/Pappet/hl7-forge/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/Pappet/hl7-forge/releases/tag/v0.1.0
