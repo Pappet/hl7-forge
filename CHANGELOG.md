@@ -9,8 +9,13 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 
 ## [Unreleased]
 
+---
+
+## [0.4.0] – 2026-03-08 – Message Analysis
+
+> Completes Milestone 3 (Message Analysis). HL7 Forge now understands the content of messages: field names from the HL7 v2.5.1 spec, validation with severity-coded badges, a segment diff view, and quick copy-to-clipboard throughout.
+
 ### Added
-- **Quick copy to clipboard** — three copy targets in the detail view: (1) segment header shows a 📋 icon on hover that copies the raw segment string; (2) any field value cell is click-to-copy with a green flash feedback; (3) Raw tab has a "📋 Copy All" button that copies the entire message text (#63)
 - **HL7 field dictionary** — hover over any field in the detail view for a CSS tooltip with its official HL7 v2.5.1 description (e.g. "Patient Name" for PID-5); powered by a compiled-in zero-overhead JSON dictionary (#48)
 - **Message type detection** — detail header shows a human-readable type description (e.g. "Admit / Visit Notification") and a "Typical segments" bar with coloured badges indicating which segments are present vs absent (#45, #50)
 - **Segment description tooltips** — hovering a segment header (e.g. `MSH`, `PID`) shows its official HL7 description as a CSS tooltip below the header; the same description appears as a native `title` tooltip on every typical-segment badge (#45)
@@ -19,6 +24,7 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 - **Validation status filter** — header button cycles through All → Warnings Only → Errors Only; also supports `has:warnings` / `has:errors` prefixes in the search bar for combined filtering (#60)
 - **Segment diff** — pin any message as a reference with the `◎` button in the list row, then open the Diff tab on another message to see a field-level side-by-side comparison with red/green highlighting (#47, #52)
 - **Diff: ignore dynamic fields toggle** — toggle switch in the Diff tab hides MSH-7 (Date/Time) and MSH-10 (Message Control ID) from the comparison; the summary shows how many dynamic fields were hidden so nothing is silently lost (#61)
+- **Quick copy to clipboard** — three copy targets in the detail view: (1) segment header shows a 📋 icon on hover that copies the raw segment string; (2) any field value cell is click-to-copy with a green flash feedback; (3) Raw tab has a "📋 Copy All" button that copies the entire message text (#63)
 - **Detail header layout** — message title, type description, and meta line are stacked vertically on the left; Bookmark button and tag controls are grouped on the right side of the header
 
 ### Fixed
@@ -30,6 +36,28 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 - **Pin button highlight color** — decoupled pin button styling from bookmarks to ensure pinned items highlight in blue instead of yellow (#59)
 - **Diff table column widths** — enforced strict layout on the segment diff table using `table-layout: fixed` so right-hand columns don't stretch (#67)
 - **Typical-segment badge colour for data type warnings** — `INVALID_DATATYPE` warnings no longer turn a segment badge yellow; only `MISSING_FIELD` triggers amber, keeping the badge colour semantics accurate (red = missing segment, amber = missing required field, blue = present)
+
+### Commit History (chronological)
+
+#### 2026-03-08
+
+| Commit | Description |
+|--------|-------------|
+| [`7cd9062`](https://github.com/Pappet/hl7-forge/commit/7cd9062) | `feat(ui):` Quick copy-to-clipboard for segments, fields, and raw message (#76) |
+| [`598c713`](https://github.com/Pappet/hl7-forge/commit/598c713) | `feat(validation):` Data type validation for NM, DT, TS, SI fields (#74) |
+| [`7f040df`](https://github.com/Pappet/hl7-forge/commit/7f040df) | `feat(ui):` Dynamic field toggle in diff view (#73) |
+| [`dd8a216`](https://github.com/Pappet/hl7-forge/commit/dd8a216) | `feat(ui):` Validation status filter (#72) |
+| [`56bb394`](https://github.com/Pappet/hl7-forge/commit/56bb394) | `fix(ui):` Enforce diff table column widths (#70) |
+| [`87de6d1`](https://github.com/Pappet/hl7-forge/commit/87de6d1) | `fix(ui):` Accent color for pinned messages in detail view (#69) |
+| [`18484c4`](https://github.com/Pappet/hl7-forge/commit/18484c4) | `fix(ui):` Add missing .msg-ack CSS class (#68) |
+| [`b70ff1f`](https://github.com/Pappet/hl7-forge/commit/b70ff1f) | `style(ui):` Remove duplicate theme-toggle CSS block (#66) |
+| [`4fdc373`](https://github.com/Pappet/hl7-forge/commit/4fdc373) | `fix(ui):` Prevent message row content shift on selection (#65) |
+| [`3ef653e`](https://github.com/Pappet/hl7-forge/commit/3ef653e) | `fix(ui):` Show full date and time in message list (#64) |
+| [`292ef35`](https://github.com/Pappet/hl7-forge/commit/292ef35) | `feat:` Color-code typical segment badges by validation state (#54) |
+| [`91d03dd`](https://github.com/Pappet/hl7-forge/commit/91d03dd) | `feat:` HL7 validation engine with UI warning display (#51) |
+| [`28cbb88`](https://github.com/Pappet/hl7-forge/commit/28cbb88) | `feat:` Message type detection with descriptions and typical segments (#50) |
+| [`f36c3de`](https://github.com/Pappet/hl7-forge/commit/f36c3de) | `feat:` Segment diff — compare two messages side by side (#52) |
+| [`60ba09d`](https://github.com/Pappet/hl7-forge/commit/60ba09d) | `feat:` Embed HL7 v2.5.1 JSON dictionary for field hover tooltips (#48) |
 
 ---
 
@@ -72,12 +100,6 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 - Fixed clippy warnings: derivable impl, char comparison pattern, `to_string` in format args, large enum variant
 
 ### Commit History (chronological)
-
-#### 2026-03-08
-
-| Commit | Description |
-|--------|-------------|
-| [`c82270c`](https://github.com/Pappet/hl7-forge/commit/c82270c) | `feat(ui):` Quick copy-to-clipboard for segments, fields, and raw message (#63) |
 
 #### 2026-03-07
 
