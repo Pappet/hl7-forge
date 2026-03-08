@@ -154,7 +154,7 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 | [`9ef8ed9`](https://github.com/Pappet/hl7-forge/commit/9ef8ed9cf631b442ebf6e10d7767fcdff5b6e3c1) | `fix:` align MSH field indices with HL7 standard (correct +1 offset); add graceful shutdown via `Ctrl+C` signal handler |
 | [`bbde980`](https://github.com/Pappet/hl7-forge/commit/bbde98060ccc46fbe5a9ed238907a73ebcd9af21) | `fix:` harden MLLP server and message store against load spikes and DoS (connection timeouts, 10 MB payload limit) |
 | [`fa11aa4`](https://github.com/Pappet/hl7-forge/commit/fa11aa42ae65bde3926349bea3ee81d2b3d9714c) | `polish:` add Cargo metadata; clean up Tokio features; introduce toast notifications in UI |
-| [`f33ccfc`](https://github.com/Pappet/hl7-forge/commit/f33ccfcccdfb12e16f4879e06fb8a3a9b8802919) | `fix:` UI polish and pre-release fixes (correct Axum route `:id`, clean up compiler warnings) |
+| [`f33ccfc`](https://github.com/Pappet/hl7-forge/commit/f33ccfccdfb12e16f4879e06fb8a3a9b8802919) | `fix:` UI polish and pre-release fixes (correct Axum route `:id`, clean up compiler warnings) |
 | [`696522c`](https://github.com/Pappet/hl7-forge/commit/696522c4126fc45096687fdb5ef38d6462f593b2) | `docs:` revamp README with feature overview, Windows deployment guide, and milestone table |
 | [`679aad3`](https://github.com/Pappet/hl7-forge/commit/679aad3e02d1d0c89299ad8f22b38e95b10bb37c) | `ci:` initial GitHub Actions build workflow |
 | [`0c46811`](https://github.com/Pappet/hl7-forge/commit/0c468114f5080b9da02ea6e3b4a22796e56337f2) | `docs:` add ROADMAP.md as strategic planning document |
@@ -205,7 +205,9 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 - **Pause / Live mode** — button buffers incoming messages; flush and return to live mode
 - **Toast notifications** — subtle in-app notifications for relevant events
 - **Detail view** with three tabs: `Parsed`, `Raw`, `JSON`
-- **Client-side search filter** (debounced, 300 ms) — filter by message type, patient, facility, message control ID
+- **Search & Filter** — by message type, patient name, facility, message control ID, source IP; supports `has:warnings`/`has:errors` (#60)
+- **Validation Filter** — 3-state toggle in the header to quickly isolate messages with warnings or errors (#60)
+- **Bookmark & Tag** — pin important messages (eviction-protected), add custom text tags
 - **JSON export** — download individual messages as `.json`
 - Dark theme with CSS variables
 - PARSE ERROR marker in red for failed messages
