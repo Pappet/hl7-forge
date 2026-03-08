@@ -103,6 +103,15 @@ MSH|^~\&|||||20260220133000||ADT^A04||P|2.3
 PID|1||1006^^^HOSP^MR||Test^Broken||19700101|F
 EOM
 
+# 7. ADT^A01 without PID-3
+# Manual test: send ADT^A01 without PID-3 -> badge appears in list; warning panel shows "PID-3 (Patient Identifier List) is required for ADT^A01"
+read -r -d '' MSG_ERR_MISSING_PID3 << EOM
+MSH|^~\&|SEND_APP|SEND_FAC|RECV_APP|RECV_FAC|20260220134000||ADT^A01|MSG0007|P|2.3
+EVN|A01|20260220134000
+PID|1||||Sample^Max^M||19800101|M|||1 Test Street^^Springfield^IL^62701^US||555-12345678|||M
+PV1|1|I|ICU^Bed 1^Room 3||||1234^Doctor^Andrew
+EOM
+
 
 # ==========================================
 # Run Functional Tests
@@ -120,6 +129,7 @@ echo "--------------------------------------------------"
 send_mllp "ERROR: Missing MSH Segment" "$MSG_ERR_NO_MSH"
 send_mllp "ERROR: Unknown Message Type (ZZZ^Z99)" "$MSG_ERR_INV_TYPE"
 send_mllp "ERROR: Missing Mandatory Fields in MSH" "$MSG_ERR_BAD_MSH"
+send_mllp "ERROR: ADT^A01 without PID-3 (Check UI for warning)" "$MSG_ERR_MISSING_PID3"
 
 echo "Functional test run completed."
 echo ""
