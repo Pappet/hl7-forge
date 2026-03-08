@@ -546,7 +546,9 @@ function renderTab() {
                 <span class="typical-segments-label">Typical segments:</span>
                 ${msg.typical_segments.map(s => {
                     const present = msg.segments.some(seg => seg.name === s);
-                    return `<span class="typical-seg ${present ? 'present' : 'absent'}">${esc(s)}</span>`;
+                    const desc = (msg.typical_segment_descriptions || {})[s];
+                    const titleAttr = desc ? ` title="${escAttr(s + ': ' + desc)}"` : '';
+                    return `<span class="typical-seg ${present ? 'present' : 'absent'}"${titleAttr}>${esc(s)}</span>`;
                 }).join('')}
                </div>`
             : '';

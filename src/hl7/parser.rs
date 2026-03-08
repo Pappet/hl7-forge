@@ -102,6 +102,14 @@ pub fn parse_message(raw: &str, source_addr: &str) -> Result<Hl7Message, String>
             .iter()
             .map(|s| s.to_string())
             .collect();
+        msg.typical_segment_descriptions = info
+            .typical_segments
+            .iter()
+            .filter_map(|s| {
+                crate::dictionary::get_segment_description(s)
+                    .map(|d| (s.to_string(), d))
+            })
+            .collect();
     }
 
     // Fourth pass: validate required segments and fields

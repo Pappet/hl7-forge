@@ -1,5 +1,6 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use uuid::Uuid;
 
 /// A parsed HL7 v2.x message
@@ -31,6 +32,8 @@ pub struct Hl7Message {
     pub message_type_description: Option<String>,
     /// Segments typically present in this message type (from the HL7 spec)
     pub typical_segments: Vec<String>,
+    /// Description for each typical segment name, from the embedded dictionary
+    pub typical_segment_descriptions: HashMap<String, String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -98,6 +101,7 @@ impl Hl7Message {
             validation_warnings: Vec::new(),
             message_type_description: None,
             typical_segments: Vec::new(),
+            typical_segment_descriptions: HashMap::new(),
         }
     }
 }
