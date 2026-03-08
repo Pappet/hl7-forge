@@ -469,17 +469,71 @@ body.resizing * {
 }
 
 .detail-header {
-    padding: 14px 20px;
+    padding: 12px 20px 10px;
     background: var(--bg-secondary);
     border-bottom: 1px solid var(--border);
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.detail-header-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
 }
 
 .detail-header h2 {
     font-size: 15px;
     font-weight: 600;
+}
+
+.detail-type-desc {
+    font-size: 11px;
+    color: var(--accent);
+    font-style: italic;
+    letter-spacing: 0.01em;
+}
+
+/* ── Typical segments bar ───────────────────────────────────────────── */
+.typical-segments-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+}
+
+.typical-segments-label {
+    color: var(--text-muted);
+    margin-right: 4px;
+    white-space: nowrap;
+}
+
+.typical-seg {
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.typical-seg.present {
+    background: color-mix(in srgb, var(--success) 20%, transparent);
+    color: var(--success);
+    border: 1px solid color-mix(in srgb, var(--success) 40%, transparent);
+}
+
+.typical-seg.absent {
+    background: color-mix(in srgb, var(--text-muted) 10%, transparent);
+    color: var(--text-muted);
+    border: 1px solid color-mix(in srgb, var(--text-muted) 20%, transparent);
 }
 
 .detail-tabs {
@@ -703,8 +757,9 @@ body.resizing * {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-    margin-top: 8px;
     align-items: center;
+    justify-content: flex-end;
+    flex-shrink: 0;
 }
 
 .msg-tag {
@@ -874,6 +929,7 @@ body.resizing * {
         transform: translateY(-50%) translateX(0);
     }
 }
+
 /* ── Validation warning badge (list row) ──────────────────────────────── */
 .validation-badge {
     font-size: 9px;
@@ -933,6 +989,8 @@ body.resizing * {
     border-radius: 3px;
     padding: 0 4px;
     margin-right: 6px;
+}
+
 /* ── Segment Diff view ────────────────────────────────────────────────── */
 .diff-tab {
     color: var(--accent) !important;
@@ -1084,4 +1142,34 @@ body.resizing * {
 .diff-val-b.diff-changed {
     color: var(--success);
     background: color-mix(in srgb, var(--success) 8%, transparent);
+}
+
+/* Segment header tooltip */
+.segment-name.has-seg-tooltip {
+    position: relative;
+    cursor: help;
+}
+
+.segment-name.has-seg-tooltip:hover::after {
+    content: attr(data-desc);
+    position: absolute;
+    left: 0;
+    top: calc(100% + 6px);
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 11px;
+    font-family: var(--font-mono);
+    white-space: nowrap;
+    z-index: 100;
+    pointer-events: none;
+    opacity: 0;
+    animation: seg-tooltip-fade-in 0.15s ease-out 0.2s forwards;
+}
+
+@keyframes seg-tooltip-fade-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
 }

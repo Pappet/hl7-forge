@@ -67,9 +67,13 @@
 
         <div class="detail-panel">
             <div class="detail-header">
-                <h2 id="detail-title">Select a message</h2>
-                <span id="detail-meta"
-                    style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);"></span>
+                <div class="detail-header-info">
+                    <h2 id="detail-title">Select a message</h2>
+                    <span id="detail-type-desc" class="detail-type-desc" style="display:none"></span>
+                    <span id="detail-meta"
+                        style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);"></span>
+                </div>
+                <div id="detail-tags" class="detail-tags-container"></div>
             </div>
             <div class="detail-tabs">
                 <button class="detail-tab active" data-tab="parsed" onclick="switchTab('parsed')">Segments</button>

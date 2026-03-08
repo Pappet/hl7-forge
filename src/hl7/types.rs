@@ -1,5 +1,6 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use uuid::Uuid;
 
 /// A parsed HL7 v2.x message
@@ -27,6 +28,12 @@ pub struct Hl7Message {
     pub bookmarked: bool,
     /// Validation warnings produced by the rule engine (empty = valid)
     pub validation_warnings: Vec<crate::validation::ValidationWarning>,
+    /// Human-readable description of the message type (e.g. "Admit / Visit Notification")
+    pub message_type_description: Option<String>,
+    /// Segments typically present in this message type (from the HL7 spec)
+    pub typical_segments: Vec<String>,
+    /// Description for each typical segment name, from the embedded dictionary
+    pub typical_segment_descriptions: HashMap<String, String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -34,6 +41,8 @@ pub struct Hl7Segment {
     pub name: String,
     pub fields: Vec<Hl7Field>,
     pub raw: String,
+    /// Human-readable description from the HL7 dictionary (e.g. "Patient Identification")
+    pub description: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -90,6 +99,9 @@ impl Hl7Message {
             tags: Vec::new(),
             bookmarked: false,
             validation_warnings: Vec::new(),
+            message_type_description: None,
+            typical_segments: Vec::new(),
+            typical_segment_descriptions: HashMap::new(),
         }
     }
 }
@@ -114,6 +126,7 @@ pub struct Hl7MessageSummary {
     pub bookmarked: bool,
     /// Number of validation warnings (for the list-view warning badge)
     pub validation_warning_count: usize,
+    pub message_type_description: Option<String>,
 }
 
 impl From<&Hl7Message> for Hl7MessageSummary {
@@ -135,6 +148,7 @@ impl From<&Hl7Message> for Hl7MessageSummary {
             tags: msg.tags.clone(),
             bookmarked: msg.bookmarked,
             validation_warning_count: msg.validation_warnings.len(),
+            message_type_description: msg.message_type_description.clone(),
         }
     }
 }

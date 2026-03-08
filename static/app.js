@@ -444,16 +444,21 @@ function renderDetail() {
 
     document.getElementById('detail-title').textContent =
         `${msg.message_type} — ${msg.patient_name || msg.patient_id || 'Unknown'}`;
+
+    const descEl = document.getElementById('detail-type-desc');
+    if (descEl) {
+        if (msg.message_type_description) {
+            descEl.textContent = msg.message_type_description;
+            descEl.style.display = '';
+        } else {
+            descEl.style.display = 'none';
+        }
+    }
+
     document.getElementById('detail-meta').textContent =
         `${msg.source_addr} | ${msg.message_control_id} | v${msg.version}`;
 
-    const tagsContainer = document.getElementById('detail-tags') || (() => {
-        const el = document.createElement('div');
-        el.id = 'detail-tags';
-        el.className = 'detail-tags-container';
-        document.getElementById('detail-meta').parentElement.appendChild(el);
-        return el;
-    })();
+    const tagsContainer = document.getElementById('detail-tags');
 
     const bookmarkBtnClass = msg.bookmarked ? 'detail-bookmark-btn active' : 'detail-bookmark-btn';
     const bookmarkBtnIcon = msg.bookmarked ? '★' : '☆';
@@ -530,6 +535,17 @@ function renderTab() {
             </div>`;
             return;
         }
+        const typicalBanner = (msg.typical_segments && msg.typical_segments.length)
+            ? `<div class="typical-segments-bar">
+                <span class="typical-segments-label">Typical segments:</span>
+                ${msg.typical_segments.map(s => {
+                    const present = msg.segments.some(seg => seg.name === s);
+                    const desc = (msg.typical_segment_descriptions || {})[s];
+                    const titleAttr = desc ? ` title="${escAttr(s + ': ' + desc)}"` : '';
+                    return `<span class="typical-seg ${present ? 'present' : 'absent'}"${titleAttr}>${esc(s)}</span>`;
+                }).join('')}
+               </div>`
+            : '';
         const validationBanner = (msg.validation_warnings && msg.validation_warnings.length)
             ? `<div class="validation-warnings-panel">
                 <div class="validation-warnings-title">&#9888; Validation Warnings (${msg.validation_warnings.length})</div>
@@ -540,13 +556,13 @@ function renderTab() {
                 </ul>
                </div>`
             : '';
-        content.innerHTML = validationBanner + msg.segments.map((seg, segIdx) => {
+        content.innerHTML = typicalBanner + validationBanner + msg.segments.map((seg, segIdx) => {
             const key = `${msg.id}-${segIdx}`;
             const collapsed = collapsedSegments.has(key);
             const icon = collapsed ? '▸' : '▾';
             return `
             <div class="segment-block">
-                <div class="segment-name" data-seg-key="${key}">
+                <div class="segment-name ${seg.description ? 'has-seg-tooltip' : ''}" data-seg-key="${key}"${seg.description ? ` data-desc="${escAttr(seg.name + ': ' + seg.description)}"` : ''}>
                     <span class="collapse-icon">${icon}</span>
                     ${esc(seg.name)}
                     <span class="field-count">(${seg.fields.length})</span>
