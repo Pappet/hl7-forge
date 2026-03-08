@@ -470,7 +470,7 @@ function renderDetail() {
     const bookmarkBtnIcon = msg.bookmarked ? '★' : '☆';
 
     const isPinned = diffPinnedMessage && diffPinnedMessage.id === msg.id;
-    const pinBtnClass = isPinned ? 'detail-bookmark-btn active' : 'detail-bookmark-btn';
+    const pinBtnClass = isPinned ? 'detail-pin-btn active' : 'detail-pin-btn';
     const pinBtnLabel = isPinned ? '📌 Pinned' : '📌 Pin for Diff';
 
     tagsContainer.innerHTML = `

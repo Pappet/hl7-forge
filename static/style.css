@@ -855,6 +855,28 @@ body.resizing * {
     border-color: var(--warning);
 }
 
+/* Pin button in detail view */
+.detail-pin-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 14px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+}
+
+.detail-pin-btn:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+}
+
+.detail-pin-btn.active {
+    color: var(--accent);
+    border-color: var(--accent);
+}
+
 /* Custom Tooltip for Field Dictionary */
 .field-idx.has-tooltip {
     position: relative;
