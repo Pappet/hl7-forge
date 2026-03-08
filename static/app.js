@@ -566,7 +566,7 @@ function renderTab() {
             const icon = collapsed ? '▸' : '▾';
             return `
             <div class="segment-block">
-                <div class="segment-name" data-seg-key="${key}">
+                <div class="segment-name ${seg.description ? 'has-seg-tooltip' : ''}" data-seg-key="${key}"${seg.description ? ` data-desc="${escAttr(seg.name + ': ' + seg.description)}"` : ''}>
                     <span class="collapse-icon">${icon}</span>
                     ${esc(seg.name)}
                     <span class="field-count">(${seg.fields.length})</span>

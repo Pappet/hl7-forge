@@ -185,6 +185,7 @@ fn parse_segment(raw: &str, delimiters: Delimiters) -> Hl7Segment {
         name,
         fields,
         raw: raw.to_string(),
+        description: None,
     }
 }
 

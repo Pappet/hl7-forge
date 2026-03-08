@@ -47,11 +47,15 @@ pub fn get_field_description(version: &str, segment: &str, field_seq: usize) -> 
 }
 
 pub fn inject_descriptions(segments: &mut [crate::hl7::types::Hl7Segment], version: &str) {
+    let dict = get_v251();
     for segment in segments.iter_mut() {
-        let seg_name = &segment.name;
-        for field in segment.fields.iter_mut() {
-            if let Some(desc) = get_field_description(version, seg_name, field.index) {
-                field.description = Some(desc);
+        let seg_name = segment.name.clone();
+        if let Some(seg_def) = dict.segments.get(&seg_name) {
+            segment.description = Some(seg_def.desc.clone());
+            for field in segment.fields.iter_mut() {
+                if let Some(field_def) = seg_def.fields.iter().find(|f| f.seq == field.index) {
+                    field.description = Some(field_def.desc.clone());
+                }
             }
         }
     }

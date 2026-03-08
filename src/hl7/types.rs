@@ -38,6 +38,8 @@ pub struct Hl7Segment {
     pub name: String,
     pub fields: Vec<Hl7Field>,
     pub raw: String,
+    /// Human-readable description from the HL7 dictionary (e.g. "Patient Identification")
+    pub description: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
