@@ -95,6 +95,27 @@ The `.detail-header` is a flex row:
 - **Left** (`.detail-header-info`, `flex: 1`): message title → type description → meta line — vertical stack
 - **Right** (`#detail-tags` / `.detail-tags-container`, `flex-shrink: 0`): Bookmark button, tag chips, Add tag input — right-aligned
 
+### Validation Badge Colour Semantics
+
+Three distinct colours are used for validation — do not mix them:
+
+| Colour | CSS class | Warning code | Meaning |
+|--------|-----------|--------------|---------|
+| **Red** | `.validation-seg.error` | `MISSING_SEGMENT` | A required segment is absent from the message |
+| **Amber** | `.validation-seg` (default) | `MISSING_FIELD` | A required field within a present segment is empty |
+| **Blue** | `.validation-seg.type` | `INVALID_DATATYPE` | A field value does not match its declared HL7 data type (NM/DT/TS/SI) |
+
+The same three-tier logic applies to **typical-segment badges** in the detail view:
+
+| Badge colour | CSS class | Condition |
+|---|---|---|
+| Red | `.typical-seg.missing` | `MISSING_SEGMENT` warning for this segment |
+| Amber | `.typical-seg.warn` | `MISSING_FIELD` warning for a field in this segment |
+| Blue | `.typical-seg.present` | Segment is present with no structural warnings (`INVALID_DATATYPE` alone does **not** turn a badge amber) |
+| Grey | `.typical-seg.absent` | Segment is not present and not required |
+
+**Rule:** `INVALID_DATATYPE` warnings appear in the validation panel only. They must never affect typical-segment badge colours — the segment and field are present, only the value format is suspect.
+
 ---
 
 ## 7. Backend Coding Rules (Rust)

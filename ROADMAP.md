@@ -102,7 +102,10 @@ This document tracks all milestones and planned features. Each milestone lists i
 - [x] **Segment description tooltips** — hover segment headers and typical-segment badges for their HL7 description (#45)
 - [x] **Message type detection** — ADT, ORM, ORU, SIU, MDM etc. with human-readable description and a "Typical segments" bar showing present/absent segments (#45, #50)
 - [x] **Validation** — rule-based engine checks required MSH fields and message-type-specific segments; warnings shown as amber badges in the list and a warning panel in the detail view (#46, #51)
+- [x] **Data type validation** — validation engine extended to check NM, DT, TS, SI field values against the v2.5.1 dictionary; type violations shown as distinct blue badges; first-component-only check avoids false positives on composite types (#62)
+- [x] **Validation status filter** — header button and `has:` search prefix to filter the message list by validation status (all / warnings / errors only) (#60)
 - [x] **Segment diff** — pin any message as a reference with the `◎` button; open the Diff tab on any other message for a field-level side-by-side comparison with red/green highlighting (#47, #52)
+- [x] **Diff: ignore dynamic fields** — toggle in the Diff tab to hide MSH-7/MSH-10 so always-changing metadata does not obscure logical differences; hidden count shown in summary (#61)
 - [ ] **Dictionary Version Support** — verify HL7 versions to officially support and define a distribution/toggle strategy (deferred to post-M3)
 
 ### Acceptance Criteria

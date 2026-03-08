@@ -14,11 +14,11 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 - **Message type detection** — detail header shows a human-readable type description (e.g. "Admit / Visit Notification") and a "Typical segments" bar with coloured badges indicating which segments are present vs absent (#45, #50)
 - **Segment description tooltips** — hovering a segment header (e.g. `MSH`, `PID`) shows its official HL7 description as a CSS tooltip below the header; the same description appears as a native `title` tooltip on every typical-segment badge (#45)
 - **Validation engine** — rule-based validator checks required MSH fields and message-type-specific segments (ADT, ORU, ORM, OML, SIU, MDM); warnings shown as an amber badge in the message list and a collapsible panel in the detail view (#46, #51)
+- **Data type validation** — the validation engine checks NM (numeric), DT (date), TS (timestamp), and SI (sequence ID) field values against the HL7 v2.5.1 dictionary; violations appear as blue `INVALID_DATATYPE` badges in the detail view, distinct from missing-field (amber) and missing-segment (red) warnings; only first field component is validated to avoid false positives on composite values (#62)
+- **Validation status filter** — header button cycles through All → Warnings Only → Errors Only; also supports `has:warnings` / `has:errors` prefixes in the search bar for combined filtering (#60)
 - **Segment diff** — pin any message as a reference with the `◎` button in the list row, then open the Diff tab on another message to see a field-level side-by-side comparison with red/green highlighting (#47, #52)
+- **Diff: ignore dynamic fields toggle** — toggle switch in the Diff tab hides MSH-7 (Date/Time) and MSH-10 (Message Control ID) from the comparison; the summary shows how many dynamic fields were hidden so nothing is silently lost (#61)
 - **Detail header layout** — message title, type description, and meta line are stacked vertically on the left; Bookmark button and tag controls are grouped on the right side of the header
-
-### Added
-- **Diff: ignore dynamic fields toggle** — the Diff tab now has a toggle switch to hide MSH-7 (Date/Time) and MSH-10 (Message Control ID) from the comparison; the diff counter updates to reflect hidden fields, making logical differences easier to spot (#61)
 
 ### Fixed
 - **Missing CSS closing brace** — `.validation-seg` rule was missing its closing `}` in the merged main branch, causing the diff-view CSS block to be incorrectly scoped
@@ -28,6 +28,7 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 - **Missing ACK styling** — added the missing `.msg-ack` class to center align and correctly style ACK codes (#58)
 - **Pin button highlight color** — decoupled pin button styling from bookmarks to ensure pinned items highlight in blue instead of yellow (#59)
 - **Diff table column widths** — enforced strict layout on the segment diff table using `table-layout: fixed` so right-hand columns don't stretch (#67)
+- **Typical-segment badge colour for data type warnings** — `INVALID_DATATYPE` warnings no longer turn a segment badge yellow; only `MISSING_FIELD` triggers amber, keeping the badge colour semantics accurate (red = missing segment, amber = missing required field, blue = present)
 
 ---
 
