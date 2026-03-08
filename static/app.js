@@ -19,6 +19,7 @@ let paused = false;
 let pendingMessages = [];
 let renderScheduled = false;
 let showBookmarkedOnly = false;
+let validationFilter = 0; // 0: All, 1: Warnings, 2: Errors Only
 
 // Segment diff state
 let diffPinnedMessage = null; // the reference message pinned for comparison
@@ -131,7 +132,8 @@ function saveSession() {
             collapsedSegments: [...collapsedSegments],
             colorByPort,
             highlightedSource,
-            showBookmarkedOnly
+            showBookmarkedOnly,
+            validationFilter
         }));
     } catch (_) { /* sessionStorage full or unavailable */ }
 }
@@ -149,6 +151,7 @@ function loadSession() {
         if (typeof saved.colorByPort === 'boolean') colorByPort = saved.colorByPort;
         if (saved.highlightedSource !== undefined) highlightedSource = saved.highlightedSource;
         if (typeof saved.showBookmarkedOnly === 'boolean') showBookmarkedOnly = saved.showBookmarkedOnly;
+        if (typeof saved.validationFilter === 'number') validationFilter = saved.validationFilter;
         if (Array.isArray(saved.collapsedSegments)) {
             collapsedSegments = new Set(saved.collapsedSegments);
         }
@@ -324,6 +327,11 @@ function renderMessageList() {
     if (showBookmarkedOnly) {
         filtered = filtered.filter(m => m.bookmarked);
     }
+    if (validationFilter === 1) { // Any warnings
+        filtered = filtered.filter(m => (m.validation_warning_count || 0) > 0 || m.has_segment_errors);
+    } else if (validationFilter === 2) { // Errors only
+        filtered = filtered.filter(m => m.has_segment_errors);
+    }
 
     if (filtered.length === 0) {
         empty.style.display = 'flex';
@@ -417,7 +425,16 @@ function renderMessageList() {
 }
 
 function matchesSearch(msg, query) {
-    const q = query.toLowerCase();
+    let q = query.toLowerCase().trim();
+    if (q.startsWith('has:warnings')) {
+        if ((msg.validation_warning_count || 0) === 0 && !msg.has_segment_errors) return false;
+        q = q.replace('has:warnings', '').trim();
+        if (!q) return true;
+    } else if (q.startsWith('has:errors')) {
+        if (!msg.has_segment_errors) return false;
+        q = q.replace('has:errors', '').trim();
+        if (!q) return true;
+    }
     return (
         (msg.message_type || '').toLowerCase().includes(q) ||
         (msg.sending_facility || '').toLowerCase().includes(q) ||
@@ -864,6 +881,31 @@ function toggleBookmarkFilter() {
     saveSession();
 }
 
+function syncValidationFilterUI() {
+    const btn = document.getElementById('btn-validation');
+    if (!btn) return;
+    if (validationFilter === 0) {
+        btn.textContent = '⚠ All';
+        btn.style.borderColor = '';
+        btn.style.color = '';
+    } else if (validationFilter === 1) {
+        btn.textContent = '⚠ Warn';
+        btn.style.borderColor = 'var(--warning)';
+        btn.style.color = 'var(--warning)';
+    } else if (validationFilter === 2) {
+        btn.textContent = '⚠ Error';
+        btn.style.borderColor = 'var(--error)';
+        btn.style.color = 'var(--error)';
+    }
+}
+
+function toggleValidationFilter() {
+    validationFilter = (validationFilter + 1) % 3;
+    syncValidationFilterUI();
+    renderMessageList();
+    saveSession();
+}
+
 // --- Utility ---
 function showToast(message, type = 'error') {
     const toast = document.createElement('div');
@@ -1008,6 +1050,8 @@ document.addEventListener('click', (e) => {
         btn.style.borderColor = 'var(--warning)';
         btn.style.color = 'var(--warning)';
     }
+
+    syncValidationFilterUI();
 })();
 
 initSplitter();
