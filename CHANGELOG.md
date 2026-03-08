@@ -17,6 +17,9 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 - **Segment diff** — pin any message as a reference with the `◎` button in the list row, then open the Diff tab on another message to see a field-level side-by-side comparison with red/green highlighting (#47, #52)
 - **Detail header layout** — message title, type description, and meta line are stacked vertically on the left; Bookmark button and tag controls are grouped on the right side of the header
 
+### Added
+- **Diff: ignore dynamic fields toggle** — the Diff tab now has a toggle switch to hide MSH-7 (Date/Time) and MSH-10 (Message Control ID) from the comparison; the diff counter updates to reflect hidden fields, making logical differences easier to spot (#61)
+
 ### Fixed
 - **Missing CSS closing brace** — `.validation-seg` rule was missing its closing `}` in the merged main branch, causing the diff-view CSS block to be incorrectly scoped
 - **Message list date/time** — replaced `toLocaleTimeString` with manual formatting to ensure consistent `YYYY-MM-DD HH:mm:ss` display (#55)

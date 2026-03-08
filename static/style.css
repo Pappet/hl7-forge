@@ -1039,6 +1039,17 @@ body.resizing * {
     background: color-mix(in srgb, var(--warning) 8%, transparent);
 }
 
+.diff-options-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 14px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
 .diff-header {
     display: grid;
     grid-template-columns: 1fr 1fr;
