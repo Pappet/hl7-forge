@@ -29,7 +29,8 @@
         <div class="header-actions">
             <button onclick="togglePause()" id="btn-pause" title="Pause live updates">⏸ Pause</button>
             <button onclick="toggleAutoscroll()" id="btn-autoscroll" title="Auto-scroll">⬇ Auto</button>
-            <button onclick="toggleBookmarkFilter()" id="btn-bookmarks" title="Show bookmarked only">☆ Bookmarks</button>
+            <button onclick="toggleBookmarkFilter()" id="btn-bookmarks" title="Show bookmarked only">☆
+                Bookmarks</button>
             <button onclick="exportMessages()" title="Export JSON">📥 Export</button>
             <button class="danger" onclick="clearMessages()" title="Clear all">🗑 Clear</button>
         </div>
@@ -46,7 +47,7 @@
                 <span>Type</span>
                 <span>Facility</span>
                 <span>Patient</span>
-                <span>Time</span>
+                <span>Date / Time</span>
                 <span>Segs</span>
                 <span>ACK</span>
                 <span></span>
@@ -80,7 +81,8 @@
                 <button class="detail-tab" data-tab="raw" onclick="switchTab('raw')">Raw</button>
                 <button class="detail-tab" data-tab="ack" onclick="switchTab('ack')">ACK</button>
                 <button class="detail-tab" data-tab="json" onclick="switchTab('json')">JSON</button>
-                <button class="detail-tab diff-tab" id="tab-btn-diff" data-tab="diff" onclick="switchTab('diff')" style="display:none">&#9651; Diff</button>
+                <button class="detail-tab diff-tab" id="tab-btn-diff" data-tab="diff" onclick="switchTab('diff')"
+                    style="display:none">&#9651; Diff</button>
             </div>
             <div class="detail-content" id="detail-content">
                 <div class="empty-state">

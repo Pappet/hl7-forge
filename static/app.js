@@ -350,8 +350,13 @@ function renderMessageList() {
         row.onclick = () => selectMessage(msg.id);
 
         const time = new Date(msg.received_at);
-        const timeStr = time.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-
+        const yyyy = time.getFullYear();
+        const mm = String(time.getMonth() + 1).padStart(2, '0');
+        const dd = String(time.getDate()).padStart(2, '0');
+        const hh = String(time.getHours()).padStart(2, '0');
+        const min = String(time.getMinutes()).padStart(2, '0');
+        const ss = String(time.getSeconds()).padStart(2, '0');
+        const timeStr = `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
         // Source color dot
         const srcColor = getSourceColor(msg.source_addr);
         const dotHtml = `<span class="source-dot" style="background:${srcColor};box-shadow:0 0 4px ${srcColor}" title="${escAttr(msg.source_addr)}"></span>`;
@@ -551,25 +556,25 @@ function renderTab() {
             ? `<div class="typical-segments-bar">
                 <span class="typical-segments-label">Typical segments:</span>
                 ${msg.typical_segments.map(s => {
-                    const present = msg.segments.some(seg => seg.name === s);
-                    const desc = (msg.typical_segment_descriptions || {})[s];
-                    let cls, titleText;
-                    if (missingSegWarnings[s]) {
-                        cls = 'missing';
-                        titleText = missingSegWarnings[s];
-                    } else if (fieldWarningSegs[s]) {
-                        cls = 'warn';
-                        titleText = (desc ? desc + ' — ' : '') + 'has required fields missing';
-                    } else if (present) {
-                        cls = 'present';
-                        titleText = desc || null;
-                    } else {
-                        cls = 'absent';
-                        titleText = desc || null;
-                    }
-                    const titleAttr = titleText ? ` title="${escAttr(titleText)}"` : '';
-                    return `<span class="typical-seg ${cls}"${titleAttr}>${esc(s)}</span>`;
-                }).join('')}
+                const present = msg.segments.some(seg => seg.name === s);
+                const desc = (msg.typical_segment_descriptions || {})[s];
+                let cls, titleText;
+                if (missingSegWarnings[s]) {
+                    cls = 'missing';
+                    titleText = missingSegWarnings[s];
+                } else if (fieldWarningSegs[s]) {
+                    cls = 'warn';
+                    titleText = (desc ? desc + ' — ' : '') + 'has required fields missing';
+                } else if (present) {
+                    cls = 'present';
+                    titleText = desc || null;
+                } else {
+                    cls = 'absent';
+                    titleText = desc || null;
+                }
+                const titleAttr = titleText ? ` title="${escAttr(titleText)}"` : '';
+                return `<span class="typical-seg ${cls}"${titleAttr}>${esc(s)}</span>`;
+            }).join('')}
                </div>`
             : '';
         const hasSegErrors = warnings.some(w => w.code === 'MISSING_SEGMENT');
@@ -579,10 +584,10 @@ function renderTab() {
                 <div class="validation-warnings-title">&#9888; Validation ${hasSegErrors ? 'Errors' : 'Warnings'} (${msg.validation_warnings.length})</div>
                 <ul class="validation-warnings-list">
                 ${msg.validation_warnings.map(w => {
-                    const badgeCls = w.code === 'MISSING_SEGMENT' ? 'validation-seg error' : 'validation-seg';
-                    const label = w.segment + (w.field != null ? '-' + w.field : '');
-                    return `<li><span class="${badgeCls}">${esc(label)}</span> ${esc(w.message)}</li>`;
-                }).join('')}
+                const badgeCls = w.code === 'MISSING_SEGMENT' ? 'validation-seg error' : 'validation-seg';
+                const label = w.segment + (w.field != null ? '-' + w.field : '');
+                return `<li><span class="${badgeCls}">${esc(label)}</span> ${esc(w.message)}</li>`;
+            }).join('')}
                 </ul>
                </div>`
             : '';
@@ -706,7 +711,7 @@ function renderDiffTab(container, msgB) {
             const rowClass = changed ? 'diff-row changed' : 'diff-row same';
             rows += `
                 <tr class="${rowClass}">
-                    <td class="diff-field-name" title="${escAttr(desc)}">${esc(segName)}-${idx}${desc ? ' <span class="diff-desc">'+esc(desc)+'</span>' : ''}</td>
+                    <td class="diff-field-name" title="${escAttr(desc)}">${esc(segName)}-${idx}${desc ? ' <span class="diff-desc">' + esc(desc) + '</span>' : ''}</td>
                     <td class="diff-val diff-val-a ${changed ? 'diff-changed' : ''}">${esc(vA) || '<span class="field-empty">empty</span>'}</td>
                     <td class="diff-val diff-val-b ${changed ? 'diff-changed' : ''}">${esc(vB) || '<span class="field-empty">empty</span>'}</td>
                 </tr>`;
