@@ -90,7 +90,7 @@ This document tracks all milestones and planned features. Each milestone lists i
 
 **Goal:** Developers understand HL7 messages directly in the UI — field names, validation, diff.
 
-**Status: Planned**
+**Status: Complete**
 
 ### Requirements
 
@@ -98,17 +98,18 @@ This document tracks all milestones and planned features. Each milestone lists i
 
 ### Tasks
 
-- [x] **HL7 field dictionary** — hover tooltips with field descriptions (e.g. "PID-5: Patient Name") based on embedded HL7 v2.5.1 spec
-- [ ] **Dictionary Version Support** — verify what HL7 versions should be officially supported by the Forge and how to distribute/toggle them
-- [ ] **Message type detection** — ADT, ORM, ORU, SIU, MDM etc. with short description and typical segments
-- [ ] **Validation** — check required fields per message type, show warnings (e.g. "PID-3 missing in ADT^A01")
-- [ ] **Segment diff** — compare two messages side by side, highlight differences
+- [x] **HL7 field dictionary** — hover tooltips with field descriptions (e.g. "PID-5: Patient Name") based on embedded HL7 v2.5.1 spec (#48)
+- [x] **Segment description tooltips** — hover segment headers and typical-segment badges for their HL7 description (#45)
+- [x] **Message type detection** — ADT, ORM, ORU, SIU, MDM etc. with human-readable description and a "Typical segments" bar showing present/absent segments (#45, #50)
+- [x] **Validation** — rule-based engine checks required MSH fields and message-type-specific segments; warnings shown as amber badges in the list and a warning panel in the detail view (#46, #51)
+- [x] **Segment diff** — pin any message as a reference with the `◎` button; open the Diff tab on any other message for a field-level side-by-side comparison with red/green highlighting (#47, #52)
+- [ ] **Dictionary Version Support** — verify HL7 versions to officially support and define a distribution/toggle strategy (deferred to post-M3)
 
 ### Acceptance Criteria
 
 - [x] Hovering over an HL7 field shows its name and description from the spec
-- [ ] Validation warnings appear for missing required fields
-- [ ] Diff view shows field differences between two messages highlighted in color
+- [x] Validation warnings appear for missing required fields
+- [x] Diff view shows field differences between two messages highlighted in colour
 
 ---
 

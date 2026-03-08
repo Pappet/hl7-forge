@@ -77,6 +77,23 @@ hsl(260, 65%, 60%)  — Indigo     hsl(15,  90%, 58%)  — Coral
 - **Embedded distribution:** Static files are baked into the binary via `rust-embed`. Changes require recompilation.
 - **DOM batching:** Buffer incoming messages and flush to the DOM every `250ms` to prevent freeze at high throughput.
 - **Client-side filtering:** Search filters the in-memory `messages[]` array directly. Debounce search input at `300ms`.
+- **Full message on demand:** The `messages[]` array holds lightweight `Hl7MessageSummary` objects. Any operation that needs segment data (detail view, diff pin) must fetch the full message via `GET /api/messages/{id}`.
+
+### Tooltip Rules
+
+Two tooltip styles are in use — choose based on the element:
+
+| Context | Style | Implementation |
+|---|---|---|
+| Field index cell (`field-idx`) | Custom CSS `::after`/`::before` — right of cell, fade-in | `data-desc` attribute + `.has-tooltip` class |
+| Segment header row | Custom CSS `::after` — below header, fade-in | `data-desc` attribute + `.has-seg-tooltip` class |
+| Typical-segment badges | Native `title` attribute | `title="SEG: Description"` on `<span>` |
+
+### Detail Header Layout
+
+The `.detail-header` is a flex row:
+- **Left** (`.detail-header-info`, `flex: 1`): message title → type description → meta line — vertical stack
+- **Right** (`#detail-tags` / `.detail-tags-container`, `flex-shrink: 0`): Bookmark button, tag chips, Add tag input — right-aligned
 
 ---
 

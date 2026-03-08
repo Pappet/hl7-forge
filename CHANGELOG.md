@@ -10,8 +10,15 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 ## [Unreleased]
 
 ### Added
-- **HL7 field dictionary** — hover over any field value or index in the message detail view to see a premium CSS tooltip with its official HL7 v2.5.1 specification description (e.g., "Patient Name" for PID-5). Powered by a zero-overhead, compiled-in JSON dictionary ensuring completely offline functionality (#48)
-- **Segment description tooltips** — hovering the segment header (e.g. `MSH`, `PID`) now shows the official HL7 segment description from the embedded dictionary as a CSS tooltip below the header; the same description also appears as a native tooltip on the "Typical segments" badges for both present and absent segments (#45)
+- **HL7 field dictionary** — hover over any field in the detail view for a CSS tooltip with its official HL7 v2.5.1 description (e.g. "Patient Name" for PID-5); powered by a compiled-in zero-overhead JSON dictionary (#48)
+- **Message type detection** — detail header shows a human-readable type description (e.g. "Admit / Visit Notification") and a "Typical segments" bar with coloured badges indicating which segments are present vs absent (#45, #50)
+- **Segment description tooltips** — hovering a segment header (e.g. `MSH`, `PID`) shows its official HL7 description as a CSS tooltip below the header; the same description appears as a native `title` tooltip on every typical-segment badge (#45)
+- **Validation engine** — rule-based validator checks required MSH fields and message-type-specific segments (ADT, ORU, ORM, OML, SIU, MDM); warnings shown as an amber badge in the message list and a collapsible panel in the detail view (#46, #51)
+- **Segment diff** — pin any message as a reference with the `◎` button in the list row, then open the Diff tab on another message to see a field-level side-by-side comparison with red/green highlighting (#47, #52)
+- **Detail header layout** — message title, type description, and meta line are stacked vertically on the left; Bookmark button and tag controls are grouped on the right side of the header
+
+### Fixed
+- **Missing CSS closing brace** — `.validation-seg` rule was missing its closing `}` in the merged main branch, causing the diff-view CSS block to be incorrectly scoped
 
 ---
 

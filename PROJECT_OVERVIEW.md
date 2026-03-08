@@ -7,8 +7,8 @@ HL7 Forge is a high-performance MLLP server with a real-time web UI for inspecti
 ## Project Status
 
 - **Language:** Rust
-- **Latest Release:** v0.3.0 — Milestones 1 & 2 complete
-- **Next Milestone:** Milestone 3 (Message Analysis)
+- **Latest Release:** v0.3.0 — Milestones 1, 2 & 3 complete
+- **Next Milestone:** Milestone 4 (Workflow & Testing)
 
 ---
 
@@ -90,11 +90,23 @@ A thread-safe in-memory buffer with dual eviction:
 - **Trigger:** either limit hit → evict oldest 10% of non-bookmarked messages
 - **Rationale:** MDM messages with Base64-encoded attachments can be several MB each; count-only eviction is insufficient.
 
-### HL7 Parser & Dictionary (`src/hl7/`, `src/dictionary.rs`)
+### HL7 Parser & Dictionary (`src/hl7/`, `src/dictionary.rs`, `src/validation.rs`)
 
-- `hl7/parser.rs` — Parses raw HL7 text by extracting delimiters from the MSH segment, splitting on `\r`/`\n` into segments, and decomposing fields/components. Also builds ACK responses.
-- `hl7/types.rs` — Data structures: `Hl7Message`, `Hl7MessageSummary`, `Hl7Segment`, `Hl7Field`, `Delimiters`.
-- `dictionary.rs` — A compiled-in, high-speed `OnceLock` in-memory JSON dictionary engine providing field definitions based on the HL7 v2.5.1 specification.
+The parser operates in four passes:
+
+1. **Segment parsing** — extracts delimiters from MSH, splits on `\r`/`\n`, decomposes fields and components.
+2. **Dictionary injection** — `inject_descriptions` walks every segment and field, filling `Hl7Segment.description` and `Hl7Field.description` from the embedded v2.5.1 JSON via a single `HashMap::get` per segment.
+3. **Message type lookup** — `message_types::get_message_type_info` resolves the `TYPE^EVENT` string to a human-readable description and a list of typical segments; also builds the `typical_segment_descriptions` map for the UI badges.
+4. **Validation** — `validation::validate_message` applies rule-based checks: universal MSH required fields, plus per-type rules for ADT, ORU^R01, ORM^O01, OML^O21, SIU, and MDM.
+
+Key source files:
+
+- `hl7/parser.rs` — four-pass parse pipeline and ACK builder
+- `hl7/types.rs` — `Hl7Message`, `Hl7MessageSummary`, `Hl7Segment` (with `description`), `Hl7Field`, `Delimiters`
+- `hl7/message_types.rs` — `OnceLock<HashMap>` registry of 80+ HL7 v2.x message types with descriptions and typical segment lists
+- `dictionary.rs` — `OnceLock`-based JSON dictionary engine; `inject_descriptions` fills segment + field descriptions; `get_segment_description` used for typical-segment badges
+- `validation.rs` — `ValidationWarning` struct and rule engine; non-blocking (messages stored regardless of warnings)
+- `src/assets/hl7/v2.5.1.json` — embedded dictionary source (segment descriptions + field definitions)
 
 **MSH field indexing quirk:** MSH-1 is the field separator character itself (`|`). The parser inserts a synthetic `Hl7Field { index: 1, value: "|" }` and shifts all other fields up by 1, so that `get_field_value(msh, 3)` correctly returns Sending Application per the HL7 standard.
 
@@ -107,10 +119,16 @@ Three files, all embedded into the binary at compile time via `rust-embed`:
 - `app.js` — All logic (WebSocket, rendering, search, batching)
 
 Key behaviors:
-- Messages are batched and rendered at most every 250ms
+- Messages are batched and rendered at most every 250ms to prevent DOM freeze at high throughput
 - Pause/Live button buffers incoming messages without displaying them
 - Search is purely client-side (filters `messages[]` array via `matchesSearch()`)
-- Parse errors are shown with PARSE ERROR in red in the message list
+- Parse errors are shown with `⚠ PARSE ERROR` in red in the message list
+- Validation warnings show as an amber `⚠ N` badge in the list row and a collapsible warnings panel in the detail view
+- Message type description displayed in the detail header; "Typical segments" bar shows present (green) vs absent (grey) badges with HL7 description tooltips
+- Segment headers have a CSS `::after` tooltip showing the segment description on hover
+- Fields have a CSS `::after` tooltip showing the field description on hover
+- Segment diff: `diffPinnedMessage` state stores a full message fetched via `/api/messages/{id}`; `renderDiffTab()` builds a field-level two-column table with red/green highlighting
+- Detail header is a flex row: left column (`detail-header-info`) has title, type description, and meta; right column (`detail-tags-container`) has Bookmark, tags, and Add tag controls
 
 ---
 
@@ -118,26 +136,27 @@ Key behaviors:
 
 ```
 src/
-├── main.rs          # Entry point, tokio::select! over MLLP + Web tasks
-├── config.rs        # Configuration loading (hl7-forge.toml + env vars)
-├── mllp.rs          # TCP listener, MLLP framing, ACK/NACK dispatch
-├── store.rs         # In-memory store with broadcast channel, dual eviction
-├── web.rs           # Axum router, REST handlers, WebSocket handler
-├── dictionary.rs    # In-memory embedded HL7 dictionary engine 
+├── main.rs              # Entry point, tokio::select! over MLLP + Web tasks
+├── config.rs            # Configuration loading (hl7-forge.toml + env vars)
+├── mllp.rs              # TCP listener, MLLP framing, ACK/NACK dispatch
+├── store.rs             # In-memory store with broadcast channel, dual eviction
+├── web.rs               # Axum router, REST handlers, WebSocket handler
+├── dictionary.rs        # OnceLock JSON dictionary engine (segment + field descriptions)
+├── validation.rs        # Rule-based HL7 validator, ValidationWarning struct
 └── hl7/
     ├── mod.rs
-    ├── parser.rs    # Raw HL7 → Hl7Message, delimiter extraction, ACK builder
-    └── types.rs     # Hl7Message, Hl7MessageSummary, Hl7Segment, Hl7Field, Delimiters
+    ├── parser.rs        # Four-pass parse pipeline, delimiter extraction, ACK builder
+    ├── types.rs         # Hl7Message, Hl7MessageSummary, Hl7Segment, Hl7Field, Delimiters
+    └── message_types.rs # OnceLock registry of 80+ message types with descriptions
+src/assets/hl7/
+└── v2.5.1.json          # Embedded HL7 v2.5.1 dictionary (segment + field definitions)
 static/
-├── index.html       # HTML skeleton
-├── style.css        # Dark theme, CSS variables
-└── app.js           # SPA logic (vanilla JS)
-assets/
-└── hl7/
-    └── v2.5.1.json  # Highly optimized canonical source of truth for dictionary fields
+├── index.html           # HTML skeleton
+├── style.css            # Dark theme, CSS variables
+└── app.js               # SPA logic (vanilla JS)
 tests/
-├── test.sh          # Linux/macOS functional + load test (netcat, 100 messages)
-└── test.ps1         # Windows functional + load test (.NET TcpClient, 1000 messages)
+├── test.sh              # Linux/macOS functional + load test (netcat, 100 messages)
+└── test.ps1             # Windows functional + load test (.NET TcpClient, 1000 messages)
 ```
 
 ---
