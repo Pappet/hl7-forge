@@ -1111,6 +1111,7 @@ body.resizing * {
     width: 100%;
     border-collapse: collapse;
     font-size: 11px;
+    table-layout: fixed;
 }
 
 .diff-table th {
