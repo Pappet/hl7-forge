@@ -857,3 +857,63 @@ body.resizing * {
         transform: translateY(-50%) translateX(0);
     }
 }
+/* ── Validation warning badge (list row) ──────────────────────────────── */
+.validation-badge {
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--warning);
+    background: color-mix(in srgb, var(--warning) 15%, transparent);
+    border: 1px solid color-mix(in srgb, var(--warning) 35%, transparent);
+    border-radius: 3px;
+    padding: 0 4px;
+    margin-left: 4px;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+/* ── Validation warnings panel (detail view) ──────────────────────────── */
+.validation-warnings-panel {
+    margin: 8px 12px;
+    border: 1px solid color-mix(in srgb, var(--warning) 40%, transparent);
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--warning) 8%, transparent);
+    overflow: hidden;
+}
+
+.validation-warnings-title {
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--warning);
+    background: color-mix(in srgb, var(--warning) 12%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, var(--warning) 25%, transparent);
+}
+
+.validation-warnings-list {
+    list-style: none;
+    padding: 4px 0;
+    margin: 0;
+}
+
+.validation-warnings-list li {
+    padding: 4px 12px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+}
+
+.validation-warnings-list li:last-child {
+    border-bottom: none;
+}
+
+.validation-seg {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--warning);
+    background: color-mix(in srgb, var(--warning) 15%, transparent);
+    border-radius: 3px;
+    padding: 0 4px;
+    margin-right: 6px;
+}

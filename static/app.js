@@ -354,9 +354,13 @@ function renderMessageList() {
         const dotHtml = `<span class="source-dot" style="background:${srcColor};box-shadow:0 0 4px ${srcColor}" title="${escAttr(msg.source_addr)}"></span>`;
 
         // Task 1: red marker for messages that failed to parse
+        const warnCount = msg.validation_warning_count || 0;
+        const warnBadge = warnCount > 0
+            ? ` <span class="validation-badge" title="${warnCount} validation warning${warnCount > 1 ? 's' : ''}">⚠ ${warnCount}</span>`
+            : '';
         const typeHtml = msg.parse_error
             ? `<span class="msg-type" style="color:var(--error)" title="${escAttr(msg.parse_error)}">⚠ PARSE ERROR</span>`
-            : `<span class="msg-type">${esc(msg.message_type)}</span>`;
+            : `<span class="msg-type">${esc(msg.message_type)}${warnBadge}</span>`;
 
         const tagsHtml = (msg.tags && msg.tags.length > 0)
             ? `<div class="msg-tags-list">` + msg.tags.map(t => `<span class="msg-tag-small">${esc(t)}</span>`).join('') + `</div>`
@@ -483,7 +487,17 @@ function renderTab() {
             </div>`;
             return;
         }
-        content.innerHTML = msg.segments.map((seg, segIdx) => {
+        const validationBanner = (msg.validation_warnings && msg.validation_warnings.length)
+            ? `<div class="validation-warnings-panel">
+                <div class="validation-warnings-title">&#9888; Validation Warnings (${msg.validation_warnings.length})</div>
+                <ul class="validation-warnings-list">
+                ${msg.validation_warnings.map(w =>
+                    `<li><span class="validation-seg">${esc(w.segment)}${w.field != null ? '-' + w.field : ''}</span> ${esc(w.message)}</li>`
+                ).join('')}
+                </ul>
+               </div>`
+            : '';
+        content.innerHTML = validationBanner + msg.segments.map((seg, segIdx) => {
             const key = `${msg.id}-${segIdx}`;
             const collapsed = collapsedSegments.has(key);
             const icon = collapsed ? '▸' : '▾';
