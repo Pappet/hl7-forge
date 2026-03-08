@@ -106,8 +106,7 @@ pub fn parse_message(raw: &str, source_addr: &str) -> Result<Hl7Message, String>
             .typical_segments
             .iter()
             .filter_map(|s| {
-                crate::dictionary::get_segment_description(s)
-                    .map(|d| (s.to_string(), d))
+                crate::dictionary::get_segment_description(s).map(|d| (s.to_string(), d))
             })
             .collect();
     }

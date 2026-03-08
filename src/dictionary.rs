@@ -48,10 +48,7 @@ pub fn get_field_description(version: &str, segment: &str, field_seq: usize) -> 
 
 /// Return the description for a segment (e.g. "MSH" → "Message Header").
 pub fn get_segment_description(name: &str) -> Option<String> {
-    get_v251()
-        .segments
-        .get(name)
-        .map(|s| s.desc.clone())
+    get_v251().segments.get(name).map(|s| s.desc.clone())
 }
 
 pub fn inject_descriptions(segments: &mut [crate::hl7::types::Hl7Segment], version: &str) {
