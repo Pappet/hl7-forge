@@ -356,10 +356,11 @@ function renderMessageList() {
         const srcColor = getSourceColor(msg.source_addr);
         const dotHtml = `<span class="source-dot" style="background:${srcColor};box-shadow:0 0 4px ${srcColor}" title="${escAttr(msg.source_addr)}"></span>`;
 
-        // Task 1: red marker for messages that failed to parse
+        // Validation badge: red if missing segments (errors), yellow for field warnings only
         const warnCount = msg.validation_warning_count || 0;
+        const warnCls = msg.has_segment_errors ? 'validation-badge error' : 'validation-badge';
         const warnBadge = warnCount > 0
-            ? ` <span class="validation-badge" title="${warnCount} validation warning${warnCount > 1 ? 's' : ''}">⚠ ${warnCount}</span>`
+            ? ` <span class="${warnCls}" title="${warnCount} validation warning${warnCount > 1 ? 's' : ''}">⚠ ${warnCount}</span>`
             : '';
         const typeHtml = msg.parse_error
             ? `<span class="msg-type" style="color:var(--error)" title="${escAttr(msg.parse_error)}">⚠ PARSE ERROR</span>`
@@ -571,9 +572,11 @@ function renderTab() {
                 }).join('')}
                </div>`
             : '';
+        const hasSegErrors = warnings.some(w => w.code === 'MISSING_SEGMENT');
+        const panelCls = hasSegErrors ? 'validation-warnings-panel error' : 'validation-warnings-panel';
         const validationBanner = (msg.validation_warnings && msg.validation_warnings.length)
-            ? `<div class="validation-warnings-panel">
-                <div class="validation-warnings-title">&#9888; Validation Warnings (${msg.validation_warnings.length})</div>
+            ? `<div class="${panelCls}">
+                <div class="validation-warnings-title">&#9888; Validation ${hasSegErrors ? 'Errors' : 'Warnings'} (${msg.validation_warnings.length})</div>
                 <ul class="validation-warnings-list">
                 ${msg.validation_warnings.map(w => {
                     const badgeCls = w.code === 'MISSING_SEGMENT' ? 'validation-seg error' : 'validation-seg';
