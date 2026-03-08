@@ -1244,6 +1244,7 @@ body.resizing * {
 .copy-btn.copy-success {
     opacity: 1 !important;
     color: var(--success);
+    animation: copy-flash 0.5s ease-out;
 }
 
 /* Field value click-to-copy */
@@ -1269,4 +1270,8 @@ body.resizing * {
 .copy-raw-btn {
     font-size: 11px;
     padding: 4px 10px;
+}
+
+.copy-raw-btn.copy-success {
+    animation: copy-flash 0.5s ease-out;
 }
