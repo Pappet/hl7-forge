@@ -128,6 +128,8 @@ Key behaviors:
 - Segment headers have a CSS `::after` tooltip showing the segment description on hover
 - Fields have a CSS `::after` tooltip showing the field description on hover
 - Segment diff: `diffPinnedMessage` state stores a full message fetched via `/api/messages/{id}`; `renderDiffTab()` builds a field-level two-column table with red/green highlighting
+- Message list displays a full timestamp (`YYYY-MM-DD HH:mm:ss`) for precise traceability (#55)
+- Segment diff uses a fixed table layout (`table-layout: fixed`) to ensure consistent column alignment even with varying content (#67)
 - Detail header is a flex row: left column (`detail-header-info`) has title, type description, and meta; right column (`detail-tags-container`) has Bookmark, tags, and Add tag controls
 
 ---
