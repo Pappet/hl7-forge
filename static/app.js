@@ -624,6 +624,7 @@ function renderTab() {
                     <span class="collapse-icon">${icon}</span>
                     ${esc(seg.name)}
                     <span class="field-count">(${seg.fields.length})</span>
+                    <span class="copy-btn" onclick="event.stopPropagation(); copySegment(${segIdx}, this)" title="Copy segment">📋</span>
                 </div>
                 ${collapsed ? '' : `<table class="field-table">
                     <thead><tr><th style="width:70px">Field</th><th>Value</th><th>Components</th></tr></thead>
@@ -644,7 +645,11 @@ function renderTab() {
         }).join('');
     } else if (activeTab === 'raw') {
         const lines = msg.raw.split(/\r?\n|\r/).filter(l => l.trim());
-        content.innerHTML = `<div class="raw-view">${lines.map(line => {
+        content.innerHTML = `
+            <div style="display:flex;justify-content:flex-end;margin-bottom:8px;">
+                <button class="copy-raw-btn" onclick="copyRawMessage(this)" title="Copy entire message">📋 Copy All</button>
+            </div>
+            <div class="raw-view">${lines.map(line => {
             const segName = line.substring(0, 3);
             return `<div class="segment-line"><span style="color:var(--accent);font-weight:600">${esc(segName)}</span>${esc(line.substring(3))}</div>`;
         }).join('')
@@ -961,6 +966,30 @@ function escAttr(str) {
         .replace(/>/g, '&gt;');
 }
 
+// --- Copy to Clipboard ---
+async function copyToClipboard(text, feedbackEl) {
+    try {
+        await navigator.clipboard.writeText(text);
+        if (feedbackEl) {
+            feedbackEl.classList.add('copy-success');
+            setTimeout(() => feedbackEl.classList.remove('copy-success'), 1500);
+        }
+    } catch (e) {
+        showToast('Copy failed: ' + e.message);
+    }
+}
+
+function copySegment(segIdx, el) {
+    if (!selectedMessage) return;
+    const seg = selectedMessage.segments[segIdx];
+    if (seg) copyToClipboard(seg.raw, el);
+}
+
+function copyRawMessage(el) {
+    if (!selectedMessage) return;
+    copyToClipboard(selectedMessage.raw, el);
+}
+
 // --- Panel Splitter ---
 const SPLITTER_STORAGE_KEY = 'hl7forge_splitter_width';
 const SPLITTER_DEFAULT_RATIO = 0.55;
@@ -1053,8 +1082,13 @@ document.getElementById('search-input').addEventListener('input', (e) => {
 });
 
 document.addEventListener('click', (e) => {
-    const el = e.target.closest('.segment-name');
-    if (el) toggleSegment(el.dataset.segKey);
+    const segEl = e.target.closest('.segment-name');
+    if (segEl) toggleSegment(segEl.dataset.segKey);
+
+    const cell = e.target.closest('.field-val');
+    if (cell && !cell.querySelector('.field-empty')) {
+        copyToClipboard(cell.textContent.trim(), cell);
+    }
 });
 
 // Apply restored session state to UI elements
