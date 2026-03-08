@@ -297,6 +297,12 @@ body.resizing * {
     text-align: right;
 }
 
+.msg-ack {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-align: center;
+}
+
 .list-header {
     display: grid;
     grid-template-columns: 12px 100px 90px 1fr 140px 60px 40px 24px 24px;
