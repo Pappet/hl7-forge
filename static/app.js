@@ -570,7 +570,7 @@ function renderTab() {
         const fieldWarningSegs = {};
         for (const w of warnings) {
             if (w.code === 'MISSING_SEGMENT') missingSegWarnings[w.segment] = w.message;
-            else if (w.code === 'MISSING_FIELD') fieldWarningSegs[w.segment] = true;
+            else if (w.code === 'MISSING_FIELD' || w.code === 'INVALID_DATATYPE') fieldWarningSegs[w.segment] = true;
         }
 
         const typicalBanner = (msg.typical_segments && msg.typical_segments.length)
@@ -605,7 +605,9 @@ function renderTab() {
                 <div class="validation-warnings-title">&#9888; Validation ${hasSegErrors ? 'Errors' : 'Warnings'} (${msg.validation_warnings.length})</div>
                 <ul class="validation-warnings-list">
                 ${msg.validation_warnings.map(w => {
-                const badgeCls = w.code === 'MISSING_SEGMENT' ? 'validation-seg error' : 'validation-seg';
+                const badgeCls = w.code === 'MISSING_SEGMENT' ? 'validation-seg error'
+                    : w.code === 'INVALID_DATATYPE' ? 'validation-seg type'
+                    : 'validation-seg';
                 const label = w.segment + (w.field != null ? '-' + w.field : '');
                 return `<li><span class="${badgeCls}">${esc(label)}</span> ${esc(w.message)}</li>`;
             }).join('')}

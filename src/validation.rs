@@ -46,6 +46,8 @@ pub fn validate_message(msg: &Hl7Message) -> Vec<ValidationWarning> {
         _ => {} // No rules for unknown types — do not emit spurious warnings
     }
 
+    validate_data_types(msg, &mut warnings);
+
     warnings
 }
 
@@ -347,6 +349,171 @@ fn validate_mdm(msg: &Hl7Message, warnings: &mut Vec<ValidationWarning>) {
     }
 }
 
+// ─── Data type validation ────────────────────────────────────────────────────
+
+/// Validate field values against the data types declared in the HL7 dictionary.
+///
+/// Covers the four primitive types with unambiguous, checkable formats:
+/// - **NM** (Numeric) — digits, optional sign, optional single decimal point
+/// - **DT** (Date) — YYYY[MM[DD]] — all digits, valid month/day ranges
+/// - **TS** (Timestamp) — YYYY[MM[DD[HH[MM[SS[.S+]]]]]][+/-HHMM]
+/// - **SI** (Sequence ID) — non-negative integer
+///
+/// Composite types (XPN, CX, CE, …) and free-text types (ST, TX, FT, ID, IS)
+/// are intentionally skipped — they are too format-ambiguous or table-dependent
+/// to validate without value sets.
+///
+/// Only the first component of each field is checked. Multi-component values
+/// (e.g. `CODE^Text^System`) are typical for composite types and are skipped
+/// at the `check_datatype` level.
+fn validate_data_types(msg: &Hl7Message, warnings: &mut Vec<ValidationWarning>) {
+    let dict = crate::dictionary::get_v251();
+    for seg in &msg.segments {
+        let Some(seg_def) = dict.segments.get(&seg.name) else {
+            continue;
+        };
+        for field in &seg.fields {
+            if field.value.is_empty() {
+                continue; // empty values are caught by MISSING_FIELD rules
+            }
+            let Some(field_def) = seg_def.fields.iter().find(|f| f.seq == field.index) else {
+                continue;
+            };
+            // Use only the first component — composite values include sub-component
+            // separators (^) that are not part of the primitive value itself.
+            let primary = field
+                .components
+                .first()
+                .map(String::as_str)
+                .unwrap_or(field.value.as_str());
+            if primary.is_empty() {
+                continue;
+            }
+            if let Some(err) = check_datatype(&field_def.datatype, primary) {
+                warnings.push(ValidationWarning {
+                    code: "INVALID_DATATYPE".into(),
+                    message: format!("{}-{} ({}): {}", seg.name, field.index, field_def.desc, err),
+                    segment: seg.name.clone(),
+                    field: Some(field.index),
+                });
+            }
+        }
+    }
+}
+
+fn check_datatype(datatype: &str, value: &str) -> Option<String> {
+    match datatype {
+        "NM" => validate_nm(value).map(str::to_string),
+        "DT" => validate_dt(value),
+        "TS" => validate_ts(value),
+        "SI" => validate_si(value).map(str::to_string),
+        _ => None, // composite or table-dependent types are not validated
+    }
+}
+
+/// NM — Numeric: optional sign, digits, optional single decimal point.
+fn validate_nm(value: &str) -> Option<&'static str> {
+    let v = value.strip_prefix(|c| matches!(c, '+' | '-')).unwrap_or(value);
+    if v.is_empty() {
+        return Some("expected a number (NM) but value contains only a sign character");
+    }
+    let mut dot_seen = false;
+    for c in v.chars() {
+        if c == '.' {
+            if dot_seen {
+                return Some("expected a number (NM) but value has multiple decimal points");
+            }
+            dot_seen = true;
+        } else if !c.is_ascii_digit() {
+            return Some("expected a number (NM) but value contains non-numeric characters");
+        }
+    }
+    None
+}
+
+/// DT — Date: YYYY, YYYYMM, or YYYYMMDD — all digits, valid month/day ranges.
+fn validate_dt(value: &str) -> Option<String> {
+    if !value.chars().all(|c| c.is_ascii_digit()) {
+        return Some("expected a date (DT) in YYYY[MM[DD]] format".to_string());
+    }
+    match value.len() {
+        4 => None,
+        6 => {
+            let month: u32 = value[4..6].parse().unwrap_or(0);
+            if !(1..=12).contains(&month) {
+                Some(format!(
+                    "expected a date (DT) but month '{}' is out of range 01–12",
+                    &value[4..6]
+                ))
+            } else {
+                None
+            }
+        }
+        8 => {
+            let month: u32 = value[4..6].parse().unwrap_or(0);
+            if !(1..=12).contains(&month) {
+                return Some(format!(
+                    "expected a date (DT) but month '{}' is out of range 01–12",
+                    &value[4..6]
+                ));
+            }
+            let day: u32 = value[6..8].parse().unwrap_or(0);
+            if !(1..=31).contains(&day) {
+                return Some(format!(
+                    "expected a date (DT) but day '{}' is out of range 01–31",
+                    &value[6..8]
+                ));
+            }
+            None
+        }
+        _ => Some(
+            "expected a date (DT): length must be 4 (YYYY), 6 (YYYYMM), or 8 (YYYYMMDD)"
+                .to_string(),
+        ),
+    }
+}
+
+/// TS — Timestamp: YYYY[MM[DD[HH[MM[SS[.S+]]]]]][+/-HHMM].
+/// Strips fractional seconds and timezone suffix, then validates date portion.
+fn validate_ts(value: &str) -> Option<String> {
+    // Strip fractional seconds (everything after the first '.')
+    let without_frac = match value.find('.') {
+        Some(pos) => &value[..pos],
+        None => value,
+    };
+    // Strip timezone offset (+HHMM / -HHMM) — only search after position 8
+    // so a leading '-' in an unexpected value doesn't confuse the parser.
+    let core = if without_frac.len() > 8 {
+        match without_frac[8..].find(['+', '-']) {
+            Some(offset) => &without_frac[..8 + offset],
+            None => without_frac,
+        }
+    } else {
+        without_frac
+    };
+    if core.len() < 4 || !core.chars().all(|c| c.is_ascii_digit()) {
+        return Some(
+            "expected a timestamp (TS) in YYYY[MM[DD[HH[MM[SS]]]]] format".to_string(),
+        );
+    }
+    // Validate however much of the date is present
+    let date_len = core.len().min(8);
+    if date_len >= 6 {
+        validate_dt(&core[..date_len])
+    } else {
+        None // YYYY only — valid
+    }
+}
+
+/// SI — Sequence ID: non-negative integer (digits only).
+fn validate_si(value: &str) -> Option<&'static str> {
+    if value.chars().all(|c| c.is_ascii_digit()) {
+        None
+    } else {
+        Some("expected a sequence ID (SI) but value contains non-digit characters")
+    }
+}
+
 // ─── Tests ───────────────────────────────────────────────────────────────────
 
 #[cfg(test)]
@@ -418,6 +585,101 @@ mod tests {
         assert!(
             warnings.iter().all(|w| w.segment == "MSH"),
             "Unknown type should produce only MSH warnings, got: {:?}",
+            warnings
+        );
+    }
+
+    // ── Data type unit tests ────────────────────────────────────────────────
+
+    #[test]
+    fn nm_valid_integers_and_decimals() {
+        assert!(validate_nm("0").is_none());
+        assert!(validate_nm("123").is_none());
+        assert!(validate_nm("-45").is_none());
+        assert!(validate_nm("+0.5").is_none());
+        assert!(validate_nm("3.14").is_none());
+    }
+
+    #[test]
+    fn nm_rejects_non_numeric() {
+        assert!(validate_nm("abc").is_some());
+        assert!(validate_nm("12.3.4").is_some());
+        assert!(validate_nm("12 mg").is_some());
+        assert!(validate_nm("+").is_some()); // sign only
+    }
+
+    #[test]
+    fn dt_valid_dates() {
+        assert!(validate_dt("2026").is_none());
+        assert!(validate_dt("202603").is_none());
+        assert!(validate_dt("20260308").is_none());
+    }
+
+    #[test]
+    fn dt_rejects_bad_dates() {
+        assert!(validate_dt("2026/03/08").is_some()); // slashes
+        assert!(validate_dt("20261301").is_some()); // month 13
+        assert!(validate_dt("20260332").is_some()); // day 32
+        assert!(validate_dt("20260").is_some()); // odd length
+    }
+
+    #[test]
+    fn ts_valid_timestamps() {
+        assert!(validate_ts("20260308").is_none());
+        assert!(validate_ts("20260308143000").is_none());
+        assert!(validate_ts("20260308143000.000").is_none());
+        assert!(validate_ts("20260308143000+0500").is_none());
+        assert!(validate_ts("2026").is_none());
+    }
+
+    #[test]
+    fn ts_rejects_bad_timestamps() {
+        assert!(validate_ts("notadate").is_some());
+        assert!(validate_ts("20261301").is_some()); // bad month
+        assert!(validate_ts("abc").is_some());
+    }
+
+    #[test]
+    fn si_valid() {
+        assert!(validate_si("0").is_none());
+        assert!(validate_si("1").is_none());
+        assert!(validate_si("42").is_none());
+    }
+
+    #[test]
+    fn si_rejects_non_integer() {
+        assert!(validate_si("abc").is_some());
+        assert!(validate_si("-1").is_some());
+        assert!(validate_si("1.5").is_some());
+    }
+
+    #[test]
+    fn valid_adt_produces_no_datatype_warnings() {
+        // VALID_ADT_A01 has correct types — no INVALID_DATATYPE warnings expected
+        let msg = parse_message(VALID_ADT_A01, "127.0.0.1:9999").unwrap();
+        let warnings = validate_message(&msg);
+        assert!(
+            warnings.iter().all(|w| w.code != "INVALID_DATATYPE"),
+            "Valid ADT should have no datatype warnings, got: {:?}",
+            warnings
+        );
+    }
+
+    #[test]
+    fn invalid_ts_field_triggers_datatype_warning() {
+        // MSH-7 is TS; "notadate" should trigger INVALID_DATATYPE
+        let raw =
+            "MSH|^~\\&|APP|FAC|R|R|notadate||ADT^A01|MSG001|P|2.5\r\
+             EVN||20240101\r\
+             PID|||12345^^^HOSP||Smith^John^^||19800515|M\r\
+             PV1||I";
+        let msg = parse_message(raw, "127.0.0.1:9999").unwrap();
+        let warnings = validate_message(&msg);
+        assert!(
+            warnings
+                .iter()
+                .any(|w| w.code == "INVALID_DATATYPE" && w.segment == "MSH" && w.field == Some(7)),
+            "Expected INVALID_DATATYPE for MSH-7, got: {:?}",
             warnings
         );
     }

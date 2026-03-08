@@ -18,6 +18,7 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 - **Detail header layout** — message title, type description, and meta line are stacked vertically on the left; Bookmark button and tag controls are grouped on the right side of the header
 
 ### Added
+- **Data type validation** — the validation engine now checks NM (numeric), DT (date), TS (timestamp), and SI (sequence ID) fields against the HL7 v2.5.1 dictionary; type violations appear as blue `INVALID_DATATYPE` badges in the detail view, distinct from missing-field warnings (#62)
 - **Diff: ignore dynamic fields toggle** — the Diff tab now has a toggle switch to hide MSH-7 (Date/Time) and MSH-10 (Message Control ID) from the comparison; the diff counter updates to reflect hidden fields, making logical differences easier to spot (#61)
 
 ### Fixed
