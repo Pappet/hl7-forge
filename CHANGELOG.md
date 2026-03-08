@@ -19,6 +19,12 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 
 ### Fixed
 - **Missing CSS closing brace** — `.validation-seg` rule was missing its closing `}` in the merged main branch, causing the diff-view CSS block to be incorrectly scoped
+- **Message list date/time** — replaced `toLocaleTimeString` with manual formatting to ensure consistent `YYYY-MM-DD HH:mm:ss` display (#55)
+- **Message row layout shift** — added transparent left borders to all message rows to prevent horizontal shifting when a row is selected (#56)
+- **Duplicate CSS blocks** — removed redundant `.theme-toggle` styles from `style.css` (#57)
+- **Missing ACK styling** — added the missing `.msg-ack` class to center align and correctly style ACK codes (#58)
+- **Pin button highlight color** — decoupled pin button styling from bookmarks to ensure pinned items highlight in blue instead of yellow (#59)
+- **Diff table column widths** — enforced strict layout on the segment diff table using `table-layout: fixed` so right-hand columns don't stretch (#67)
 
 ---
 
