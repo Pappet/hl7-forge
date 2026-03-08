@@ -483,16 +483,23 @@ function renderDetail() {
     renderTab();
 }
 
-function toggleDiffPin(id) {
-    const msg = messages.find(m => m.id === id);
-    if (!msg) return;
+async function toggleDiffPin(id) {
     if (diffPinnedMessage && diffPinnedMessage.id === id) {
-        diffPinnedMessage = null; // unpin
-    } else {
-        diffPinnedMessage = msg;
+        diffPinnedMessage = null;
+        renderMessageList();
+        renderDetail();
+        return;
     }
-    renderMessageList();  // refresh pin icons in the list
-    renderDetail();       // refresh pin button + diff tab visibility
+    try {
+        const resp = await fetch(`/api/messages/${id}`);
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        diffPinnedMessage = await resp.json();
+    } catch (e) {
+        console.error('Failed to fetch pinned message:', e);
+        return;
+    }
+    renderMessageList();
+    renderDetail();
 }
 
 function switchTab(tab) {
