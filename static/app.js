@@ -23,6 +23,8 @@ let validationFilter = 0; // 0: All, 1: Warnings, 2: Errors Only
 
 // Segment diff state
 let diffPinnedMessage = null; // the reference message pinned for comparison
+let diffIgnoreDynamic = false;
+const DYNAMIC_DIFF_FIELDS = new Set(['MSH-7', 'MSH-10']);
 
 // --- Source Color Mapping ---
 // 12 visually distinct colors optimised for dark backgrounds (HSL, high sat, medium lightness)
@@ -133,7 +135,8 @@ function saveSession() {
             colorByPort,
             highlightedSource,
             showBookmarkedOnly,
-            validationFilter
+            validationFilter,
+            diffIgnoreDynamic
         }));
     } catch (_) { /* sessionStorage full or unavailable */ }
 }
@@ -152,6 +155,7 @@ function loadSession() {
         if (saved.highlightedSource !== undefined) highlightedSource = saved.highlightedSource;
         if (typeof saved.showBookmarkedOnly === 'boolean') showBookmarkedOnly = saved.showBookmarkedOnly;
         if (typeof saved.validationFilter === 'number') validationFilter = saved.validationFilter;
+        if (typeof saved.diffIgnoreDynamic === 'boolean') diffIgnoreDynamic = saved.diffIgnoreDynamic;
         if (Array.isArray(saved.collapsedSegments)) {
             collapsedSegments = new Set(saved.collapsedSegments);
         }
@@ -697,6 +701,7 @@ function renderDiffTab(container, msgB) {
     `;
 
     let totalDiffs = 0;
+    let hiddenDynamic = 0;
 
     for (const segName of allSegNames) {
         const segA = firstSeg(segsA, segName);
@@ -718,12 +723,19 @@ function renderDiffTab(container, msgB) {
         let segHasDiff = missingA || missingB;
 
         for (const idx of sortedIdxs) {
+            const fieldKey = `${segName}-${idx}`;
             const fA = segA ? segA.fields.find(f => f.index === idx) : null;
             const fB = segB ? segB.fields.find(f => f.index === idx) : null;
             const vA = fA ? fA.value : '';
             const vB = fB ? fB.value : '';
-            const desc = (fA && fA.description) || (fB && fB.description) || '';
             const changed = vA !== vB;
+
+            if (diffIgnoreDynamic && DYNAMIC_DIFF_FIELDS.has(fieldKey)) {
+                if (changed) hiddenDynamic++;
+                continue;
+            }
+
+            const desc = (fA && fA.description) || (fB && fB.description) || '';
             if (changed) { totalDiffs++; segHasDiff = true; }
             const rowClass = changed ? 'diff-row changed' : 'diff-row same';
             rows += `
@@ -752,11 +764,27 @@ function renderDiffTab(container, msgB) {
             </div>`;
     }
 
+    const hiddenNote = hiddenDynamic > 0 ? ` (${hiddenDynamic} dynamic hidden)` : '';
     const summary = totalDiffs === 0
-        ? '<div class="diff-summary same">&#10003; Messages are identical</div>'
-        : `<div class="diff-summary changed">&#9651; ${totalDiffs} field difference${totalDiffs > 1 ? 's' : ''} found</div>`;
+        ? `<div class="diff-summary same">&#10003; Messages are identical${hiddenNote}</div>`
+        : `<div class="diff-summary changed">&#9651; ${totalDiffs} field difference${totalDiffs > 1 ? 's' : ''} found${hiddenNote}</div>`;
 
-    container.innerHTML = summary + html;
+    const optionsBar = `
+        <div class="diff-options-bar">
+            <label class="theme-toggle" style="cursor:pointer; display:flex; align-items:center; gap:8px;">
+                <input type="checkbox" onchange="toggleDiffIgnoreDynamic(event)" style="display:none" ${diffIgnoreDynamic ? 'checked' : ''}>
+                <span class="toggle-slider"></span>
+                Hide dynamic fields (MSH-7, MSH-10)
+            </label>
+        </div>`;
+
+    container.innerHTML = summary + optionsBar + html;
+}
+
+function toggleDiffIgnoreDynamic(e) {
+    diffIgnoreDynamic = e.target.checked;
+    renderTab();
+    saveSession();
 }
 
 function toggleSegment(key) {
