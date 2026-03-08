@@ -10,6 +10,7 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 ## [Unreleased]
 
 ### Added
+- **Quick copy to clipboard** — three copy targets in the detail view: (1) segment header shows a 📋 icon on hover that copies the raw segment string; (2) any field value cell is click-to-copy with a green flash feedback; (3) Raw tab has a "📋 Copy All" button that copies the entire message text (#63)
 - **HL7 field dictionary** — hover over any field in the detail view for a CSS tooltip with its official HL7 v2.5.1 description (e.g. "Patient Name" for PID-5); powered by a compiled-in zero-overhead JSON dictionary (#48)
 - **Message type detection** — detail header shows a human-readable type description (e.g. "Admit / Visit Notification") and a "Typical segments" bar with coloured badges indicating which segments are present vs absent (#45, #50)
 - **Segment description tooltips** — hovering a segment header (e.g. `MSH`, `PID`) shows its official HL7 description as a CSS tooltip below the header; the same description appears as a native `title` tooltip on every typical-segment badge (#45)
@@ -70,6 +71,12 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 - Fixed clippy warnings: derivable impl, char comparison pattern, `to_string` in format args, large enum variant
 
 ### Commit History (chronological)
+
+#### 2026-03-08
+
+| Commit | Description |
+|--------|-------------|
+| [`TBD`](https://github.com/Pappet/hl7-forge/commit/TBD) | `feat(ui):` Quick copy-to-clipboard for segments, fields, and raw message (#63) |
 
 #### 2026-03-07
 
