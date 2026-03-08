@@ -94,7 +94,17 @@ pub fn parse_message(raw: &str, source_addr: &str) -> Result<Hl7Message, String>
     };
     crate::dictionary::inject_descriptions(&mut msg.segments, version);
 
-    // Third pass: validate required segments and fields
+    // Third pass: look up message type description and typical segments
+    if let Some(info) = super::message_types::get_message_type_info(&msg.message_type) {
+        msg.message_type_description = Some(info.description.to_string());
+        msg.typical_segments = info
+            .typical_segments
+            .iter()
+            .map(|s| s.to_string())
+            .collect();
+    }
+
+    // Fourth pass: validate required segments and fields
     msg.validation_warnings = crate::validation::validate_message(&msg);
 
     Ok(msg)

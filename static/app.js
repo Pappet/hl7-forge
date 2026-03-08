@@ -444,6 +444,17 @@ function renderDetail() {
 
     document.getElementById('detail-title').textContent =
         `${msg.message_type} — ${msg.patient_name || msg.patient_id || 'Unknown'}`;
+
+    const descEl = document.getElementById('detail-type-desc');
+    if (descEl) {
+        if (msg.message_type_description) {
+            descEl.textContent = msg.message_type_description;
+            descEl.style.display = '';
+        } else {
+            descEl.style.display = 'none';
+        }
+    }
+
     document.getElementById('detail-meta').textContent =
         `${msg.source_addr} | ${msg.message_control_id} | v${msg.version}`;
 
@@ -530,6 +541,15 @@ function renderTab() {
             </div>`;
             return;
         }
+        const typicalBanner = (msg.typical_segments && msg.typical_segments.length)
+            ? `<div class="typical-segments-bar">
+                <span class="typical-segments-label">Typical segments:</span>
+                ${msg.typical_segments.map(s => {
+                    const present = msg.segments.some(seg => seg.name === s);
+                    return `<span class="typical-seg ${present ? 'present' : 'absent'}">${esc(s)}</span>`;
+                }).join('')}
+               </div>`
+            : '';
         const validationBanner = (msg.validation_warnings && msg.validation_warnings.length)
             ? `<div class="validation-warnings-panel">
                 <div class="validation-warnings-title">&#9888; Validation Warnings (${msg.validation_warnings.length})</div>
@@ -540,7 +560,7 @@ function renderTab() {
                 </ul>
                </div>`
             : '';
-        content.innerHTML = validationBanner + msg.segments.map((seg, segIdx) => {
+        content.innerHTML = typicalBanner + validationBanner + msg.segments.map((seg, segIdx) => {
             const key = `${msg.id}-${segIdx}`;
             const collapsed = collapsedSegments.has(key);
             const icon = collapsed ? '▸' : '▾';
