@@ -857,3 +857,155 @@ body.resizing * {
         transform: translateY(-50%) translateX(0);
     }
 }
+/* ── Segment Diff view ────────────────────────────────────────────────── */
+.diff-tab {
+    color: var(--accent) !important;
+}
+
+.diff-summary {
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+}
+
+.diff-summary.same {
+    color: var(--success);
+    background: color-mix(in srgb, var(--success) 8%, transparent);
+}
+
+.diff-summary.changed {
+    color: var(--warning);
+    background: color-mix(in srgb, var(--warning) 8%, transparent);
+}
+
+.diff-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border-bottom: 2px solid var(--border);
+    background: var(--bg-secondary);
+}
+
+.diff-col-label {
+    padding: 8px 14px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.diff-col-label strong {
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+}
+
+.diff-label-a {
+    border-right: 1px solid var(--border);
+}
+
+.diff-meta {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-muted);
+}
+
+.diff-segment-block {
+    border-bottom: 1px solid var(--border);
+}
+
+.diff-segment-block.has-diff .diff-segment-name {
+    background: color-mix(in srgb, var(--warning) 10%, var(--bg-secondary));
+}
+
+.diff-segment-name {
+    padding: 5px 14px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent);
+    background: var(--bg-secondary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+}
+
+.diff-segment-missing {
+    color: var(--warning);
+}
+
+.diff-missing-badge {
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--warning);
+    background: color-mix(in srgb, var(--warning) 15%, transparent);
+    border: 1px solid color-mix(in srgb, var(--warning) 35%, transparent);
+    border-radius: 3px;
+    padding: 0 5px;
+    font-family: var(--font-sans);
+}
+
+.diff-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+}
+
+.diff-table th {
+    padding: 4px 10px;
+    text-align: left;
+    font-size: 10px;
+    color: var(--text-muted);
+    font-weight: 600;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+}
+
+.diff-field-col {
+    width: 180px;
+}
+
+.diff-row td {
+    padding: 3px 10px;
+    vertical-align: top;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+    font-family: var(--font-mono);
+}
+
+.diff-row.same {
+    opacity: 0.55;
+}
+
+.diff-row.changed td {
+    opacity: 1;
+}
+
+.diff-field-name {
+    color: var(--text-secondary);
+    font-size: 10px;
+    white-space: nowrap;
+}
+
+.diff-desc {
+    color: var(--text-muted);
+    font-family: var(--font-sans);
+    font-size: 9px;
+    font-style: italic;
+    margin-left: 4px;
+}
+
+.diff-val {
+    word-break: break-all;
+}
+
+.diff-val-a.diff-changed {
+    color: var(--error);
+    background: color-mix(in srgb, var(--error) 8%, transparent);
+}
+
+.diff-val-b.diff-changed {
+    color: var(--success);
+    background: color-mix(in srgb, var(--success) 8%, transparent);
+}
