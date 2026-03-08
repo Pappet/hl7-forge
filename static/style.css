@@ -226,7 +226,7 @@ body.resizing * {
 
 .message-row {
     display: grid;
-    grid-template-columns: 12px 100px 90px 1fr 140px 60px 40px 24px;
+    grid-template-columns: 12px 100px 90px 1fr 140px 60px 40px 24px 24px;
     gap: 12px;
     padding: 9px 16px;
     border-bottom: 1px solid var(--border);
@@ -298,7 +298,7 @@ body.resizing * {
 
 .list-header {
     display: grid;
-    grid-template-columns: 12px 100px 90px 1fr 140px 60px 40px 24px;
+    grid-template-columns: 12px 100px 90px 1fr 140px 60px 40px 24px 24px;
     gap: 12px;
     padding: 7px 16px;
     font-size: 10px;
@@ -777,6 +777,23 @@ body.resizing * {
 
 .msg-bookmark.active {
     color: var(--warning);
+}
+
+.msg-pin {
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text-muted);
+    transition: color 0.15s;
+    text-align: center;
+    user-select: none;
+}
+
+.msg-pin:hover {
+    color: var(--accent);
+}
+
+.msg-pin.active {
+    color: var(--accent);
 }
 
 /* Bookmark button in detail view */

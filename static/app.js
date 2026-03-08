@@ -376,6 +376,11 @@ function renderMessageList() {
         const bookmarkClass = msg.bookmarked ? 'msg-bookmark active' : 'msg-bookmark';
         const bookmarkIcon = msg.bookmarked ? '★' : '☆';
 
+        const isPinned = diffPinnedMessage && diffPinnedMessage.id === msg.id;
+        const pinClass = isPinned ? 'msg-pin active' : 'msg-pin';
+        const pinIcon = isPinned ? '◉' : '◎';
+        const pinTitle = isPinned ? 'Unpin (diff reference)' : 'Pin as diff reference';
+
         row.innerHTML = `
             ${dotHtml}
             <div style="display:flex; flex-direction:column; gap:2px; overflow:hidden;">
@@ -388,6 +393,7 @@ function renderMessageList() {
             <span class="msg-segs">${msg.segment_count}</span>
             ${ackHtml}
             <span class="${bookmarkClass}" onclick="toggleBookmark('${msg.id}', event)" title="Bookmark">${bookmarkIcon}</span>
+            <span class="${pinClass}" onclick="toggleDiffPin('${msg.id}')" title="${pinTitle}">${pinIcon}</span>
         `;
         fragment.appendChild(row);
     }
@@ -485,7 +491,8 @@ function toggleDiffPin(id) {
     } else {
         diffPinnedMessage = msg;
     }
-    renderDetail(); // refresh pin button + diff tab visibility
+    renderMessageList();  // refresh pin icons in the list
+    renderDetail();       // refresh pin button + diff tab visibility
 }
 
 function switchTab(tab) {
