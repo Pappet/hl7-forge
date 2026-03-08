@@ -25,6 +25,8 @@ pub struct Hl7Message {
     pub ack_code: Option<String>,
     pub tags: Vec<String>,
     pub bookmarked: bool,
+    /// Validation warnings produced by the rule engine (empty = valid)
+    pub validation_warnings: Vec<crate::validation::ValidationWarning>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -87,6 +89,7 @@ impl Hl7Message {
             ack_code: None,
             tags: Vec::new(),
             bookmarked: false,
+            validation_warnings: Vec::new(),
         }
     }
 }
@@ -109,6 +112,8 @@ pub struct Hl7MessageSummary {
     pub ack_code: Option<String>,
     pub tags: Vec<String>,
     pub bookmarked: bool,
+    /// Number of validation warnings (for the list-view warning badge)
+    pub validation_warning_count: usize,
 }
 
 impl From<&Hl7Message> for Hl7MessageSummary {
@@ -129,6 +134,7 @@ impl From<&Hl7Message> for Hl7MessageSummary {
             ack_code: msg.ack_code.clone(),
             tags: msg.tags.clone(),
             bookmarked: msg.bookmarked,
+            validation_warning_count: msg.validation_warnings.len(),
         }
     }
 }

@@ -3,6 +3,7 @@ mod dictionary;
 mod hl7;
 mod mllp;
 mod store;
+mod validation;
 mod web;
 
 use config::Config;

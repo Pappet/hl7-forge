@@ -94,6 +94,9 @@ pub fn parse_message(raw: &str, source_addr: &str) -> Result<Hl7Message, String>
     };
     crate::dictionary::inject_descriptions(&mut msg.segments, version);
 
+    // Third pass: validate required segments and fields
+    msg.validation_warnings = crate::validation::validate_message(&msg);
+
     Ok(msg)
 }
 
