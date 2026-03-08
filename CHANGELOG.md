@@ -15,16 +15,14 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 - **Segment description tooltips** — hovering a segment header (e.g. `MSH`, `PID`) shows its official HL7 description as a CSS tooltip below the header; the same description appears as a native `title` tooltip on every typical-segment badge (#45)
 - **Validation engine** — rule-based validator checks required MSH fields and message-type-specific segments (ADT, ORU, ORM, OML, SIU, MDM); warnings shown as an amber badge in the message list and a collapsible panel in the detail view (#46, #51)
 - **Segment diff** — pin any message as a reference with the `◎` button in the list row, then open the Diff tab on another message to see a field-level side-by-side comparison with red/green highlighting (#47, #52)
+- **Validation Filter** — 3-state toggle (All, Warnings, Errors) to filter the message list by validation state; supports `has:warnings` and `has:errors` search syntax (#60)
 - **Detail header layout** — message title, type description, and meta line are stacked vertically on the left; Bookmark button and tag controls are grouped on the right side of the header
 
 ### Fixed
 - **Missing CSS closing brace** — `.validation-seg` rule was missing its closing `}` in the merged main branch, causing the diff-view CSS block to be incorrectly scoped
-- **Message list date/time** — replaced `toLocaleTimeString` with manual formatting to ensure consistent `YYYY-MM-DD HH:mm:ss` display (#55)
-- **Message row layout shift** — added transparent left borders to all message rows to prevent horizontal shifting when a row is selected (#56)
-- **Duplicate CSS blocks** — removed redundant `.theme-toggle` styles from `style.css` (#57)
-- **Missing ACK styling** — added the missing `.msg-ack` class to center align and correctly style ACK codes (#58)
-- **Pin button highlight color** — decoupled pin button styling from bookmarks to ensure pinned items highlight in blue instead of yellow (#59)
-- **Diff table column widths** — enforced strict layout on the segment diff table using `table-layout: fixed` so right-hand columns don't stretch (#67)
+- Message list displays a full timestamp (`YYYY-MM-DD HH:mm:ss`) for precise traceability (#55)
+- Validation filtering via a 3-state toggle (All/Warn/Error) and `has:` search prefix (#60)
+- Segment diff uses a fixed table layout (`table-layout: fixed`) to ensure consistent column alignment even with varying content (#67)
 
 ---
 
@@ -154,7 +152,7 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 | [`9ef8ed9`](https://github.com/Pappet/hl7-forge/commit/9ef8ed9cf631b442ebf6e10d7767fcdff5b6e3c1) | `fix:` align MSH field indices with HL7 standard (correct +1 offset); add graceful shutdown via `Ctrl+C` signal handler |
 | [`bbde980`](https://github.com/Pappet/hl7-forge/commit/bbde98060ccc46fbe5a9ed238907a73ebcd9af21) | `fix:` harden MLLP server and message store against load spikes and DoS (connection timeouts, 10 MB payload limit) |
 | [`fa11aa4`](https://github.com/Pappet/hl7-forge/commit/fa11aa42ae65bde3926349bea3ee81d2b3d9714c) | `polish:` add Cargo metadata; clean up Tokio features; introduce toast notifications in UI |
-| [`f33ccfc`](https://github.com/Pappet/hl7-forge/commit/f33ccfcccdfb12e16f4879e06fb8a3a9b8802919) | `fix:` UI polish and pre-release fixes (correct Axum route `:id`, clean up compiler warnings) |
+| [`f33ccfc`](https://github.com/Pappet/hl7-forge/commit/f33ccfccdfb12e16f4879e06fb8a3a9b8802919) | `fix:` UI polish and pre-release fixes (correct Axum route `:id`, clean up compiler warnings) |
 | [`696522c`](https://github.com/Pappet/hl7-forge/commit/696522c4126fc45096687fdb5ef38d6462f593b2) | `docs:` revamp README with feature overview, Windows deployment guide, and milestone table |
 | [`679aad3`](https://github.com/Pappet/hl7-forge/commit/679aad3e02d1d0c89299ad8f22b38e95b10bb37c) | `ci:` initial GitHub Actions build workflow |
 | [`0c46811`](https://github.com/Pappet/hl7-forge/commit/0c468114f5080b9da02ea6e3b4a22796e56337f2) | `docs:` add ROADMAP.md as strategic planning document |
@@ -205,7 +203,9 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 - **Pause / Live mode** — button buffers incoming messages; flush and return to live mode
 - **Toast notifications** — subtle in-app notifications for relevant events
 - **Detail view** with three tabs: `Parsed`, `Raw`, `JSON`
-- **Client-side search filter** (debounced, 300 ms) — filter by message type, patient, facility, message control ID
+- **Search & Filter** — by message type, patient name, facility, message control ID, source IP; supports `has:warnings`/`has:errors` (#60)
+- **Validation Filter** — 3-state toggle in the header to quickly isolate messages with warnings or errors (#60)
+- **Bookmark & Tag** — pin important messages (eviction-protected), add custom text tags
 - **JSON export** — download individual messages as `.json`
 - Dark theme with CSS variables
 - PARSE ERROR marker in red for failed messages
