@@ -32,8 +32,9 @@ Designed as a drop-in replacement for HL7 Inspector: runs as a central service, 
 - **Five Message Views** — Parsed segments, Raw HL7, sent ACK/NACK, JSON, and Segment Diff
 - **HL7 Dictionary Tooltips** — hover any field or segment header for its official HL7 v2.5.1 description; no internet required
 - **Message Type Detection** — human-readable type description and "Typical segments" bar per message
-- **Validation Engine** — amber warnings for missing required fields and segments, per message type
-- **Segment Diff** — pin any message as a reference and compare it field-by-field with any other message
+- **Validation Engine** — warnings for missing required fields/segments (amber) and invalid field data types (blue); per message type; non-blocking, all messages are stored regardless
+- **Validation Filter** — one-click filter to show only messages with warnings or errors; also supports `has:warnings` / `has:errors` search prefixes
+- **Segment Diff** — pin any message as a reference and compare it field-by-field; optional toggle to hide always-changing dynamic fields (MSH-7, MSH-10)
 - **Search & Filter** — by message type, patient name, facility, message control ID, source IP
 - **Bookmark & Tag** — pin important messages (eviction-protected), add custom text tags
 - **Session-based Views** — each developer sees their own filters, selection, and scroll position
