@@ -570,7 +570,7 @@ function renderTab() {
         const fieldWarningSegs = {};
         for (const w of warnings) {
             if (w.code === 'MISSING_SEGMENT') missingSegWarnings[w.segment] = w.message;
-            else if (w.code === 'MISSING_FIELD' || w.code === 'INVALID_DATATYPE') fieldWarningSegs[w.segment] = true;
+            else if (w.code === 'MISSING_FIELD') fieldWarningSegs[w.segment] = true;
         }
 
         const typicalBanner = (msg.typical_segments && msg.typical_segments.length)
