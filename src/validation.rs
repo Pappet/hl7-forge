@@ -413,7 +413,9 @@ fn check_datatype(datatype: &str, value: &str) -> Option<String> {
 
 /// NM — Numeric: optional sign, digits, optional single decimal point.
 fn validate_nm(value: &str) -> Option<&'static str> {
-    let v = value.strip_prefix(|c| matches!(c, '+' | '-')).unwrap_or(value);
+    let v = value
+        .strip_prefix(|c| matches!(c, '+' | '-'))
+        .unwrap_or(value);
     if v.is_empty() {
         return Some("expected a number (NM) but value contains only a sign character");
     }
@@ -492,9 +494,7 @@ fn validate_ts(value: &str) -> Option<String> {
         without_frac
     };
     if core.len() < 4 || !core.chars().all(|c| c.is_ascii_digit()) {
-        return Some(
-            "expected a timestamp (TS) in YYYY[MM[DD[HH[MM[SS]]]]] format".to_string(),
-        );
+        return Some("expected a timestamp (TS) in YYYY[MM[DD[HH[MM[SS]]]]] format".to_string());
     }
     // Validate however much of the date is present
     let date_len = core.len().min(8);
@@ -668,8 +668,7 @@ mod tests {
     #[test]
     fn invalid_ts_field_triggers_datatype_warning() {
         // MSH-7 is TS; "notadate" should trigger INVALID_DATATYPE
-        let raw =
-            "MSH|^~\\&|APP|FAC|R|R|notadate||ADT^A01|MSG001|P|2.5\r\
+        let raw = "MSH|^~\\&|APP|FAC|R|R|notadate||ADT^A01|MSG001|P|2.5\r\
              EVN||20240101\r\
              PID|||12345^^^HOSP||Smith^John^^||19800515|M\r\
              PV1||I";
