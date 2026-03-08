@@ -230,9 +230,10 @@ body.resizing * {
     gap: 12px;
     padding: 9px 16px;
     border-bottom: 1px solid var(--border);
+    border-left: 3px solid transparent;
     font-size: 12px;
     cursor: pointer;
-    transition: background 0.1s, opacity 0.15s;
+    transition: background 0.1s, opacity 0.15s, border-left-color 0.15s;
     align-items: center;
 }
 
@@ -246,7 +247,7 @@ body.resizing * {
 
 .message-row.selected {
     background: var(--bg-tertiary);
-    border-left: 3px solid var(--accent);
+    border-left-color: var(--accent);
 }
 
 .message-row.new-flash {
@@ -1204,6 +1205,13 @@ body.resizing * {
 }
 
 @keyframes seg-tooltip-fade-in {
-    from { opacity: 0; transform: translateY(-4px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
