@@ -1003,6 +1003,11 @@ body.resizing * {
     margin-right: 6px;
 }
 
+.validation-seg.error {
+    color: var(--error);
+    background: color-mix(in srgb, var(--error) 15%, transparent);
+}
+
 /* ── Segment Diff view ────────────────────────────────────────────────── */
 .diff-tab {
     color: var(--accent) !important;

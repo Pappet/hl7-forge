@@ -575,9 +575,11 @@ function renderTab() {
             ? `<div class="validation-warnings-panel">
                 <div class="validation-warnings-title">&#9888; Validation Warnings (${msg.validation_warnings.length})</div>
                 <ul class="validation-warnings-list">
-                ${msg.validation_warnings.map(w =>
-                    `<li><span class="validation-seg">${esc(w.segment)}${w.field != null ? '-' + w.field : ''}</span> ${esc(w.message)}</li>`
-                ).join('')}
+                ${msg.validation_warnings.map(w => {
+                    const badgeCls = w.code === 'MISSING_SEGMENT' ? 'validation-seg error' : 'validation-seg';
+                    const label = w.segment + (w.field != null ? '-' + w.field : '');
+                    return `<li><span class="${badgeCls}">${esc(label)}</span> ${esc(w.message)}</li>`;
+                }).join('')}
                 </ul>
                </div>`
             : '';
