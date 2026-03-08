@@ -1223,3 +1223,55 @@ body.resizing * {
         transform: translateY(0);
     }
 }
+
+/* ── Copy-to-clipboard controls ───────────────────────────────────────── */
+
+/* Segment header copy button — hidden until row is hovered */
+.copy-btn {
+    font-size: 11px;
+    opacity: 0;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    margin-left: auto;
+    padding: 0 4px;
+    user-select: none;
+    flex-shrink: 0;
+}
+
+.segment-name:hover .copy-btn {
+    opacity: 0.5;
+}
+
+.copy-btn:hover {
+    opacity: 1 !important;
+}
+
+.copy-btn.copy-success {
+    opacity: 1 !important;
+    color: var(--success);
+}
+
+/* Field value click-to-copy */
+.field-val:not(:has(.field-empty)) {
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.field-val:not(:has(.field-empty)):hover {
+    background: var(--bg-hover);
+}
+
+.field-val.copy-success {
+    animation: copy-flash 0.5s ease-out;
+}
+
+@keyframes copy-flash {
+    0%   { background: color-mix(in srgb, var(--success) 20%, transparent); }
+    100% { background: transparent; }
+}
+
+/* Raw tab copy button */
+.copy-raw-btn {
+    font-size: 11px;
+    padding: 4px 10px;
+}
