@@ -535,14 +535,39 @@ function renderTab() {
             </div>`;
             return;
         }
+        // Build warning maps so typical-segment badges can reflect validation state.
+        // missingSegWarnings: segName → warning message (MISSING_SEGMENT)
+        // fieldWarningSegs:   segName → true (has at least one MISSING_FIELD warning)
+        const warnings = msg.validation_warnings || [];
+        const missingSegWarnings = {};
+        const fieldWarningSegs = {};
+        for (const w of warnings) {
+            if (w.code === 'MISSING_SEGMENT') missingSegWarnings[w.segment] = w.message;
+            else if (w.code === 'MISSING_FIELD') fieldWarningSegs[w.segment] = true;
+        }
+
         const typicalBanner = (msg.typical_segments && msg.typical_segments.length)
             ? `<div class="typical-segments-bar">
                 <span class="typical-segments-label">Typical segments:</span>
                 ${msg.typical_segments.map(s => {
                     const present = msg.segments.some(seg => seg.name === s);
                     const desc = (msg.typical_segment_descriptions || {})[s];
-                    const titleAttr = desc ? ` title="${escAttr(s + ': ' + desc)}"` : '';
-                    return `<span class="typical-seg ${present ? 'present' : 'absent'}"${titleAttr}>${esc(s)}</span>`;
+                    let cls, titleText;
+                    if (missingSegWarnings[s]) {
+                        cls = 'missing';
+                        titleText = missingSegWarnings[s];
+                    } else if (fieldWarningSegs[s]) {
+                        cls = 'warn';
+                        titleText = (desc ? desc + ' — ' : '') + 'has required fields missing';
+                    } else if (present) {
+                        cls = 'present';
+                        titleText = desc || null;
+                    } else {
+                        cls = 'absent';
+                        titleText = desc || null;
+                    }
+                    const titleAttr = titleText ? ` title="${escAttr(titleText)}"` : '';
+                    return `<span class="typical-seg ${cls}"${titleAttr}>${esc(s)}</span>`;
                 }).join('')}
                </div>`
             : '';

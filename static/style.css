@@ -536,6 +536,18 @@ body.resizing * {
     border: 1px solid color-mix(in srgb, var(--text-muted) 20%, transparent);
 }
 
+.typical-seg.missing {
+    background: color-mix(in srgb, var(--error) 20%, transparent);
+    color: var(--error);
+    border: 1px solid color-mix(in srgb, var(--error) 40%, transparent);
+}
+
+.typical-seg.warn {
+    background: color-mix(in srgb, var(--warning) 20%, transparent);
+    color: var(--warning);
+    border: 1px solid color-mix(in srgb, var(--warning) 40%, transparent);
+}
+
 .detail-tabs {
     display: flex;
     gap: 0;
