@@ -356,10 +356,11 @@ function renderMessageList() {
         const srcColor = getSourceColor(msg.source_addr);
         const dotHtml = `<span class="source-dot" style="background:${srcColor};box-shadow:0 0 4px ${srcColor}" title="${escAttr(msg.source_addr)}"></span>`;
 
-        // Task 1: red marker for messages that failed to parse
+        // Validation badge: red if missing segments (errors), yellow for field warnings only
         const warnCount = msg.validation_warning_count || 0;
+        const warnCls = msg.has_segment_errors ? 'validation-badge error' : 'validation-badge';
         const warnBadge = warnCount > 0
-            ? ` <span class="validation-badge" title="${warnCount} validation warning${warnCount > 1 ? 's' : ''}">⚠ ${warnCount}</span>`
+            ? ` <span class="${warnCls}" title="${warnCount} validation warning${warnCount > 1 ? 's' : ''}">⚠ ${warnCount}</span>`
             : '';
         const typeHtml = msg.parse_error
             ? `<span class="msg-type" style="color:var(--error)" title="${escAttr(msg.parse_error)}">⚠ PARSE ERROR</span>`
@@ -535,24 +536,53 @@ function renderTab() {
             </div>`;
             return;
         }
+        // Build warning maps so typical-segment badges can reflect validation state.
+        // missingSegWarnings: segName → warning message (MISSING_SEGMENT)
+        // fieldWarningSegs:   segName → true (has at least one MISSING_FIELD warning)
+        const warnings = msg.validation_warnings || [];
+        const missingSegWarnings = {};
+        const fieldWarningSegs = {};
+        for (const w of warnings) {
+            if (w.code === 'MISSING_SEGMENT') missingSegWarnings[w.segment] = w.message;
+            else if (w.code === 'MISSING_FIELD') fieldWarningSegs[w.segment] = true;
+        }
+
         const typicalBanner = (msg.typical_segments && msg.typical_segments.length)
             ? `<div class="typical-segments-bar">
                 <span class="typical-segments-label">Typical segments:</span>
                 ${msg.typical_segments.map(s => {
                     const present = msg.segments.some(seg => seg.name === s);
                     const desc = (msg.typical_segment_descriptions || {})[s];
-                    const titleAttr = desc ? ` title="${escAttr(s + ': ' + desc)}"` : '';
-                    return `<span class="typical-seg ${present ? 'present' : 'absent'}"${titleAttr}>${esc(s)}</span>`;
+                    let cls, titleText;
+                    if (missingSegWarnings[s]) {
+                        cls = 'missing';
+                        titleText = missingSegWarnings[s];
+                    } else if (fieldWarningSegs[s]) {
+                        cls = 'warn';
+                        titleText = (desc ? desc + ' — ' : '') + 'has required fields missing';
+                    } else if (present) {
+                        cls = 'present';
+                        titleText = desc || null;
+                    } else {
+                        cls = 'absent';
+                        titleText = desc || null;
+                    }
+                    const titleAttr = titleText ? ` title="${escAttr(titleText)}"` : '';
+                    return `<span class="typical-seg ${cls}"${titleAttr}>${esc(s)}</span>`;
                 }).join('')}
                </div>`
             : '';
+        const hasSegErrors = warnings.some(w => w.code === 'MISSING_SEGMENT');
+        const panelCls = hasSegErrors ? 'validation-warnings-panel error' : 'validation-warnings-panel';
         const validationBanner = (msg.validation_warnings && msg.validation_warnings.length)
-            ? `<div class="validation-warnings-panel">
-                <div class="validation-warnings-title">&#9888; Validation Warnings (${msg.validation_warnings.length})</div>
+            ? `<div class="${panelCls}">
+                <div class="validation-warnings-title">&#9888; Validation ${hasSegErrors ? 'Errors' : 'Warnings'} (${msg.validation_warnings.length})</div>
                 <ul class="validation-warnings-list">
-                ${msg.validation_warnings.map(w =>
-                    `<li><span class="validation-seg">${esc(w.segment)}${w.field != null ? '-' + w.field : ''}</span> ${esc(w.message)}</li>`
-                ).join('')}
+                ${msg.validation_warnings.map(w => {
+                    const badgeCls = w.code === 'MISSING_SEGMENT' ? 'validation-seg error' : 'validation-seg';
+                    const label = w.segment + (w.field != null ? '-' + w.field : '');
+                    return `<li><span class="${badgeCls}">${esc(label)}</span> ${esc(w.message)}</li>`;
+                }).join('')}
                 </ul>
                </div>`
             : '';

@@ -536,6 +536,18 @@ body.resizing * {
     border: 1px solid color-mix(in srgb, var(--text-muted) 20%, transparent);
 }
 
+.typical-seg.missing {
+    background: color-mix(in srgb, var(--error) 20%, transparent);
+    color: var(--error);
+    border: 1px solid color-mix(in srgb, var(--error) 40%, transparent);
+}
+
+.typical-seg.warn {
+    background: color-mix(in srgb, var(--warning) 20%, transparent);
+    color: var(--warning);
+    border: 1px solid color-mix(in srgb, var(--warning) 40%, transparent);
+}
+
 .detail-tabs {
     display: flex;
     gap: 0;
@@ -944,6 +956,12 @@ body.resizing * {
     white-space: nowrap;
 }
 
+.validation-badge.error {
+    color: var(--error);
+    background: color-mix(in srgb, var(--error) 15%, transparent);
+    border-color: color-mix(in srgb, var(--error) 35%, transparent);
+}
+
 /* ── Validation warnings panel (detail view) ──────────────────────────── */
 .validation-warnings-panel {
     margin: 8px 12px;
@@ -960,6 +978,17 @@ body.resizing * {
     color: var(--warning);
     background: color-mix(in srgb, var(--warning) 12%, transparent);
     border-bottom: 1px solid color-mix(in srgb, var(--warning) 25%, transparent);
+}
+
+.validation-warnings-panel.error {
+    border-color: color-mix(in srgb, var(--error) 40%, transparent);
+    background: color-mix(in srgb, var(--error) 8%, transparent);
+}
+
+.validation-warnings-panel.error .validation-warnings-title {
+    color: var(--error);
+    background: color-mix(in srgb, var(--error) 12%, transparent);
+    border-bottom-color: color-mix(in srgb, var(--error) 25%, transparent);
 }
 
 .validation-warnings-list {
@@ -989,6 +1018,11 @@ body.resizing * {
     border-radius: 3px;
     padding: 0 4px;
     margin-right: 6px;
+}
+
+.validation-seg.error {
+    color: var(--error);
+    background: color-mix(in srgb, var(--error) 15%, transparent);
 }
 
 /* ── Segment Diff view ────────────────────────────────────────────────── */

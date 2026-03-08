@@ -126,6 +126,8 @@ pub struct Hl7MessageSummary {
     pub bookmarked: bool,
     /// Number of validation warnings (for the list-view warning badge)
     pub validation_warning_count: usize,
+    /// True when at least one warning is a MISSING_SEGMENT error (badge turns red)
+    pub has_segment_errors: bool,
     pub message_type_description: Option<String>,
 }
 
@@ -148,6 +150,10 @@ impl From<&Hl7Message> for Hl7MessageSummary {
             tags: msg.tags.clone(),
             bookmarked: msg.bookmarked,
             validation_warning_count: msg.validation_warnings.len(),
+            has_segment_errors: msg
+                .validation_warnings
+                .iter()
+                .any(|w| w.code == "MISSING_SEGMENT"),
             message_type_description: msg.message_type_description.clone(),
         }
     }
