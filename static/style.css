@@ -473,8 +473,17 @@ body.resizing * {
     background: var(--bg-secondary);
     border-bottom: 1px solid var(--border);
     display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.detail-header-info {
+    display: flex;
     flex-direction: column;
     gap: 2px;
+    flex: 1;
+    min-width: 0;
 }
 
 .detail-header h2 {
@@ -748,8 +757,9 @@ body.resizing * {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-    margin-top: 8px;
     align-items: center;
+    justify-content: flex-end;
+    flex-shrink: 0;
 }
 
 .msg-tag {

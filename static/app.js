@@ -458,13 +458,7 @@ function renderDetail() {
     document.getElementById('detail-meta').textContent =
         `${msg.source_addr} | ${msg.message_control_id} | v${msg.version}`;
 
-    const tagsContainer = document.getElementById('detail-tags') || (() => {
-        const el = document.createElement('div');
-        el.id = 'detail-tags';
-        el.className = 'detail-tags-container';
-        document.getElementById('detail-meta').parentElement.appendChild(el);
-        return el;
-    })();
+    const tagsContainer = document.getElementById('detail-tags');
 
     const bookmarkBtnClass = msg.bookmarked ? 'detail-bookmark-btn active' : 'detail-bookmark-btn';
     const bookmarkBtnIcon = msg.bookmarked ? '★' : '☆';
