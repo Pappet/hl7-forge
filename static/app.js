@@ -20,6 +20,9 @@ let pendingMessages = [];
 let renderScheduled = false;
 let showBookmarkedOnly = false;
 
+// Segment diff state
+let diffPinnedMessage = null; // the reference message pinned for comparison
+
 // --- Source Color Mapping ---
 // 12 visually distinct colors optimised for dark backgrounds (HSL, high sat, medium lightness)
 const SOURCE_PALETTE = [
@@ -377,6 +380,11 @@ function renderMessageList() {
         const bookmarkClass = msg.bookmarked ? 'msg-bookmark active' : 'msg-bookmark';
         const bookmarkIcon = msg.bookmarked ? '★' : '☆';
 
+        const isPinned = diffPinnedMessage && diffPinnedMessage.id === msg.id;
+        const pinClass = isPinned ? 'msg-pin active' : 'msg-pin';
+        const pinIcon = isPinned ? '◉' : '◎';
+        const pinTitle = isPinned ? 'Unpin (diff reference)' : 'Pin as diff reference';
+
         row.innerHTML = `
             ${dotHtml}
             <div style="display:flex; flex-direction:column; gap:2px; overflow:hidden;">
@@ -389,6 +397,7 @@ function renderMessageList() {
             <span class="msg-segs">${msg.segment_count}</span>
             ${ackHtml}
             <span class="${bookmarkClass}" onclick="toggleBookmark('${msg.id}', event)" title="Bookmark">${bookmarkIcon}</span>
+            <span class="${pinClass}" onclick="toggleDiffPin('${msg.id}')" title="${pinTitle}">${pinIcon}</span>
         `;
         fragment.appendChild(row);
     }
@@ -449,8 +458,13 @@ function renderDetail() {
     const bookmarkBtnClass = msg.bookmarked ? 'detail-bookmark-btn active' : 'detail-bookmark-btn';
     const bookmarkBtnIcon = msg.bookmarked ? '★' : '☆';
 
+    const isPinned = diffPinnedMessage && diffPinnedMessage.id === msg.id;
+    const pinBtnClass = isPinned ? 'detail-bookmark-btn active' : 'detail-bookmark-btn';
+    const pinBtnLabel = isPinned ? '📌 Pinned' : '📌 Pin for Diff';
+
     tagsContainer.innerHTML = `
         <button class="${bookmarkBtnClass}" onclick="toggleBookmark('${msg.id}', event)" title="Toggle bookmark">${bookmarkBtnIcon} Bookmark</button>
+        <button class="${pinBtnClass}" onclick="toggleDiffPin('${msg.id}')" title="Pin this message as the diff reference">${pinBtnLabel}</button>
     ` + (msg.tags || []).map(t =>
         `<span class="msg-tag">${esc(t)} <span class="msg-tag-remove" onclick="removeTag('${msg.id}', '${escAttr(t)}')">×</span></span>`
     ).join('') + `
@@ -460,7 +474,36 @@ function renderDetail() {
         </div>
     `;
 
+    // Show/hide Diff tab based on whether a pinned message exists and it's a different message
+    const diffTabBtn = document.getElementById('tab-btn-diff');
+    if (diffTabBtn) {
+        const showDiff = diffPinnedMessage && diffPinnedMessage.id !== msg.id;
+        diffTabBtn.style.display = showDiff ? '' : 'none';
+        if (!showDiff && activeTab === 'diff') {
+            activeTab = 'parsed';
+        }
+    }
+
     renderTab();
+}
+
+async function toggleDiffPin(id) {
+    if (diffPinnedMessage && diffPinnedMessage.id === id) {
+        diffPinnedMessage = null;
+        renderMessageList();
+        renderDetail();
+        return;
+    }
+    try {
+        const resp = await fetch(`/api/messages/${id}`);
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        diffPinnedMessage = await resp.json();
+    } catch (e) {
+        console.error('Failed to fetch pinned message:', e);
+        return;
+    }
+    renderMessageList();
+    renderDetail();
 }
 
 function switchTab(tab) {
@@ -546,7 +589,106 @@ function renderTab() {
         }
     } else if (activeTab === 'json') {
         content.innerHTML = `<pre class="raw-view">${esc(JSON.stringify(msg, null, 2))}</pre>`;
+    } else if (activeTab === 'diff') {
+        renderDiffTab(content, msg);
     }
+}
+
+function renderDiffTab(container, msgB) {
+    const msgA = diffPinnedMessage;
+    if (!msgA) {
+        container.innerHTML = '<div class="empty-state"><p>No reference message pinned.</p></div>';
+        return;
+    }
+
+    // Build lookup: segName → segment for each message
+    // If a segment appears multiple times, index by name+occurrence
+    function segKey(seg, idx) { return `${seg.name}#${idx}`; }
+
+    // Collect all segment names (union, preserving order: A first, then B-only)
+    const segsA = msgA.segments || [];
+    const segsB = msgB.segments || [];
+    const allSegNames = [];
+    const seen = new Set();
+    [...segsA, ...segsB].forEach(s => { if (!seen.has(s.name)) { seen.add(s.name); allSegNames.push(s.name); } });
+
+    // For each segment name, pair the first occurrence in A and B
+    function firstSeg(segs, name) { return segs.find(s => s.name === name); }
+
+    let html = `
+        <div class="diff-header">
+            <div class="diff-col-label diff-label-a">
+                &#128204; Reference: <strong>${esc(msgA.message_type)}</strong>
+                <span class="diff-meta">${esc(msgA.message_control_id)}</span>
+            </div>
+            <div class="diff-col-label diff-label-b">
+                &#10145; Current: <strong>${esc(msgB.message_type)}</strong>
+                <span class="diff-meta">${esc(msgB.message_control_id)}</span>
+            </div>
+        </div>
+    `;
+
+    let totalDiffs = 0;
+
+    for (const segName of allSegNames) {
+        const segA = firstSeg(segsA, segName);
+        const segB = firstSeg(segsB, segName);
+
+        if (!segA && !segB) continue;
+
+        // Collect all field indices (union)
+        const allIdxs = new Set();
+        (segA ? segA.fields : []).forEach(f => allIdxs.add(f.index));
+        (segB ? segB.fields : []).forEach(f => allIdxs.add(f.index));
+        const sortedIdxs = Array.from(allIdxs).sort((a, b) => a - b);
+
+        const missingA = !segA;
+        const missingB = !segB;
+        const segClass = (missingA || missingB) ? 'diff-segment-missing' : 'diff-segment';
+
+        let rows = '';
+        let segHasDiff = missingA || missingB;
+
+        for (const idx of sortedIdxs) {
+            const fA = segA ? segA.fields.find(f => f.index === idx) : null;
+            const fB = segB ? segB.fields.find(f => f.index === idx) : null;
+            const vA = fA ? fA.value : '';
+            const vB = fB ? fB.value : '';
+            const desc = (fA && fA.description) || (fB && fB.description) || '';
+            const changed = vA !== vB;
+            if (changed) { totalDiffs++; segHasDiff = true; }
+            const rowClass = changed ? 'diff-row changed' : 'diff-row same';
+            rows += `
+                <tr class="${rowClass}">
+                    <td class="diff-field-name" title="${escAttr(desc)}">${esc(segName)}-${idx}${desc ? ' <span class="diff-desc">'+esc(desc)+'</span>' : ''}</td>
+                    <td class="diff-val diff-val-a ${changed ? 'diff-changed' : ''}">${esc(vA) || '<span class="field-empty">empty</span>'}</td>
+                    <td class="diff-val diff-val-b ${changed ? 'diff-changed' : ''}">${esc(vB) || '<span class="field-empty">empty</span>'}</td>
+                </tr>`;
+        }
+
+        html += `
+            <div class="diff-segment-block${segHasDiff ? ' has-diff' : ''}">
+                <div class="diff-segment-name ${segClass}">
+                    ${esc(segName)}
+                    ${missingA ? '<span class="diff-missing-badge">only in current</span>' : ''}
+                    ${missingB ? '<span class="diff-missing-badge">only in reference</span>' : ''}
+                </div>
+                <table class="diff-table">
+                    <thead><tr>
+                        <th class="diff-field-col">Field</th>
+                        <th>Reference value</th>
+                        <th>Current value</th>
+                    </tr></thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            </div>`;
+    }
+
+    const summary = totalDiffs === 0
+        ? '<div class="diff-summary same">&#10003; Messages are identical</div>'
+        : `<div class="diff-summary changed">&#9651; ${totalDiffs} field difference${totalDiffs > 1 ? 's' : ''} found</div>`;
+
+    container.innerHTML = summary + html;
 }
 
 function toggleSegment(key) {
