@@ -77,7 +77,7 @@ and this project follows [Semantic Versioning](https://semver.org/lang/en/).
 
 | Commit | Description |
 |--------|-------------|
-| [`c82270c`](https://github.com/Pappet/hl7-forge/commit/c82270c) | `feat(ui):` Quick copy-to-clipboard for segments, fields, and raw message (#63) |
+| [`TBD`](https://github.com/Pappet/hl7-forge/commit/TBD) | `feat(ui):` Quick copy-to-clipboard for segments, fields, and raw message (#63) |
 
 #### 2026-03-07
 
