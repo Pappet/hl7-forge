@@ -1,0 +1,6 @@
+MSH|^~\&|DOC_APP|HOSP|RECV_APP|RECV_FAC|20260220143000||MDM^T02|MSG0013|P|2.3
+EVN|T02|20260220143000
+PID|1||1008^^^HOSP^MR||Goldberg^Sara||19650920|F
+PV1|1|O|OUTPATIENT^Consultation^B
+TXA|1|OP^Operative Note|TX|||20260220143000||1234^Doctor^Andrew||||||D
+OBX|1|TX|59380-7^Surgical operation note^LN||Patient tolerated procedure well.||||||F

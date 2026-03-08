@@ -14,6 +14,9 @@ SB=$(printf '\x0b') # Start Block <VT>
 EB=$(printf '\x1c') # End Block <FS>
 CR=$(printf '\x0d') # Carriage Return <CR>
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MSG_DIR="$SCRIPT_DIR/messages"
+
 send_mllp() {
     local msg_type="$1"
     local payload="$2"
@@ -55,81 +58,26 @@ send_mllp_fast() {
 }
 
 # ==========================================
-# HL7 Dummy Messages (Valid)
-# ==========================================
-
-# 1. ADT^A01 (Patient admission)
-read -r -d '' MSG_ADT << EOM
-MSH|^~\&|SEND_APP|SEND_FAC|RECV_APP|RECV_FAC|20260220131200||ADT^A01|MSG0001|P|2.3
-EVN|A01|20260220131200
-PID|1||1001^^^HOSP^MR||Sample^Max^M||19800101|M|||1 Test Street^^Springfield^IL^62701^US||555-12345678|||M
-PV1|1|I|ICU^Bed 1^Room 3||||1234^Doctor^Andrew
-EOM
-
-# 2. ORU^R01 (Lab result)
-read -r -d '' MSG_ORU << EOM
-MSH|^~\&|LAB_APP|LAB_FAC|RECV_APP|RECV_FAC|20260220131500||ORU^R01|MSG0002|P|2.3
-PID|1||1002^^^HOSP^MR||Doe^Jane||19920515|F
-OBR|1||54321^LAB|WBC^White Blood Count|||20260220130000
-OBX|1|NM|WBC^White Blood Count||7.5|10*3/uL|4.0-10.0|N|||F
-EOM
-
-# 3. SIU^S12 (Appointment booking)
-read -r -d '' MSG_SIU << EOM
-MSH|^~\&|SCHED_APP|CLINIC|RECV_APP|RECV_FAC|20260220132000||SIU^S12|MSG0003|P|2.3
-SCH|112233|223344||||ROUTINE|Checkup|MINS|30|m||||20260301100000
-PID|1||1003^^^HOSP^MR||Smith^Anna||19751120|F
-EOM
-
-# ==========================================
-# HL7 Dummy Messages (Faulty)
-# ==========================================
-
-# 4. Missing MSH Segment (Critical structural error)
-read -r -d '' MSG_ERR_NO_MSH << EOM
-PID|1||1004^^^HOSP^MR||Error^NoMSH||19900101|M
-PV1|1|O|||||9999^Unknown
-EOM
-
-# 5. Invalid/Unknown Message Type (ZZZ^Z99)
-read -r -d '' MSG_ERR_INV_TYPE << EOM
-MSH|^~\&|SEND_APP|SEND_FAC|RECV_APP|RECV_FAC|20260220132500||ZZZ^Z99|MSG0004|P|2.3
-PID|1||1005^^^HOSP^MR||Test^Unknown||19850101|M
-EOM
-
-# 6. Missing Mandatory Fields in MSH (Missing Message Control ID)
-read -r -d '' MSG_ERR_BAD_MSH << EOM
-MSH|^~\&|||||20260220133000||ADT^A04||P|2.3
-PID|1||1006^^^HOSP^MR||Test^Broken||19700101|F
-EOM
-
-# 7. ADT^A01 without PID-3
-# Manual test: send ADT^A01 without PID-3 -> badge appears in list; warning panel shows "PID-3 (Patient Identifier List) is required for ADT^A01"
-read -r -d '' MSG_ERR_MISSING_PID3 << EOM
-MSH|^~\&|SEND_APP|SEND_FAC|RECV_APP|RECV_FAC|20260220134000||ADT^A01|MSG0007|P|2.3
-EVN|A01|20260220134000
-PID|1||||Sample^Max^M||19800101|M|||1 Test Street^^Springfield^IL^62701^US||555-12345678|||M
-PV1|1|I|ICU^Bed 1^Room 3||||1234^Doctor^Andrew
-EOM
-
-
-# ==========================================
 # Run Functional Tests
 # ==========================================
 
 echo "Starting HL7 MLLP functional tests against $HOST:$PORT..."
 echo "=================================================="
 
-send_mllp "ADT^A01 (Valid Patient admission)" "$MSG_ADT"
-send_mllp "ORU^R01 (Valid Lab result)" "$MSG_ORU"
-send_mllp "SIU^S12 (Valid Appointment booking)" "$MSG_SIU"
+for msg_file in "$MSG_DIR/valid"/*.hl7; do
+    [ -f "$msg_file" ] || continue
+    label=$(basename "$msg_file" .hl7 | tr '_' ' ')
+    send_mllp "$label" "$(cat "$msg_file")"
+done
 
 echo "Running ERROR Handling Tests..."
 echo "--------------------------------------------------"
-send_mllp "ERROR: Missing MSH Segment" "$MSG_ERR_NO_MSH"
-send_mllp "ERROR: Unknown Message Type (ZZZ^Z99)" "$MSG_ERR_INV_TYPE"
-send_mllp "ERROR: Missing Mandatory Fields in MSH" "$MSG_ERR_BAD_MSH"
-send_mllp "ERROR: ADT^A01 without PID-3 (Check UI for warning)" "$MSG_ERR_MISSING_PID3"
+
+for msg_file in "$MSG_DIR/errors"/*.hl7; do
+    [ -f "$msg_file" ] || continue
+    label=$(basename "$msg_file" .hl7 | tr '_' ' ')
+    send_mllp "ERROR: $label" "$(cat "$msg_file")"
+done
 
 echo "Functional test run completed."
 echo ""
@@ -139,6 +87,7 @@ echo ""
 # ==========================================
 
 LOAD_ITERATIONS=100
+LOAD_MSG=$(cat "$MSG_DIR/valid/adt_a01.hl7")
 
 echo "=================================================="
 echo "Starting Load Test: Sending $LOAD_ITERATIONS ADT^A01 messages..."
@@ -156,9 +105,9 @@ START_TIME=$(date +%s)
 
 for ((i=1; i<=LOAD_ITERATIONS; i++)); do
     # Generate a unique Control ID for each message to avoid server-side caching/duplication drops
-    CURRENT_MSG=$(echo "$MSG_ADT" | sed "s/MSG0001/LOAD$(printf "%04d" $i)/")
+    CURRENT_MSG=$(echo "$LOAD_MSG" | sed "s/MSG0001/LOAD$(printf "%04d" $i)/")
     send_mllp_fast "$CURRENT_MSG"
-    
+
     # Progress indicator
     if (( i % 25 == 0 )); then
         echo "  ...sent $i messages"
