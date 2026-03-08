@@ -8,3 +8,5 @@ docs/
 .axon/
 .agents/
 .planning/
+.swarm/
+.claude-flow/
