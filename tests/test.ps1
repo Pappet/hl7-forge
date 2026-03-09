@@ -23,7 +23,7 @@ function Send-Hl7Message {
         [string]$Payload
     )
 
-    Write-Host "=> Sending $TestName to $Server:$Port" -ForegroundColor Cyan
+    Write-Host "=> Sending $TestName to ${Server}:${Port}" -ForegroundColor Cyan
 
     # HL7 segments must be separated by \r (Carriage Return), not \n.
     $formattedPayload = $Payload.Trim() -replace "`r?`n", $CR
@@ -49,7 +49,7 @@ function Send-Hl7Message {
             $response = [System.Text.Encoding]::UTF8.GetString($buffer, 0, $bytesRead)
 
             # Strip MLLP wrappers and make readable
-            $cleanResponse = $response.Replace($SB, '').Replace($EB, '').Replace($CR, "`n")
+            $cleanResponse = $response -replace "$SB", "" -replace "$EB", "" -replace "$CR", "`n"
             Write-Host "   [SERVER-ACK]:`n$cleanResponse"
         } else {
             Write-Host "   [SERVER-ACK]: (No response received within timeout)" -ForegroundColor Yellow
@@ -124,7 +124,7 @@ function Invoke-Hl7LoadTest {
 # Run Functional Tests
 # ==========================================
 
-Write-Host "Starting HL7 MLLP functional tests against $Server:$Port..."
+Write-Host "Starting HL7 MLLP functional tests against ${Server}:${Port}..."
 Write-Host "=================================================="
 
 Get-ChildItem "$MsgDir\valid\*.hl7" | Sort-Object Name | ForEach-Object {
