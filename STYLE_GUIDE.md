@@ -1,38 +1,113 @@
-# HL7 Forge — Style Guide
+# Harux — Style Guide
 
-This is the reference for all appearance and functioning rules of HL7 Forge.
+> *"Peer into the entrails of your messages."*
+
+**Harux** (from Latin *haruspex* — a Roman priest who divined meaning by inspecting entrails) is an MLLP server with a web UI for receiving, parsing, and inspecting HL7 v2.x messages.
+
+This is the reference for all appearance and functioning rules of Harux.
+
+---
+
+## 0. Brand Identity
+
+### Name & Origin
+
+| | |
+|---|---|
+| **Name** | Harux |
+| **Pronunciation** | /haˈɾʊks/ — rhymes with "barracks" |
+| **Etymology** | Contraction of *haruspex* (Latin: entrail-inspector) |
+| **Tagline** | *Peer into the entrails of your messages.* |
+| **Alternate short** | *Message divination for HL7® v2.x* |
+
+### Voice & Tone
+
+Harux is a **clinical tool with a wry mythological edge**. Documentation and UI copy should be:
+
+- **Precise** — segment names, field indices, data types are never vague.
+- **Compact** — labels are short; tooltips carry the detail.
+- **Occasionally mythological** — release names, error pages, or easter eggs may reference Roman augury. The core UI stays professional.
+
+### Logo Concept
+**NOT FINAL**
+The Harux mark combines two motifs: **inspection** and **message dissection**.
+
+| Element | Rationale |
+|---|---|
+| Stylised eye or blade | Represents the act of examining / cutting open |
+| Segmented interior lines | Echoes HL7 pipe-delimited segments visible "inside" the message |
+| Monochrome + single accent | Must work as a 16×16 favicon, a CLI banner, and a README badge |
+
+Preferred rendering: a **single-stroke glyph** in `--accent` on a `--bg-primary` ground.
+The logo must never incorporate HL7® trademarks or the HL7 flame symbol.
+
+### Trademark Notice
+
+When referencing the standard, include the following notice at least once per document or prominent page:
+
+> HL7® is a registered trademark of Health Level Seven International.
+> The use of this trademark does not constitute endorsement by HL7.
+> Harux is not affiliated with or endorsed by HL7 International.
 
 ---
 
 ## 1. Color Palette (Dark Theme)
 
-| Role | Value |
-|---|---|
-| **Primary Background** | `#0f1117` |
-| **Secondary Background** (panels, headers) | `#1a1d27` |
-| **Tertiary Background** (hover, active, popups) | `#242736` |
-| **Accent Hover** | `#2a2e3f` |
-| **Borders** | `#2e3247` |
-| **Primary Text** | `#e4e6f0` |
-| **Secondary Text** | `#8b8fa3` |
-| **Muted Text** | `#5c6078` |
-| **Accent (Blue)** | `#6c8cff` (dimmed: `#4a62b3`) |
-| **Success (Green)** | `#4caf84` |
-| **Warning (Yellow)** | `#e5a54b` |
-| **Error (Red)** | `#e05454` |
+The palette draws from **volcanic amber on deep obsidian** — a nod to Roman-era divination by firelight.
+
+| Role | Value | Note |
+|---|---|---|
+| **Primary Background** | `#0f1117` | Near-black base |
+| **Secondary Background** | `#1a1d27` | Panels, headers |
+| **Tertiary Background** | `#242736` | Hover, active, popups |
+| **Accent Hover** | `#2a2e3f` | |
+| **Borders** | `#2e3247` | |
+| **Primary Text** | `#e4e6f0` | |
+| **Secondary Text** | `#8b8fa3` | |
+| **Muted Text** | `#5c6078` | |
+| **Accent (Amber)** | `#d4944c` | Primary brand color (dimmed: `#a06e38`) |
+| **Accent Alt (Blue)** | `#6c8cff` | Links, interactive focus rings |
+| **Success (Green)** | `#4caf84` | ACK received, valid |
+| **Warning (Yellow)** | `#e5a54b` | Missing field |
+| **Error (Red)** | `#e05454` | Missing segment, NACK |
+
+### CSS Variables
+
+```css
+:root {
+  --bg-primary:    #0f1117;
+  --bg-secondary:  #1a1d27;
+  --bg-tertiary:   #242736;
+  --accent-hover:  #2a2e3f;
+  --border:        #2e3247;
+
+  --text-primary:  #e4e6f0;
+  --text-secondary:#8b8fa3;
+  --text-muted:    #5c6078;
+
+  --accent:        #d4944c;
+  --accent-dim:    #a06e38;
+  --accent-alt:    #6c8cff;
+  --success:       #4caf84;
+  --warning:       #e5a54b;
+  --error:         #e05454;
+}
+```
 
 ### Source Marker Palette
 
 Used for color-coded dots in the message list (mapped by sender IP/port):
 
 ```
-hsl(210, 90%, 65%)  — Blue       hsl(150, 70%, 55%)  — Green
-hsl(30,  85%, 60%)  — Orange     hsl(280, 75%, 65%)  — Purple
-hsl(0,   80%, 62%)  — Red        hsl(180, 70%, 50%)  — Teal
-hsl(50,  85%, 55%)  — Gold       hsl(330, 75%, 62%)  — Pink
-hsl(200, 80%, 55%)  — Sky        hsl(100, 60%, 50%)  — Lime
-hsl(260, 65%, 60%)  — Indigo     hsl(15,  90%, 58%)  — Coral
+hsl(30,  85%, 60%)  — Amber       hsl(150, 70%, 55%)  — Green
+hsl(210, 90%, 65%)  — Blue        hsl(280, 75%, 65%)  — Purple
+hsl(0,   80%, 62%)  — Red         hsl(180, 70%, 50%)  — Teal
+hsl(50,  85%, 55%)  — Gold        hsl(330, 75%, 62%)  — Pink
+hsl(200, 80%, 55%)  — Sky         hsl(100, 60%, 50%)  — Lime
+hsl(260, 65%, 60%)  — Indigo      hsl(15,  90%, 58%)  — Coral
 ```
+
+> **Note:** Amber is listed first — it is the brand colour and the default marker for the first source.
 
 ---
 
@@ -40,7 +115,7 @@ hsl(260, 65%, 60%)  — Indigo     hsl(15,  90%, 58%)  — Coral
 
 - **UI elements:** System fonts — `-apple-system, system-ui, sans-serif`
 - **Data / code:** Monospace — `SF Mono, Cascadia Code, Consolas, monospace`
-- **Base font size:** 12–13px for data-dense views
+- **Base font size:** 12–13 px for data-dense views
 - **Headers:** Subtle uppercase with small letter-spacing for grid/table headers
 
 ---
@@ -49,14 +124,14 @@ hsl(260, 65%, 60%)  — Indigo     hsl(15,  90%, 58%)  — Coral
 
 - **List row padding:** `9px 16px` — compact for data-heavy interfaces
 - **Panel gaps:** Use consistent CSS variable spacing
-- **Borders:** 1px solid `var(--border)` between sections
+- **Borders:** 1 px solid `var(--border)` between sections
 
 ---
 
 ## 4. Animations & Transitions
 
 - **Hover/focus transitions:** `0.15s` for background color changes on buttons and list rows
-- **New message flash:** Row flashes `rgba(108, 140, 255, 0.15)` and fades out over `0.6s`
+- **New message flash:** Row flashes `rgba(212, 148, 76, 0.15)` and fades out over `0.6s`
 - **Toast notifications:** Slide in, auto-dismiss after a short delay
 
 ---
@@ -65,7 +140,7 @@ hsl(260, 65%, 60%)  — Indigo     hsl(15,  90%, 58%)  — Coral
 
 - **No native browser checkboxes or radios** — use custom CSS toggle switches
 - Toggle switches use `var(--bg-tertiary)` background and `var(--border)` for resting state
-- Active toggles use `var(--accent)` color with `rgba(108, 140, 255, 0.15)` background glow
+- Active toggles use `var(--accent)` colour with `rgba(212, 148, 76, 0.15)` background glow
 - Search inputs are debounced at `300ms`
 
 ---
@@ -123,7 +198,7 @@ The same three-tier logic applies to **typical-segment badges** in the detail vi
 - **Async runtime:** Tokio with `tokio::select!` for concurrent task management.
 - **Web framework:** Axum for HTTP API and WebSocket.
 - **State management:** `Arc<RwLock<T>>` with `tokio::sync::broadcast` for real-time push to WebSocket clients.
-- **Memory safeguards:** Explicit count limits and byte-size limits on stores. Evict oldest 10% when either limit is hit.
+- **Memory safeguards:** Explicit count limits and byte-size limits on stores. Evict oldest 10 % when either limit is hit.
 - **Logging:** Use the `tracing` crate. Never use `println!`.
 - **File structure:** One responsibility per file (`web.rs` for routing, `store.rs` for state, `parser.rs` for decoding).
 
